@@ -8,7 +8,7 @@ export class AuthPages {
 <div class="login-container">
   <!-- Côté gauche : Image -->
   <div class="login-image">
-    <img src="../img/login.png" alt="Ping Pong" />
+    <img src="../img/login_2.png" alt="Ping Pong" />
   </div>
   
   <!-- Côté droit : Formulaire -->

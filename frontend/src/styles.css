@@ -86,8 +86,6 @@
 
 .form-group input:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.1);
 }
 
 .error-message {
@@ -365,7 +363,7 @@
 .game-mode-card:hover {
     transform: translateY(-5px);
     border-color: var(--primary-color);
-    box-shadow: 0 10px 30px rgba(0, 255, 136, 0.2);
+    box-shadow: 0 10px 30px rgba(252, 248, 248, 0.2);
 }
 
 .game-mode-card.disabled {
