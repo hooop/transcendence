@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pong - Test IA</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            font-family: 'Courier New', monospace;
+            color: #fff;
+        }
+
+        h1 {
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #00ff88;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 20px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .difficulty-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .info {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            max-width: 600px;
+        }
+
+        .info h3 {
+            margin-top: 0;
+            color: #00ff88;
+        }
+
+        canvas {
+            border: 3px solid #00ff88;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(0, 255, 136, 0.3);
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🏓 Pong - Test Intelligence Artificielle</h1>
+
+    <div class="container">
+        <div class="controls">
+            <div class="mode-selector">
+                <button id="vsPlayerBtn">👥 VS Joueur</button>
+                <button id="vsAIBtn" class="active">🤖 VS IA</button>
+            </div>
+
+            <div class="difficulty-selector">
+                <span>Difficulté:</span>
+                <button id="easyBtn">Facile</button>
+                <button id="mediumBtn" class="active">Moyen</button>
+                <button id="hardBtn">Difficile</button>
+            </div>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div class="info">
+            <h3>Contrôles</h3>
+            <p>
+                <strong>Joueur Gauche:</strong> W (haut) / S (bas)<br>
+                <strong>Joueur Droite:</strong> Flèches ↑ / ↓ (ou IA)<br>
+                <strong>Démarrer:</strong> ESPACE<br>
+                <strong>Redémarrer:</strong> R
+            </p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { PongGame } from './src/game/PongGame.js'
+        import { AIDifficulty } from './src/game/AIPlayer.js'
+
+        const canvas = document.getElementById('gameCanvas')
+        let game = new PongGame(canvas, true, AIDifficulty.MEDIUM)
+
+        // Boutons de mode
+        const vsPlayerBtn = document.getElementById('vsPlayerBtn')
+        const vsAIBtn = document.getElementById('vsAIBtn')
+
+        // Boutons de difficulté
+        const easyBtn = document.getElementById('easyBtn')
+        const mediumBtn = document.getElementById('mediumBtn')
+        const hardBtn = document.getElementById('hardBtn')
+
+        // Gérer le changement de mode
+        vsPlayerBtn.addEventListener('click', () => {
+            game.destroy()
+            game = new PongGame(canvas, false)
+            vsPlayerBtn.classList.add('active')
+            vsAIBtn.classList.remove('active')
+        })
+
+        vsAIBtn.addEventListener('click', () => {
+            game.destroy()
+            const difficulty = getCurrentDifficulty()
+            game = new PongGame(canvas, true, difficulty)
+            vsAIBtn.classList.add('active')
+            vsPlayerBtn.classList.remove('active')
+        })
+
+        // Gérer le changement de difficulté
+        function getCurrentDifficulty() {
+            if (easyBtn.classList.contains('active')) return AIDifficulty.EASY
+            if (hardBtn.classList.contains('active')) return AIDifficulty.HARD
+            return AIDifficulty.MEDIUM
+        }
+
+        function setDifficultyActive(btn) {
+            [easyBtn, mediumBtn, hardBtn].forEach(b => b.classList.remove('active'))
+            btn.classList.add('active')
+        }
+
+        easyBtn.addEventListener('click', () => {
+            setDifficultyActive(easyBtn)
+            game.setAIDifficulty(AIDifficulty.EASY)
+        })
+
+        mediumBtn.addEventListener('click', () => {
+            setDifficultyActive(mediumBtn)
+            game.setAIDifficulty(AIDifficulty.MEDIUM)
+        })
+
+        hardBtn.addEventListener('click', () => {
+            setDifficultyActive(hardBtn)
+            game.setAIDifficulty(AIDifficulty.HARD)
+        })
+
+        // Afficher l'état initial
+        game.restart()
+
+        console.log('🎮 Jeu prêt ! Appuyez sur ESPACE pour commencer.')
+    </script>
+</body>
+</html>
