@@ -620,8 +620,7 @@ export class Router {
 			.mode-btn:hover {
 				border-color: #00ff41;
 				background: #222;
-				transform: translateY(-2px);
-			}
+				}
 			.mode-btn.active {
 				border-color: #00ff41;
 				background: #1a2a1a;
@@ -754,7 +753,6 @@ export class Router {
 				transition: all 0.3s ease;
 			}
 			.btn-ai:hover {
-				transform: translateY(-2px);
 				box-shadow: 0 5px 15px rgba(0, 255, 65, 0.2);
 			}
 			.btn-ai-easy:hover {

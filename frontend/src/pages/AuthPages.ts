@@ -5,76 +5,70 @@ export class AuthPages {
     // Page de connexion
     static renderLogin(): string {
         return `
-           <!-- Partie à injecter dans le <main> -->
-<div class="login-split-container">
+<div class="login-container">
   <!-- Côté gauche : Image -->
-  <div class="login-image-side">
-    <div class="image-overlay">
-      <h1 class="brand-title">🏓 ft_transcendence</h1>
-      <p class="brand-tagline">Play, Compete, Win</p>
-    </div>
+  <div class="login-image">
+    <img src="../img/login.png" alt="Ping Pong" />
   </div>
-
+  
   <!-- Côté droit : Formulaire -->
-  <div class="login-form-side">
-    <div class="login-form-container">
-      <div class="login-header">
-        <h2>Welcome Back!</h2>
-        <p>Sign in to continue your game</p>
-      </div>
-
-      <form id="login-form" class="auth-form">
+  <div class="login-form">
+    <div class="login-form-content">
+      <h2>Connexion</h2>
+      <p class="subtitle">Connectez-vous a votre compte</p>
+      
+      <form id="login-form">
         <div class="form-group">
-          <label for="username">Username or Email</label>
+          <label for="username">Nom d'utilisateur ou email</label>
           <input
             type="text"
             id="username"
             name="username"
             required
-            placeholder="Enter your username"
+            placeholder="Nom d'utilisateur"
             autocomplete="username"
           />
         </div>
-
+        
         <div class="form-group">
-          <label for="password">Password</label>
+          <label for="password">Mot de passe</label>
           <input
             type="password"
             id="password"
             name="password"
             required
-            placeholder="Enter your password"
+            placeholder="Mot de passe"
             autocomplete="current-password"
           />
         </div>
-
+        
         <div class="form-options">
-          <label class="checkbox-container">
+          <label class="checkbox-label">
             <input type="checkbox" id="remember-me" />
-            <span>Remember me</span>
+            <span>Se rappeler de moi</span>
           </label>
-          <a href="/forgot-password" class="forgot-link" data-route>Forgot password?</a>
+          <a href="/forgot-password" class="forgot-link" data-route>Mot de passe oublie ?</a>
         </div>
-
+        
         <div id="login-error" class="error-message" style="display: none;"></div>
-
-        <button type="submit" class="btn btn-primary btn-large btn-full">
-          Sign In
-        </button>
+        
+        <button type="submit" class="btn-login">Se connecter</button>
       </form>
-
-      <div class="auth-divider">
-        <span>OR</span>
+      
+      <div class="divider">
+        <span>ou</span>
       </div>
-
-      <a href="http://localhost:3000/api/auth/42" class="btn btn-oauth btn-large btn-full">
-        <span class="oauth-icon">🔑</span>
-        Sign in with 42
+      
+      <a href="http://localhost:3000/api/auth/42" class="btn-oauth">
+        <span class="oauth-icon">
+             <img src="../img/42_Logo.svg" alt="42" width="30" height="30" />
+        </span>
+        Se connecter avec 42
       </a>
-
-      <p class="auth-footer">
-        Don't have an account?
-        <a href="/register" data-route class="register-link">Create one</a>
+      
+      <p class="signup-link">
+        Pas encore de compte ? 
+        <a href="/register" data-route>Creer un compte</a>
       </p>
     </div>
   </div>
@@ -154,7 +148,7 @@ export class AuthPages {
 
                         <div id="register-error" class="error-message" style="display: none;"></div>
 
-                        <button type="submit" class="btn btn-primary btn-large">
+                        <button type="submit" class="btn btn-login btn-large">
                             Create Account
                         </button>
                     </form>
