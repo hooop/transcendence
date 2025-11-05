@@ -36,12 +36,12 @@ export class PongGame {
         // Configuration du jeu
         this.config = {
             width: 800,
-            height: 400,
+            height: 500,
             paddleSpeed: 300,
-            ballSpeed: 200,
+            ballSpeed: 300,
             paddleHeight: 80,
-            paddleWidth: 12,
-            ballSize: 12
+            paddleWidth: 10,
+            ballSize: 15
         }
 
         // État initial
@@ -70,7 +70,7 @@ export class PongGame {
     private setupCanvas(): void {
         this.canvas.width = this.config.width
         this.canvas.height = this.config.height
-        this.canvas.style.border = '2px solid #fff'
+        this.canvas.style.border = '1px dashed #fff'
         this.canvas.style.background = '#000'
     }
 
@@ -242,7 +242,7 @@ export class PongGame {
         if (this.state.leftScore >= winScore) {
             this.state.winner = 'left'
             this.state.isRunning = false
-            console.log('🏆 Left player wins!')
+            console.log('Left player wins!')
         } else if (this.state.rightScore >= winScore) {
             this.state.winner = 'right'
             this.state.isRunning = false
@@ -278,7 +278,7 @@ export class PongGame {
 
     private renderScore(): void {
         this.ctx.fillStyle = '#fff'
-        this.ctx.font = '48px monospace'
+        this.ctx.font = '35px monospace'
         this.ctx.textAlign = 'center'
 
         // Score joueur de gauche

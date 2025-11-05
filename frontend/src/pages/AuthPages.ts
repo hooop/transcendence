@@ -6,72 +6,72 @@ export class AuthPages {
     static renderLogin(): string {
         return `
 <div class="login-container">
-  <!-- Côté gauche : Image -->
-  <div class="login-image">
-    <img src="../img/login_2.png" alt="Ping Pong" />
-  </div>
-  
-  <!-- Côté droit : Formulaire -->
-  <div class="login-form">
-    <div class="login-form-content">
-      <h2>Connexion</h2>
-      <p class="subtitle">Connectez-vous a votre compte</p>
-      
-      <form id="login-form">
-        <div class="form-group">
-          <label for="username">Nom d'utilisateur ou email</label>
-          <input
-            type="text"
-            id="username"
-            name="username"
-            required
-            placeholder="Nom d'utilisateur"
-            autocomplete="username"
-          />
-        </div>
-        
-        <div class="form-group">
-          <label for="password">Mot de passe</label>
-          <input
-            type="password"
-            id="password"
-            name="password"
-            required
-            placeholder="Mot de passe"
-            autocomplete="current-password"
-          />
-        </div>
-        
-        <div class="form-options">
-          <label class="checkbox-label">
-            <input type="checkbox" id="remember-me" />
-            <span>Se rappeler de moi</span>
-          </label>
-          <a href="/forgot-password" class="forgot-link" data-route>Mot de passe oublie ?</a>
-        </div>
-        
-        <div id="login-error" class="error-message" style="display: none;"></div>
-        
-        <button type="submit" class="btn-login">Se connecter</button>
-      </form>
-      
-      <div class="divider">
-        <span>ou</span>
-      </div>
-      
-      <a href="http://localhost:3000/api/auth/42" class="btn-oauth">
-        <span class="oauth-icon">
-             <img src="../img/42_Logo.svg" alt="42" width="30" height="30" />
-        </span>
-        Se connecter avec 42
-      </a>
-      
-      <p class="signup-link">
-        Pas encore de compte ? 
-        <a href="/register" data-route>Creer un compte</a>
-      </p>
-    </div>
-  </div>
+
+	<!-- Côté gauche : Image -->
+
+	<div class="login-image">
+		<img src="../img/login_2.png" alt="Connexion" />
+	</div>
+
+	<!-- Côté droit : Formulaire -->
+
+	<div class="login-form">
+
+		<div class="login-form-content">
+
+			<h2>Connexion</h2>
+			<p class="subtitle">Connectez-vous a votre compte</p>
+
+			<form id="login-form">
+
+			<div class="form-group">
+					<label for="username">Nom d'utilisateur ou email</label>
+					<input
+						type="text"
+						id="username"
+						name="username"
+						required
+						placeholder="Nom d'utilisateur ou email"
+						autocomplete="username"
+					/>
+			</div>
+
+			<div class="form-group">
+				<label for="password">Mot de passe</label>
+				<input
+					type="password"
+					id="password"
+					name="password"
+					required
+					placeholder="Mot de passe"
+					autocomplete="current-password"
+				/>
+			</div>
+
+			<div id="login-error" class="error-message" style="display: none;"></div>
+
+			<button type="submit" class="btn-login">Se connecter</button>
+
+			</form>
+
+			<div class="divider">
+				<span>ou</span>
+			</div>
+
+			<a href="http://localhost:3000/api/auth/42" class="btn-oauth">
+
+				Se connecter avec
+				<span class="oauth-icon">
+					<img src="../img/42_Logo.svg" alt="42" width="30" height="30" />
+				</span>
+			</a>
+
+			<p class="signup-link">
+				Pas encore de compte ?
+				<a href="/register" data-route>Creer un compte</a>
+			</p>
+		</div>
+	</div>
 </div>
         `;
     }
@@ -79,95 +79,97 @@ export class AuthPages {
     // Page d'inscription
     static renderRegister(): string {
         return `
-            <div class="auth-page">
-                <div class="auth-container">
-                    <h1>🏓 ft_transcendence</h1>
-                    <h2>Create Account</h2>
+ <div class="login-container">
 
-                    <form id="register-form" class="auth-form">
-                        <div class="form-group">
-                            <label for="username">Username *</label>
-                            <input
-                                type="text"
-                                id="username"
-                                name="username"
-                                required
-                                placeholder="Choose a username"
-                                autocomplete="username"
-                                minlength="3"
-                            />
-                        </div>
+	<!-- Côté gauche : Image -->
 
-                        <div class="form-group">
-                            <label for="email">Email *</label>
-                            <input
-                                type="email"
-                                id="email"
-                                name="email"
-                                required
-                                placeholder="your.email@example.com"
-                                autocomplete="email"
-                            />
-                        </div>
+	<div class="login-image">
+		<img src="../img/inscription.png" alt="Inscription" />
+	</div>
 
-                        <div class="form-group">
-                            <label for="display_name">Display Name</label>
-                            <input
-                                type="text"
-                                id="display_name"
-                                name="display_name"
-                                placeholder="Your display name (optional)"
-                            />
-                        </div>
+	<!-- Côté droit : Formulaire -->
 
-                        <div class="form-group">
-                            <label for="password">Password *</label>
-                            <input
-                                type="password"
-                                id="password"
-                                name="password"
-                                required
-                                placeholder="At least 8 characters"
-                                autocomplete="new-password"
-                                minlength="8"
-                            />
-                        </div>
+	<div class="login-form">
 
-                        <div class="form-group">
-                            <label for="password_confirm">Confirm Password *</label>
-                            <input
-                                type="password"
-                                id="password_confirm"
-                                name="password_confirm"
-                                required
-                                placeholder="Re-enter your password"
-                                autocomplete="new-password"
-                                minlength="8"
-                            />
-                        </div>
+		<div class="login-form-content">
 
-                        <div id="register-error" class="error-message" style="display: none;"></div>
+			<h2>Inscription</h2>
+			<p class="subtitle">Créez un compte</p>
 
-                        <button type="submit" class="btn btn-login btn-large">
-                            Create Account
-                        </button>
-                    </form>
+			<form id="register-form">
 
-                    <div class="auth-divider">
-                        <span>OR</span>
-                    </div>
+			<div class="form-group">
+				<label for="username">Nom d'utilisateur *</label>
+				<input
+					type="text"
+					id="username"
+					name="username"
+					required
+					placeholder="Choisir un nom d'utilisateur"
+					autocomplete="username"
+					minlength="3"
+				/>
+			</div>
 
-                    <a href="http://localhost:3000/api/auth/42" class="btn btn-oauth btn-large">
-                        <span class="oauth-icon">🔑</span>
-                        Sign up with 42
-                    </a>
+			<div class="form-group">
+				<label for="email">Email *</label>
+				<input
+					type="email"
+					id="email"
+					name="email"
+					required
+					placeholder="your.email@example.com"
+					autocomplete="email"
+				/>
+			</div>
 
-                    <p class="auth-footer">
-                        Already have an account?
-                        <a href="/login" data-route>Sign in</a>
-                    </p>
-                </div>
-            </div>
+			<div class="form-group">
+				<label for="display_name">Pseudo</label>
+				<input
+					type="text"
+					id="display_name"
+					name="display_name"
+					placeholder="Choisir un pseudo (facultatif)"
+				/>
+			</div>
+
+			<div class="form-group">
+				<label for="password">Mot de passe *</label>
+				<input
+					type="password"
+					id="password"
+					name="password"
+					required
+					placeholder="Minimum 8 caractères"
+					autocomplete="new-password"
+					minlength="8"
+				/>
+			</div>
+
+			<div id="register-error" class="error-message" style="display: none;"></div>
+
+			<button type="submit" class="btn-login">S'inscrire</button>
+
+			</form>
+
+			<div class="divider">
+				<span>ou</span>
+			</div>
+
+			<a href="http://localhost:3000/api/auth/42" class="btn-oauth">
+				Se connecter avec
+				<span class="oauth-icon">
+					<img src="../img/42_Logo.svg" alt="42" width="30" height="30" />
+				</span>
+			</a>
+
+			<p class="signup-link">
+				Déjà un compte ?
+				<a href="/login" data-route>Connectez-vous</a>
+			</p>
+		</div>
+	</div>
+</div>
         `;
     }
 

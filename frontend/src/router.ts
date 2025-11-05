@@ -85,30 +85,31 @@ export class Router {
 
 		// Sinon, afficher la page d'accueil avec login/register
 		this.updatePageContent(`
-			<div class="page">
-				<h2>1972 : Une révolution naït</h2>
-				<p>
-					Il y a plus de 50 ans, dans les laboratoires d'Atari, naissait Pong.
-					Deux rectangles, une balle pixelisée, et une simplicité révolutionnaire qui allait changer
-					l'histoire du divertissement pour toujours.
-				</p>
-					<div class="welcome-header">
-					<img src="../img/pong_intro.png" alt="Pong header" class="welcome-image">
-				</div>
-				<h2>2025 : L'héritage continue</h2>
-				<p style="margin-bottom: 3rem;">
-					Aujourd'hui, SuperPong garde l'âme du jeu original :
-					anticipation, réflexes, stratégie. Mais maintenant, vous pouvez défier vos amis à distance,
-					gravir les échelons des tournois et prouver que vous avez ce qu'il faut pour devenir le champion ultime.
-				</p>
-				<div class="actions">
-					<a href="/game" data-route class="btn btn-primary">Jouer</a>
-				</div>
-			</div>
+<div class="page">
+	<h2>1972 : Une révolution naït</h2>
+	<p>
+		Il y a plus de 50 ans, dans les laboratoires d'Atari, naissait Pong.
+		Deux rectangles, une balle pixelisée, et une simplicité révolutionnaire qui allait changer
+		l'histoire du divertissement pour toujours.
+	</p>
+	<div class="welcome-header">
+		<img src="../img/pong_intro.png" alt="Pong header" class="welcome-image">
+	</div>
+	<h2>2025 : L'héritage continue</h2>
+	<p style="margin-bottom: 3rem;">
+		Aujourd'hui, SuperPong garde l'âme du jeu original :
+		anticipation, réflexes, stratégie. Mais maintenant, vous pouvez défier vos amis à distance,
+		gravir les échelons des tournois et prouver que vous avez ce qu'il faut pour devenir le champion ultime.
+	</p>
+	<div class="play-button-container">
+		<a href="/game" data-route class="btn btn-primary">Jouer</a>
+	</div>
+</div>
 		`)
 	}
 
-	private renderLogin(): void {
+	private renderLogin(): void
+	{
 		this.updatePageContent(AuthPages.renderLogin())
 		setTimeout(() => AuthPages.setupLoginForm(), 100)
 	}
@@ -145,7 +146,7 @@ export class Router {
 	private renderGameModeSelection(): void {
 		this.updatePageContent(`
 			<div class="page">
-				<h2>🏓 Choose Game Mode</h2>
+				<h2>Choisissez un mode de jeu</h2>
 				<div class="game-mode-selector">
 					<div class="mode-buttons">
 						<a href="/game/vs-friend" data-route class="mode-btn-link">
@@ -209,21 +210,25 @@ export class Router {
 		const controlsText = isAI ? 'Right Player: <strong>AI</strong> 🤖' : 'Right Player: <kbd>↑</kbd> / <kbd>↓</kbd>'
 
 		this.updatePageContent(`
-			<div class="page">
-				<h2>🏓 Pong Game - ${modeText}</h2>
-				<div class="game-container">
-					<canvas id="pong-canvas"></canvas>
-				</div>
-				<div class="game-info">
-					<p>🎮 <strong>Controls:</strong></p>
-					<p>Left Player: <kbd>W</kbd> / <kbd>S</kbd></p>
-					<p>${controlsText}</p>
-					<p>Press <kbd>SPACE</kbd> to start!</p>
-				</div>
-				<div class="back-button-container">
-					<a href="/game" data-route class="btn btn-secondary">← Back to Mode Selection</a>
-				</div>
-			</div>
+<div class="page">
+	<h2>Pong Game - ${modeText}</h2>
+
+	<div class="game-container">
+		<canvas id="pong-canvas"></canvas>
+	</div>
+
+	<div class="game-info">
+		<p>🎮 <strong>Controls:</strong></p>
+		<p>Left Player: <kbd>W</kbd> / <kbd>S</kbd></p>
+		<p>${controlsText}</p>
+		<p>Press <kbd>SPACE</kbd> to start!</p>
+	</div>
+
+	<div class="back-button-container">
+		<a href="/game" data-route class="btn btn-secondary">← Back to Mode Selection</a>
+	</div>
+
+</div>
 		`)
 		setTimeout(() => this.initPongGame(isAI, difficulty), 0)
 	}
@@ -488,6 +493,12 @@ export class Router {
 		const style = document.createElement('style')
 		style.id = 'page-styles'
 		style.textContent = `
+
+			.welcome-header {
+				text-align: center;
+				margin-bottom: 0rem;
+				}
+
 			.welcome-image {
 				max-width: 700px;
 				width: 100%;
@@ -498,63 +509,9 @@ export class Router {
 				margin-right: auto;
 				}
 
-			.welcome-header {
-				text-align: center;
-				margin-bottom: 0rem;
-				}
-			.page {
-				text-align: center;
-				padding: 2rem;
-			}
-			.page h2 {
-				font-family: 'akira', 'Arial', monospace;
-				color: #fff;
-				margin-bottom: 1rem;
-				font-size: 1.2rem;
-			}
-
-			.page p {
-				max-width: 600px;
-				margin: 0 auto;
-				font-family: 'Inter', sans-serif;
-				color: #fff;
-				margin-bottom: 1rem;
-				font-size: 0.875rem;
-				opacity: 0.5;
-				line-height: 1.5;
-			}
-			.actions {
-				margin-top: 2rem;
-				display: flex;
-				gap: 1rem;
-				justify-content: center;
-			}
 
 
 
-			.game-container {
-				display: flex;
-				justify-content: center;
-				margin: 2rem 0;
-			}
-			#pong-canvas {
-				border: 2px solid #00ff41;
-				border-radius: 4px;
-				box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
-			}
-			.game-info {
-				max-width: 500px;
-				margin: 0 auto;
-				text-align: left;
-				background: #1a1a1a;
-				padding: 1rem;
-				border-radius: 8px;
-				border: 1px solid #333;
-			}
-			.game-info p {
-				margin: 0.5rem 0;
-				color: #ccc;
-			}
 			kbd {
 				background: #333;
 				color: #00ff41;
