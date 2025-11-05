@@ -145,39 +145,37 @@ export class Router {
 
 private renderGameModeSelection(): void {
 	this.updatePageContent(`
-		<div class="page">
-			<h2>Entrainement</h2>
-
-			<!-- Toggle Friend/AI -->
-			<div class="game-mode-container">
-				<div class="mode-toggle-wrapper">
-					<span class="mode-label">Mode solo</span>
-					<label class="toggle-switch">
-						<input type="checkbox" id="mode-toggle">
-						<span class="toggle-slider"></span>
-					</label>
-				</div>
-
-				<div class="difficulty-selector" id="difficulty-group" style="display: none;">
-					<span class="difficulty-label">Difficulty:</span>
-					<button class="difficulty-btn" data-difficulty="easy">Easy</button>
-					<button class="difficulty-btn active" data-difficulty="medium">Medium</button>
-					<button class="difficulty-btn" data-difficulty="hard">Hard</button>
-				</div>
-			</div>
-
-			<!-- Canvas du jeu -->
-			<div class="game-container">
-				<canvas id="pong-canvas"></canvas>
-			</div>
-
-			<div class="game-info">
-				<p>🎮 <strong>Controls:</strong></p>
-				<p>Left Player: <kbd>W</kbd> / <kbd>S</kbd></p>
-				<p id="right-player-info">Right Player: <kbd>↑</kbd> / <kbd>↓</kbd></p>
-				<p>Press <kbd>SPACE</kbd> to start!</p>
-			</div>
-		</div>
+<div class="page">
+    <h2>Entrainement</h2>
+    <!-- Toggle Friend/AI -->
+    <div class="game-mode-container">
+        <div class="mode-toggle-wrapper">
+            <span class="mode-label">Mode solo</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="mode-toggle">
+                <span class="toggle-slider"></span>
+            </label>
+        </div>
+        <div class="difficulty-selector" id="difficulty-group" style="display: none;">
+            <span class="difficulty-label">Difficulté:</span>
+            <div class="difficulty-slider-container">
+                <span class="slider-label">Facile</span>
+                <input type="range" id="difficulty-slider" min="1" max="3" value="2" step="1">
+                <span class="slider-label">Difficile</span>
+            </div>
+        </div>
+    </div>
+    <!-- Canvas du jeu -->
+    <div class="game-container">
+        <canvas id="pong-canvas"></canvas>
+    </div>
+    <div class="game-info">
+        <p>🎮 <strong>Controls:</strong></p>
+        <p>Left Player: <kbd>W</kbd> / <kbd>S</kbd></p>
+        <p id="right-player-info">Right Player: <kbd>↑</kbd> / <kbd>↓</kbd></p>
+        <p>Press <kbd>SPACE</kbd> to start!</p>
+    </div>
+</div>
 	`)
 
 	setTimeout(() => {
