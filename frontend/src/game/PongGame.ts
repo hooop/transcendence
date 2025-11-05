@@ -35,13 +35,13 @@ export class PongGame {
 
         // Configuration du jeu
         this.config = {
-            width: 800,
-            height: 500,
-            paddleSpeed: 300,
-            ballSpeed: 300,
-            paddleHeight: 80,
-            paddleWidth: 10,
-            ballSize: 15
+            width: 1600,
+            height: 1000,
+            paddleSpeed: 450,
+            ballSpeed: 450,
+            paddleHeight: 120,
+            paddleWidth: 15,
+            ballSize: 25
         }
 
         // État initial
@@ -251,96 +251,172 @@ export class PongGame {
     }
 
     private render(): void {
-        // Effacer l'écran
-        this.ctx.fillStyle = '#000'
-        this.ctx.fillRect(0, 0, this.config.width, this.config.height)
+    // Effacer l'écran
+    this.ctx.fillStyle = '#000'
+    this.ctx.fillRect(0, 0, this.config.width, this.config.height)
 
-        // Dessiner la ligne centrale
-        this.ctx.strokeStyle = '#fff'
-        this.ctx.setLineDash([5, 5])
-        this.ctx.beginPath()
-        this.ctx.moveTo(this.config.width / 2, 0)
-        this.ctx.lineTo(this.config.width / 2, this.config.height)
-        this.ctx.stroke()
-        this.ctx.setLineDash([])
+    // 🎯 LIGNE CENTRALE OPTIMISÉE
+    this.ctx.save() // Sauvegarder l'état du contexte
 
-        // Dessiner les objets du jeu
-        this.leftPaddle.render(this.ctx)
-        this.rightPaddle.render(this.ctx)
-        this.ball.render(this.ctx)
+    // Désactiver l'antialiasing pour les lignes
+    this.ctx.imageSmoothingEnabled = false
 
-        // Dessiner le score
-        this.renderScore()
+    // Calculer la position exacte au pixel près
+    const centerX = Math.floor(this.config.width / 2) + 0.5 // Le +0.5 est crucial !
 
-        // Dessiner les messages
-        this.renderMessages()
-    }
+    this.ctx.strokeStyle = '#fff'
+    this.ctx.lineWidth = 2 // Ligne de 2px pour être bien visible
+    this.ctx.setLineDash([5, 5]) // Pointillés proportionnels à la nouvelle taille
 
-    private renderScore(): void {
-        this.ctx.fillStyle = '#fff'
-        this.ctx.font = '35px monospace'
-        this.ctx.textAlign = 'center'
+    this.ctx.beginPath()
+    this.ctx.moveTo(centerX, 0)
+    this.ctx.lineTo(centerX, this.config.height)
+    this.ctx.stroke()
 
-        // Score joueur de gauche
-        this.ctx.fillText(
-            this.state.leftScore.toString(),
-            this.config.width / 4,
-            60
+    this.ctx.setLineDash([]) // Réinitialiser
+    this.ctx.restore() // Restaurer l'état du contexte
+
+    // Dessiner les objets du jeu
+    this.leftPaddle.render(this.ctx)
+    this.rightPaddle.render(this.ctx)
+    this.ball.render(this.ctx)
+
+    // Dessiner le score
+    this.renderScore()
+
+    // Dessiner les messages
+    this.renderMessages()
+}
+
+private renderScore(): void {
+    this.ctx.save()
+
+    this.ctx.fillStyle = '#fff'
+    this.ctx.font = '70px monospace' // Augmenté car vous êtes en 1600px maintenant
+    this.ctx.textAlign = 'center'
+    this.ctx.textBaseline = 'top'
+
+    const centerX = this.config.width / 2  // 800px
+    const scoreOffset = 120  // Distance depuis la ligne centrale
+
+    // Score joueur de gauche - plus proche de la ligne
+    this.ctx.fillText(
+        this.state.leftScore.toString(),
+        centerX - scoreOffset,  // 800 - 120 = 680px
+        50
+    )
+
+    // Score joueur de droite - plus proche de la ligne
+    this.ctx.fillText(
+        this.state.rightScore.toString(),
+        centerX + scoreOffset,  // 800 + 120 = 920px
+        50
+    )
+
+    this.ctx.restore()
+}
+
+   private renderMessages(): void {
+    this.ctx.save()
+
+    this.ctx.fillStyle = '#fff'
+    this.ctx.font = '40px monospace'
+    this.ctx.textAlign = 'center'
+    this.ctx.textBaseline = 'middle'
+
+    if (!this.state.isRunning && !this.state.winner) {
+        // Premier message : "Press SPACE to start"
+        const text1 = 'Press SPACE to start'
+        const textWidth1 = this.ctx.measureText(text1).width
+
+        // Fond noir pour le premier message
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 1)'
+        this.ctx.fillRect(
+            this.config.width / 2 - textWidth1 / 2 - 20,
+            this.config.height / 2 - 20,
+            textWidth1 + 40,
+            40
         )
 
-        // Score joueur de droite
+        // Texte blanc
+        this.ctx.fillStyle = '#fff'
         this.ctx.fillText(
-            this.state.rightScore.toString(),
-            (this.config.width * 3) / 4,
-            60
+            text1,
+            this.config.width / 2,
+            this.config.height / 2
+        )
+
+        // Deuxième message : contrôles
+        const text2 = this.isAIEnabled ? 'Left: W/S keys - Right: AI' : 'Left: W/S keys - Right: Arrow keys'
+        const textWidth2 = this.ctx.measureText(text2).width
+
+        // Fond noir pour le deuxième message
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 1)'
+        this.ctx.fillRect(
+            this.config.width / 2 - textWidth2 / 2 - 20,
+            this.config.height / 2 + 30 - 20,
+            textWidth2 + 40,
+            40
+        )
+
+        // Texte blanc
+        this.ctx.fillStyle = '#fff'
+        this.ctx.fillText(
+            text2,
+            this.config.width / 2,
+            this.config.height / 2 + 30
         )
     }
 
-    private renderMessages(): void {
+    if (this.state.winner) {
+        let winner = this.state.winner === 'left' ? 'joueur' : 'AI'
+        if (!this.isAIEnabled) {
+            winner = this.state.winner === 'left' ? 'Joueur de gauche' : 'Joueur de droite'
+        }
+
+        const winText = `${winner} gagne`
+        const textWidth = this.ctx.measureText(winText).width
+
+        // Fond noir pour le message de victoire
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 1)'
+        this.ctx.fillRect(
+            this.config.width / 2 - textWidth / 2 - 20,
+            this.config.height / 2,
+            textWidth + 40,
+            40
+        )
+
+        // Texte blanc
         this.ctx.fillStyle = '#fff'
-        this.ctx.font = '16px monospace'
-        this.ctx.textAlign = 'center'
+        this.ctx.fillText(
+            winText,
+            this.config.width / 2,
+            this.config.height / 2
+        )
 
-        if (!this.state.isRunning && !this.state.winner) {
-            this.ctx.fillText(
-                'Press SPACE to start',
-                this.config.width / 2,
-                this.config.height / 2 + 100
-            )
+        const restartText = 'Press SPACE to restart'
+        const restartWidth = this.ctx.measureText(restartText).width
 
-            if (this.isAIEnabled) {
-                this.ctx.fillText(
-                    'Left: W/S keys - Right: AI',
-                    this.config.width / 2,
-                    this.config.height / 2 + 120
-                )
-            } else {
-                this.ctx.fillText(
-                    'Left: W/S keys - Right: Arrow keys',
-                    this.config.width / 2,
-                    this.config.height / 2 + 120
-                )
-            }
-        }
+        // Fond noir pour le message restart
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 1)'
+        this.ctx.fillRect(
+            this.config.width / 2 - restartWidth / 2 - 20,
+            this.config.height / 2 + 50 - 20,
+            restartWidth + 40,
+            40
+        )
 
-        if (this.state.winner) {
-            let winner = this.state.winner === 'left' ? 'Player' : 'AI'
-            if (!this.isAIEnabled) {
-                winner = this.state.winner === 'left' ? 'Left Player' : 'Right Player'
-            }
-            this.ctx.fillText(
-                `🏆 ${winner} Wins!`,
-                this.config.width / 2,
-                this.config.height / 2 + 100
-            )
-
-            this.ctx.fillText(
-                'Press R to restart',
-                this.config.width / 2,
-                this.config.height / 2 + 120
-            )
-        }
+        // Texte blanc
+        this.ctx.fillStyle = '#fff'
+        this.ctx.fillText(
+            restartText,
+            this.config.width / 2,
+            this.config.height / 2 + 50
+        )
     }
+
+    this.ctx.restore()
+}
 
     private gameLoop = (currentTime: number): void => {
         // Calculer deltaTime en secondes

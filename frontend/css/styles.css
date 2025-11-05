@@ -104,7 +104,7 @@
   display: flex;
   max-width: 1000px;
 
-  margin: 150px;
+  margin: 150px auto;
   background: #000;
   border-radius: 8px;
   overflow: hidden;
