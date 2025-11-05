@@ -143,31 +143,100 @@ export class Router {
 		})
 	}
 
-	private renderGameModeSelection(): void {
-		this.updatePageContent(`
-			<div class="page">
-				<h2>Choisissez un mode de jeu</h2>
-				<div class="game-mode-selector">
-					<div class="mode-buttons">
-						<a href="/game/vs-friend" data-route class="mode-btn-link">
-							<div class="mode-btn">
-								<span class="mode-icon">👥</span>
-								<span class="mode-title">VS Friend</span>
-								<span class="mode-desc">Local multiplayer</span>
-							</div>
-						</a>
-						<a href="/game/vs-ai" data-route class="mode-btn-link">
-							<div class="mode-btn">
-								<span class="mode-icon">🤖</span>
-								<span class="mode-title">VS AI</span>
-								<span class="mode-desc">Play against computer</span>
-							</div>
-						</a>
-					</div>
+private renderGameModeSelection(): void {
+	this.updatePageContent(`
+		<div class="page">
+			<h2>Entrainement</h2>
+
+			<!-- Toggle Friend/AI -->
+			<div class="game-mode-container">
+				<div class="mode-toggle-wrapper">
+					<span class="mode-label">Mode solo</span>
+					<label class="toggle-switch">
+						<input type="checkbox" id="mode-toggle">
+						<span class="toggle-slider"></span>
+					</label>
+				</div>
+
+				<div class="difficulty-selector" id="difficulty-group" style="display: none;">
+					<span class="difficulty-label">Difficulty:</span>
+					<button class="difficulty-btn" data-difficulty="easy">Easy</button>
+					<button class="difficulty-btn active" data-difficulty="medium">Medium</button>
+					<button class="difficulty-btn" data-difficulty="hard">Hard</button>
 				</div>
 			</div>
-		`)
+
+			<!-- Canvas du jeu -->
+			<div class="game-container">
+				<canvas id="pong-canvas"></canvas>
+			</div>
+
+			<div class="game-info">
+				<p>🎮 <strong>Controls:</strong></p>
+				<p>Left Player: <kbd>W</kbd> / <kbd>S</kbd></p>
+				<p id="right-player-info">Right Player: <kbd>↑</kbd> / <kbd>↓</kbd></p>
+				<p>Press <kbd>SPACE</kbd> to start!</p>
+			</div>
+		</div>
+	`)
+
+	setTimeout(() => {
+		this.initPongGame(false, AIDifficulty.MEDIUM)
+		this.setupGameOptions()
+	}, 0)
+}
+
+private setupGameOptions(): void {
+	let currentMode: 'friend' | 'ai' = 'friend'
+	let currentDifficulty: AIDifficulty = AIDifficulty.MEDIUM
+
+	// Toggle mode Friend/AI
+	const modeToggle = document.getElementById('mode-toggle') as HTMLInputElement
+	if (modeToggle) {
+		modeToggle.addEventListener('change', () => {
+			currentMode = modeToggle.checked ? 'ai' : 'friend'
+
+			// Afficher/masquer le sélecteur de difficulté
+			const difficultyGroup = document.getElementById('difficulty-group')
+			if (difficultyGroup) {
+				difficultyGroup.style.display = currentMode === 'ai' ? 'flex' : 'none'
+			}
+
+			// Mettre à jour le texte des contrôles
+			const rightPlayerInfo = document.getElementById('right-player-info')
+			if (rightPlayerInfo) {
+				rightPlayerInfo.innerHTML = currentMode === 'ai'
+					? 'Right Player: <strong>AI</strong> 🤖'
+					: 'Right Player: <kbd>↑</kbd> / <kbd>↓</kbd>'
+			}
+
+			// Recréer le jeu
+			this.initPongGame(currentMode === 'ai', currentDifficulty)
+		})
 	}
+
+	// Toggle difficulté AI
+	const difficultyBtns = document.querySelectorAll('.difficulty-btn')
+	difficultyBtns.forEach(btn => {
+		btn.addEventListener('click', () => {
+			const difficulty = (btn as HTMLElement).getAttribute('data-difficulty')
+
+			// Mapper la difficulté
+			if (difficulty === 'easy') currentDifficulty = AIDifficulty.EASY
+			else if (difficulty === 'hard') currentDifficulty = AIDifficulty.HARD
+			else currentDifficulty = AIDifficulty.MEDIUM
+
+			// Mettre à jour les boutons actifs
+			difficultyBtns.forEach(b => b.classList.remove('active'))
+			btn.classList.add('active')
+
+			// Recréer le jeu seulement si on est en mode AI
+			if (currentMode === 'ai') {
+				this.initPongGame(true, currentDifficulty)
+			}
+		})
+	})
+}
 
 	private renderAIDifficultySelection(): void {
 		this.updatePageContent(`
