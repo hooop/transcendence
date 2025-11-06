@@ -70,7 +70,7 @@ export class PongGame {
     private setupCanvas(): void {
         this.canvas.width = this.config.width
         this.canvas.height = this.config.height
-        this.canvas.style.border = '1px dashed #fff'
+        this.canvas.style.border = '5px solid #fff'
         this.canvas.style.background = '#000'
     }
 
@@ -266,7 +266,7 @@ export class PongGame {
 
     this.ctx.strokeStyle = '#fff'
     this.ctx.lineWidth = 2 // Ligne de 2px pour être bien visible
-    this.ctx.setLineDash([5, 5]) // Pointillés proportionnels à la nouvelle taille
+/*     this.ctx.setLineDash([5, 5]) // Pointillés proportionnels à la nouvelle taille */
 
     this.ctx.beginPath()
     this.ctx.moveTo(centerX, 0)

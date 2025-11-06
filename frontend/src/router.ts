@@ -156,14 +156,18 @@ private renderGameModeSelection(): void {
                 <span class="toggle-slider"></span>
             </label>
         </div>
-        <div class="difficulty-selector" id="difficulty-group" style="display: none;">
-            <span class="difficulty-label">Difficulté:</span>
-            <div class="difficulty-slider-container">
-                <span class="slider-label">Facile</span>
-                <input type="range" id="difficulty-slider" min="1" max="3" value="2" step="1">
-                <span class="slider-label">Difficile</span>
-            </div>
-        </div>
+		<div class="difficulty-selector" id="difficulty-group" style="display: none;">
+			<div class="difficulty-pills">
+				<input type="radio" name="difficulty" id="diff-easy" value="easy">
+				<label for="diff-easy">Facile</label>
+
+				<input type="radio" name="difficulty" id="diff-medium" value="medium" checked>
+				<label for="diff-medium">Moyen</label>
+
+				<input type="radio" name="difficulty" id="diff-hard" value="hard">
+				<label for="diff-hard">Difficile</label>
+			</div>
+		</div>
     </div>
     <!-- Canvas du jeu -->
     <div class="game-container">
@@ -576,9 +580,6 @@ private setupGameOptions(): void {
 				margin-right: auto;
 				}
 
-
-
-
 			kbd {
 				background: #333;
 				color: #00ff41;
@@ -663,56 +664,7 @@ private setupGameOptions(): void {
 				color: #999;
 			}
 
-			/* AI Difficulty Selector */
-			.ai-difficulty-selector {
-				margin: 2rem auto;
-				max-width: 600px;
-			}
-			.ai-difficulty-selector h3 {
-				color: #00ff41;
-				margin-bottom: 1rem;
-				font-size: 1.2rem;
-			}
-			.difficulty-buttons {
-				display: flex;
-				gap: 1rem;
-				justify-content: center;
-			}
-			.difficulty-btn {
-				flex: 1;
-				display: flex;
-				flex-direction: column;
-				align-items: center;
-				gap: 0.5rem;
-				padding: 1rem;
-				background: #1a1a1a;
-				border: 2px solid #333;
-				border-radius: 8px;
-				color: #fff;
-				cursor: pointer;
-				transition: all 0.3s ease;
-			}
-			.difficulty-btn:hover {
-				border-color: #00ff41;
-				background: #222;
-			}
-			.difficulty-btn.active {
-				border-color: #00ff41;
-				background: #1a2a1a;
-				box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
-			}
-			.difficulty-icon {
-				font-size: 2rem;
-			}
-			.difficulty-title {
-				font-size: 1.1rem;
-				font-weight: bold;
-				color: #00ff41;
-			}
-			.difficulty-desc {
-				font-size: 0.85rem;
-				color: #999;
-			}
+
 
 			/* Liens sans style par défaut */
 			.mode-btn-link,

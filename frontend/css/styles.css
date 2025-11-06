@@ -310,14 +310,18 @@
 
 /* ==== GAME (page avec canvas) ==== */
 
-.game-container {
+.game-container
+{
 	display: flex;
 	justify-content: center;
-	margin: 2rem 0;
+	margin-top: 1rem;
+	margin-bottom: 0px;
 }
+
 #pong-canvas {
 	max-width: 70%;
 	border-radius: 0px;
+	margin: 0;
 }
 
 .game-info {
@@ -991,7 +995,8 @@
 	display: flex;
 	align-items: center;
 	gap: 2rem;
-	margin-bottom: 2rem;
+	margin-top: 40px;
+	margin-bottom: 0px;
 	max-width: 70%; /* Même largeur que le canvas */
 	margin-left: auto;
 	margin-right: auto;
@@ -1057,54 +1062,36 @@
 	background-color: rgb(0, 0, 0);
 }
 
-/* Slider pour la difficulté */
-.difficulty-slider-container {
+/* Style Tailwind - Pills/Badges */
+.difficulty-pills {
+    display: flex;
+    gap: 8px;
+}
+
+.difficulty-pills input[type="radio"] {
+    display: none;
+}
+
+.difficulty-pills label {
+    padding: 6px 16px;
+    height: 31px;
     display: flex;
     align-items: center;
-    gap: 16px;
-}
-
-.slider-label {
     font-size: 13px;
-    color: #ffffff;
     font-weight: 500;
-}
-
-#difficulty-slider {
-    width: 150px;
-    height: 4px;
-    -webkit-appearance: none;
-    appearance: none;
-    background: #ffffff;
-    outline: none;
-    border-radius: 2px;
-}
-
-#difficulty-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 16px;
-    height: 16px;
-    background: rgb(255, 255, 255);
+    color: var(--text-secondary);
+    background-color: var(--bg-form);
+    border-radius: 6px;
     cursor: pointer;
-    border-radius: 50%;
-    transition: all 0.3s;
+    transition: all 0.2s;
 }
 
-#difficulty-slider::-moz-range-thumb {
-    width: 16px;
-    height: 16px;
-    background: #333;
-    cursor: pointer;
-    border-radius: 50%;
-    border: none;
-    transition: all 0.3s;
+.difficulty-pills label:hover {
+    background-color: #111111;
 }
 
-#difficulty-slider::-webkit-slider-thumb:hover {
-    transform: scale(1.1);
-}
-
-#difficulty-slider::-moz-range-thumb:hover {
-    transform: scale(1.1);
+.difficulty-pills input[type="radio"]:checked + label {
+    background-color: var(--bg-input);
+    color: #fff;
+    border-color: #000;
 }
