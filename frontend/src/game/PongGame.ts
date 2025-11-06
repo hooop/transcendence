@@ -25,54 +25,117 @@ export class PongGame {
     // Contrôles clavier
     private keys: Set<string> = new Set()
 
-    constructor(canvas: HTMLCanvasElement, aiEnabled: boolean = false, aiDifficulty: AIDifficulty = AIDifficulty.MEDIUM) {
-        this.canvas = canvas
-        const ctx = canvas.getContext('2d')
-        if (!ctx) throw new Error('Could not get 2D context')
-        this.ctx = ctx
+    constructor(canvas: HTMLCanvasElement, aiEnabled: boolean = false, aiDifficulty: AIDifficulty = AIDifficulty.MEDIUM)
+	{
+		this.canvas = canvas
+		const ctx = canvas.getContext('2d')
+		if (!ctx) throw new Error('Could not get 2D context')
+		this.ctx = ctx
 
-        this.isAIEnabled = aiEnabled
+		this.isAIEnabled = aiEnabled
 
-        // Configuration du jeu
-        this.config = {
-            width: 1600,
-            height: 1000,
-            paddleSpeed: 450,
-            ballSpeed: 450,
-            paddleHeight: 120,
-            paddleWidth: 15,
-            ballSize: 25
-        }
+	// MODIFIÉ : Calculer les dimensions avec fallback
+		const container = this.canvas.parentElement
+		let width = 1600  // Valeur par défaut
+		let height = 900  // Valeur par défaut
 
-        // État initial
-        this.state = {
-            leftScore: 0,
-            rightScore: 0,
-            isRunning: false,
-            winner: null
-        }
+		if (container && container.clientWidth > 0 && container.clientHeight > 0)
+		{
+        width = container.clientWidth
+        height = container.clientHeight
+   		 }
 
-        this.setupCanvas()
-        this.initializeGameObjects()
-        this.setupEventListeners()
+    console.log(`🎮 Canvas dimensions: ${width}x${height}`)  // DEBUG
 
-        // Initialiser l'IA si activée
-        if (this.isAIEnabled) {
-            this.ai = new AIPlayer(this.config, aiDifficulty)
-            this.speedIncreaseInterval = this.ai.getSpeedIncreaseInterval()
-            console.log(`🤖 AI initialized with difficulty: ${aiDifficulty}`)
-            console.log(`⚡ Ball will increase speed by 15% every ${this.speedIncreaseInterval / 1000}s`)
-        }
+		// Configuration du jeu avec dimensions dynamiques
+		this.config = {
+			width: width,
+			height: height,
+			paddleSpeed: 300,
+			ballSpeed: 300,
+			paddleHeight: 80,
+			paddleWidth: 10,
+			ballSize: 15
+		}
 
-        console.log('🏓 Pong game initialized')
-    }
+		// État initial
+		this.state = {
+			leftScore: 0,
+			rightScore: 0,
+			isRunning: false,
+			winner: null
+		}
 
-    private setupCanvas(): void {
+		this.setupCanvas()
+		this.initializeGameObjects()
+		this.setupEventListeners()
+
+		// Initialiser l'IA si activée
+		if (this.isAIEnabled) {
+			this.ai = new AIPlayer(this.config, aiDifficulty)
+			this.speedIncreaseInterval = this.ai.getSpeedIncreaseInterval()
+			console.log(`🤖 AI initialized with difficulty: ${aiDifficulty}`)
+			console.log(`⚡ Ball will increase speed by 15% every ${this.speedIncreaseInterval / 1000}s`)
+		}
+
+		console.log('🏓 Pong game initialized')
+	}
+
+private setupCanvas(): void {
+    // Juste définir la taille initiale du canvas
+    const container = this.canvas.parentElement
+    if (container && container.clientWidth > 0 && container.clientHeight > 0) {
+        this.canvas.width = container.clientWidth
+        this.canvas.height = container.clientHeight
+    } else {
         this.canvas.width = this.config.width
         this.canvas.height = this.config.height
-        this.canvas.style.border = '5px solid #fff'
-        this.canvas.style.background = '#000'
     }
+
+    // Style du canvas
+    this.canvas.style.border = '0px'
+    this.canvas.style.background = '#000'
+
+    // Écouter les changements de taille de fenêtre
+    window.addEventListener('resize', () => this.resizeCanvas())
+}
+private resizeCanvas(): void {
+    // Récupérer la taille du container
+    const container = this.canvas.parentElement
+    if (!container) return
+
+    const width = container.clientWidth
+    const height = container.clientHeight
+
+    // Mettre à jour la taille du canvas
+    this.canvas.width = width
+    this.canvas.height = height
+
+    // Mettre à jour la config du jeu
+    this.config.width = width
+    this.config.height = height
+
+    // Repositionner les éléments du jeu SEULEMENT s'ils existent
+    if (this.ball) {
+        this.ball.position.x = width / 2
+        this.ball.position.y = height / 2
+    }
+
+    if (this.leftPaddle) {
+        this.leftPaddle.position.x = 30
+        this.leftPaddle.position.y = height / 2
+    }
+
+    if (this.rightPaddle) {
+        this.rightPaddle.position.x = width - 30
+        this.rightPaddle.position.y = height / 2
+    }
+
+    // IMPORTANT : Rafraîchir l'affichage
+    if (!this.state.isRunning && this.ball && this.leftPaddle && this.rightPaddle) {
+        this.render()
+    }
+}
 
     private initializeGameObjects(): void {
         // Créer la balle au centre
@@ -449,14 +512,15 @@ private renderScore(): void {
         console.log('🚀 Game started!')
     }
 
-	destroy(): void {
+destroy(): void {
     this.stop()
 
     // Nettoyer tous les listeners
     document.removeEventListener('keydown', this.handleGameControls)
+    window.removeEventListener('resize', () => this.resizeCanvas())  // NOUVEAU
 
     console.log('🧹 Game destroyed')
-    }
+}
 
     private handleGameControls = (e: KeyboardEvent): void => {
     // Empêcher le comportement par défaut

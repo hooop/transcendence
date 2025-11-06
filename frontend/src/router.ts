@@ -58,22 +58,27 @@ export class Router {
 		this.handleRoute()
 	}
 
-	private handleRoute(): void {
-		// Nettoyer le jeu quand on quitte la page
-		if (this.currentGame && window.location.pathname !== '/game') {
-			this.currentGame.destroy()
-			this.currentGame = null
-		}
+private handleRoute(): void {
+    // Nettoyer le jeu quand on quitte la page
+    if (this.currentGame && window.location.pathname !== '/game') {
+        this.currentGame.destroy()
+        this.currentGame = null
+    }
 
-		const path = window.location.pathname
-		const handler = this.routes.get(path)
+    // NOUVEAU : Enlever la classe fullscreen si on quitte /game
+    const path = window.location.pathname
+    if (path !== '/game') {
+        document.body.classList.remove('fullscreen-game')
+    }
 
-		if (handler) {
-			handler()
-		} else {
-			this.navigate('/')
-		}
-	}
+    const handler = this.routes.get(path)
+
+    if (handler) {
+        handler()
+    } else {
+        this.navigate('/')
+    }
+}
 
 	private renderHome(): void {
 		// Si l'utilisateur est connecté, rediriger vers le dashboard
@@ -144,48 +149,45 @@ export class Router {
 	}
 
 private renderGameModeSelection(): void {
-	this.updatePageContent(`
-<div class="page">
-    <h2>Entrainement</h2>
-    <!-- Toggle Friend/AI -->
-    <div class="game-mode-container">
-        <div class="mode-toggle-wrapper">
-            <span class="mode-label">Mode solo</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="mode-toggle">
-                <span class="toggle-slider"></span>
-            </label>
+    // Ajouter la classe fullscreen
+    document.body.classList.add('fullscreen-game')
+
+    this.updatePageContent(`
+        <!-- Barre de contrôle fixe en haut -->
+        <div class="game-control-bar">
+            <div class="control-group">
+                <span class="control-label">Mode solo</span>
+                <label class="toggle-switch">
+                    <input type="checkbox" id="mode-toggle">
+                    <span class="toggle-slider"></span>
+                </label>
+            </div>
+
+            <div class="control-group" id="difficulty-group" style="display: none;">
+                <span class="control-label">Difficulté :</span>
+                <div class="difficulty-pills">
+                    <input type="radio" name="difficulty" id="diff-easy" value="easy">
+                    <label for="diff-easy" class="pill-label">Facile</label>
+
+                    <input type="radio" name="difficulty" id="diff-medium" value="medium" checked>
+                    <label for="diff-medium" class="pill-label">Moyen</label>
+
+                    <input type="radio" name="difficulty" id="diff-hard" value="hard">
+                    <label for="diff-hard" class="pill-label">Difficile</label>
+                </div>
+            </div>
         </div>
-		<div class="difficulty-selector" id="difficulty-group" style="display: none;">
-			<div class="difficulty-pills">
-				<input type="radio" name="difficulty" id="diff-easy" value="easy">
-				<label for="diff-easy">Facile</label>
 
-				<input type="radio" name="difficulty" id="diff-medium" value="medium" checked>
-				<label for="diff-medium">Moyen</label>
+        <!-- Canvas du jeu (prend tout l'espace restant) -->
+        <div class="game-canvas-container">
+            <canvas id="pong-canvas"></canvas>
+        </div>
+    `)
 
-				<input type="radio" name="difficulty" id="diff-hard" value="hard">
-				<label for="diff-hard">Difficile</label>
-			</div>
-		</div>
-    </div>
-    <!-- Canvas du jeu -->
-    <div class="game-container">
-        <canvas id="pong-canvas"></canvas>
-    </div>
-    <div class="game-info">
-        <p>🎮 <strong>Controls:</strong></p>
-        <p>Left Player: <kbd>W</kbd> / <kbd>S</kbd></p>
-        <p id="right-player-info">Right Player: <kbd>↑</kbd> / <kbd>↓</kbd></p>
-        <p>Press <kbd>SPACE</kbd> to start!</p>
-    </div>
-</div>
-	`)
-
-	setTimeout(() => {
-		this.initPongGame(false, AIDifficulty.MEDIUM)
-		this.setupGameOptions()
-	}, 0)
+    setTimeout(() => {
+        this.initPongGame(false, AIDifficulty.MEDIUM)
+        this.setupGameOptions()
+    }, 100)
 }
 
 private setupGameOptions(): void {
