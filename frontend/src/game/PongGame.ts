@@ -25,7 +25,7 @@ export class PongGame {
     // Contrôles clavier
     private keys: Set<string> = new Set()
 
-	private statusElement: HTMLElement | null = null
+	/* private statusElement: HTMLElement | null = null */
 
 	public onStatusChange?: (message: string, isWinner: boolean) => void
 
