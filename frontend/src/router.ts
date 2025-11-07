@@ -175,6 +175,11 @@ private renderGameModeSelection(): void {
                     <label for="diff-hard" class="pill-label">Difficile</label>
                 </div>
             </div>
+
+            <!-- Zone de statut pour les messages du jeu -->
+            <div class="control-group game-status" id="game-status">
+                <span class="status-message">Press <kbd>SPACE</kbd> to start!</span>
+            </div>
         </div>
 
         <!-- Canvas du jeu (prend tout l'espace restant) -->
@@ -278,32 +283,38 @@ private setupGameOptions(): void {
 	}
 
 	private renderGame(isAI: boolean = false, difficulty: AIDifficulty = AIDifficulty.MEDIUM): void {
-		const modeText = isAI ? `VS AI (${difficulty})` : 'VS Friend'
-		const controlsText = isAI ? 'Right Player: <strong>AI</strong> 🤖' : 'Right Player: <kbd>↑</kbd> / <kbd>↓</kbd>'
+	const modeText = isAI ? `VS AI (${difficulty})` : 'VS Friend'
+	const controlsText = isAI ? 'Right Player: <strong>AI</strong> 🤖' : 'Right Player: <kbd>↑</kbd> / <kbd>↓</kbd>'
 
-		this.updatePageContent(`
+	this.updatePageContent(`
 <div class="page">
-	<h2>Pong Game - ${modeText}</h2>
+	<!-- Barre de contrôle fixe en haut -->
+	<div class="game-control-bar">
+		<div class="control-group">
+			<span class="control-label">🎮 ${modeText}</span>
+		</div>
+		<div class="control-group">
+			<span class="control-label">Left: <kbd>W</kbd>/<kbd>S</kbd></span>
+		</div>
+		<div class="control-group">
+			<span class="control-label">${controlsText}</span>
+		</div>
+		<div class="control-group game-status" id="game-status">
+			<span class="status-message">Press <kbd>SPACE</kbd> to start!</span>
+		</div>
+		<div class="control-group" style="margin-left: auto;">
+			<a href="/game" data-route class="btn btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.85rem;">← Back</a>
+		</div>
+	</div>
 
-	<div class="game-container">
+	<!-- Container du canvas en plein écran -->
+	<div class="game-canvas-container">
 		<canvas id="pong-canvas"></canvas>
 	</div>
-
-	<div class="game-info">
-		<p>🎮 <strong>Controls:</strong></p>
-		<p>Left Player: <kbd>W</kbd> / <kbd>S</kbd></p>
-		<p>${controlsText}</p>
-		<p>Press <kbd>SPACE</kbd> to start!</p>
-	</div>
-
-	<div class="back-button-container">
-		<a href="/game" data-route class="btn btn-secondary">← Back to Mode Selection</a>
-	</div>
-
 </div>
-		`)
-		setTimeout(() => this.initPongGame(isAI, difficulty), 0)
-	}
+	`)
+	setTimeout(() => this.initPongGame(isAI, difficulty), 0)
+}
 
 	private renderTournament(): void {
 		if (!this.tournamentManager) {

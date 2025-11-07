@@ -25,6 +25,8 @@ export class PongGame {
     // Contrôles clavier
     private keys: Set<string> = new Set()
 
+	   private statusElement: HTMLElement | null = null
+
     constructor(canvas: HTMLCanvasElement, aiEnabled: boolean = false, aiDifficulty: AIDifficulty = AIDifficulty.MEDIUM)
 	{
 		this.canvas = canvas
@@ -44,8 +46,6 @@ export class PongGame {
         width = container.clientWidth
         height = container.clientHeight
    		 }
-
-    console.log(`🎮 Canvas dimensions: ${width}x${height}`)  // DEBUG
 
 		// Configuration du jeu avec dimensions dynamiques
 		this.config = {
@@ -69,6 +69,8 @@ export class PongGame {
 		this.setupCanvas()
 		this.initializeGameObjects()
 		this.setupEventListeners()
+
+		/*  this.statusElement = document.getElementById('game-status') */
 
 		// Initialiser l'IA si activée
 		if (this.isAIEnabled) {
@@ -356,7 +358,7 @@ private renderScore(): void {
     this.ctx.save()
 
     this.ctx.fillStyle = '#fff'
-    this.ctx.font = '70px monospace' // Augmenté car vous êtes en 1600px maintenant
+    this.ctx.font = '50px monospace' // Augmenté car vous êtes en 1600px maintenant
     this.ctx.textAlign = 'center'
     this.ctx.textBaseline = 'top'
 
@@ -381,105 +383,40 @@ private renderScore(): void {
 }
 
    private renderMessages(): void {
-    this.ctx.save()
 
-    this.ctx.fillStyle = '#fff'
-    this.ctx.font = '40px monospace'
-    this.ctx.textAlign = 'center'
-    this.ctx.textBaseline = 'middle'
+	this.statusElement = document.getElementById('game-status')
 
-    if (!this.state.isRunning && !this.state.winner) {
-        // Premier message : "Press SPACE to start"
-        const text1 = 'Press SPACE to start'
-        const textWidth1 = this.ctx.measureText(text1).width
-
-        // Fond noir pour le premier message
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 1)'
-        this.ctx.fillRect(
-            this.config.width / 2 - textWidth1 / 2 - 20,
-            this.config.height / 2 - 20,
-            textWidth1 + 40,
-            40
-        )
-
-        // Texte blanc
-        this.ctx.fillStyle = '#fff'
-        this.ctx.fillText(
-            text1,
-            this.config.width / 2,
-            this.config.height / 2
-        )
-
-        // Deuxième message : contrôles
-        const text2 = this.isAIEnabled ? 'Left: W/S keys - Right: AI' : 'Left: W/S keys - Right: Arrow keys'
-        const textWidth2 = this.ctx.measureText(text2).width
-
-        // Fond noir pour le deuxième message
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 1)'
-        this.ctx.fillRect(
-            this.config.width / 2 - textWidth2 / 2 - 20,
-            this.config.height / 2 + 30 - 20,
-            textWidth2 + 40,
-            40
-        )
-
-        // Texte blanc
-        this.ctx.fillStyle = '#fff'
-        this.ctx.fillText(
-            text2,
-            this.config.width / 2,
-            this.config.height / 2 + 30
-        )
+    if (!this.statusElement) {
+        console.warn('game-status element not found')
+        return
     }
+	// Ne plus afficher les messages sur le canvas
+	// À la place, mettre à jour l'élément HTML
 
-    if (this.state.winner) {
-        let winner = this.state.winner === 'left' ? 'joueur' : 'AI'
-        if (!this.isAIEnabled) {
-            winner = this.state.winner === 'left' ? 'Joueur de gauche' : 'Joueur de droite'
-        }
 
-        const winText = `${winner} gagne`
-        const textWidth = this.ctx.measureText(winText).width
-
-        // Fond noir pour le message de victoire
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 1)'
-        this.ctx.fillRect(
-            this.config.width / 2 - textWidth / 2 - 20,
-            this.config.height / 2,
-            textWidth + 40,
-            40
-        )
-
-        // Texte blanc
-        this.ctx.fillStyle = '#fff'
-        this.ctx.fillText(
-            winText,
-            this.config.width / 2,
-            this.config.height / 2
-        )
-
-        const restartText = 'Press SPACE to restart'
-        const restartWidth = this.ctx.measureText(restartText).width
-
-        // Fond noir pour le message restart
-        this.ctx.fillStyle = 'rgba(0, 0, 0, 1)'
-        this.ctx.fillRect(
-            this.config.width / 2 - restartWidth / 2 - 20,
-            this.config.height / 2 + 50 - 20,
-            restartWidth + 40,
-            40
-        )
-
-        // Texte blanc
-        this.ctx.fillStyle = '#fff'
-        this.ctx.fillText(
-            restartText,
-            this.config.width / 2,
-            this.config.height / 2 + 50
-        )
-    }
-
-    this.ctx.restore()
+	if (!this.state.isRunning && !this.state.winner) {
+		// Message de départ
+		const controls = this.isAIEnabled
+			? 'Left: W/S - Right: AI'
+			: 'Left: W/S - Right: Arrow keys'
+		this.statusElement.innerHTML = `
+			<span class="status-message">Press <kbd>SPACE</kbd> to start! | ${controls}</span>
+		`
+	} else if (this.state.winner) {
+		// Message de victoire
+		let winner = this.state.winner === 'left' ? 'Left Player' : 'Right Player'
+		if (this.isAIEnabled && this.state.winner === 'right') {
+			winner = 'AI'
+		}
+		this.statusElement.innerHTML = `
+			<span class="status-message winner-message">🏆 ${winner} wins! | Press <kbd>SPACE</kbd> to restart</span>
+		`
+	} else {
+		// Pendant le jeu, afficher le score
+		this.statusElement.innerHTML = `
+			<span class="status-message">Game in progress | Score: ${this.state.leftScore} - ${this.state.rightScore}</span>
+		`
+	}
 }
 
     private gameLoop = (currentTime: number): void => {
