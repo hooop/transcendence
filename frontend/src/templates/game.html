@@ -1,5 +1,6 @@
 <!-- Barre de contrôle fixe en haut -->
 <div class="game-control-bar">
+
 	<div class="control-group">
 		<span class="control-label">Mode solo</span>
 		<label class="toggle-switch">
@@ -8,23 +9,19 @@
 		</label>
 	</div>
 
-	<div class="control-group" id="difficulty-group" style="display: none;">
-		<div class="difficulty-pills">
-			<input type="radio" name="difficulty" id="diff-easy" value="easy">
-			<label for="diff-easy" class="pill-label">Facile</label>
-
-			<input type="radio" name="difficulty" id="diff-medium" value="medium" checked>
-			<label for="diff-medium" class="pill-label">Moyen</label>
-
-			<input type="radio" name="difficulty" id="diff-hard" value="hard">
-			<label for="diff-hard" class="pill-label">Difficile</label>
-		</div>
+	<div class="control-group">
+		<select id="difficulty-select" class="difficulty-select" disabled>
+			<option value="easy">Facile</option>
+			<option value="medium" selected>Moyen</option>
+			<option value="hard">Difficile</option>
+		</select>
 	</div>
 
 	<!-- Zone de statut pour les messages du jeu -->
 	<div class="control-group game-status" id="game-status">
 		<span class="status-message">Press <kbd>SPACE</kbd> to start!</span>
 	</div>
+
 </div>
 
 <!-- Canvas du jeu (prend tout l'espace restant) -->

@@ -153,50 +153,60 @@ private setupGameOptions(): void {
 
 	// Toggle mode Friend/AI
 	const modeToggle = document.getElementById('mode-toggle') as HTMLInputElement
-	if (modeToggle) {
+	const difficultySelect = document.getElementById('difficulty-select') as HTMLSelectElement
+
+	if (modeToggle && difficultySelect) {
+		// Au chargement, le select est désactivé (mode friend par défaut)
+		difficultySelect.disabled = true
+
+		// Écouter le changement de mode
 		modeToggle.addEventListener('change', () => {
 			currentMode = modeToggle.checked ? 'ai' : 'friend'
 
-			// Afficher/masquer le sélecteur de difficulté
-			const difficultyGroup = document.getElementById('difficulty-group')
-			if (difficultyGroup) {
-				difficultyGroup.style.display = currentMode === 'ai' ? 'flex' : 'none'
+			// Activer/désactiver le select selon le mode
+			difficultySelect.disabled = !modeToggle.checked
+
+			// Relancer le jeu avec le bon mode
+			if (this.currentGame) {
+				this.currentGame.destroy()
 			}
 
-			// Mettre à jour le texte des contrôles
-			const rightPlayerInfo = document.getElementById('right-player-info')
-			if (rightPlayerInfo) {
-				rightPlayerInfo.innerHTML = currentMode === 'ai'
-					? 'Right Player: <strong>AI</strong> 🤖'
-					: 'Right Player: <kbd>↑</kbd> / <kbd>↓</kbd>'
-			}
+			// Récupérer la difficulté actuelle du select
+			const selectValue = difficultySelect.value
+			if (selectValue === 'easy') currentDifficulty = AIDifficulty.EASY
+			else if (selectValue === 'medium') currentDifficulty = AIDifficulty.MEDIUM
+			else if (selectValue === 'hard') currentDifficulty = AIDifficulty.HARD
 
-			// Recréer le jeu
 			this.initPongGame(currentMode === 'ai', currentDifficulty)
 		})
-	}
 
-	// Toggle difficulté AI
-	const difficultyBtns = document.querySelectorAll('.difficulty-btn')
-	difficultyBtns.forEach(btn => {
-		btn.addEventListener('click', () => {
-			const difficulty = (btn as HTMLElement).getAttribute('data-difficulty')
+		// Écouter les changements de difficulté
+		difficultySelect.addEventListener('change', () => {
+			const value = difficultySelect.value
 
-			// Mapper la difficulté
-			if (difficulty === 'easy') currentDifficulty = AIDifficulty.EASY
-			else if (difficulty === 'hard') currentDifficulty = AIDifficulty.HARD
-			else currentDifficulty = AIDifficulty.MEDIUM
+			if (value === 'easy') currentDifficulty = AIDifficulty.EASY
+			else if (value === 'medium') currentDifficulty = AIDifficulty.MEDIUM
+			else if (value === 'hard') currentDifficulty = AIDifficulty.HARD
 
-			// Mettre à jour les boutons actifs
-			difficultyBtns.forEach(b => b.classList.remove('active'))
-			btn.classList.add('active')
-
-			// Recréer le jeu seulement si on est en mode AI
-			if (currentMode === 'ai') {
+			// Relancer le jeu si on est en mode AI
+			if (currentMode === 'ai' && this.currentGame) {
+				this.currentGame.destroy()
 				this.initPongGame(true, currentDifficulty)
 			}
 		})
-	})
+	}
+
+	// Gestion des messages de statut du jeu
+	if (this.currentGame) {
+		this.currentGame.onStatusChange = (message: string, isWinner: boolean) => {
+			const statusElement = document.getElementById('game-status')
+			if (statusElement) {
+				statusElement.innerHTML = isWinner
+					? `<span class="status-message winner-message">${message}</span>`
+					: `<span class="status-message">${message}</span>`
+			}
+		}
+	}
 }
 
 	private renderAIDifficultySelection(): void {
