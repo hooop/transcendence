@@ -2,7 +2,7 @@
 <div class="game-control-bar">
 
 	<div class="control-group">
-		<span class="control-label">Mode solo</span>
+		<span class="control-label">Mode IA</span>
 		<label class="toggle-switch">
 			<input type="checkbox" id="mode-toggle">
 			<span class="toggle-slider"></span>
@@ -11,15 +11,17 @@
 
 	<div class="control-group">
 		<select id="difficulty-select" class="difficulty-select" disabled>
+			<option value="" disabled selected>Difficulté</option>
 			<option value="easy">Facile</option>
-			<option value="medium" selected>Moyen</option>
+			<option value="medium">Moyen</option>
 			<option value="hard">Difficile</option>
 		</select>
 	</div>
 
+
 	<!-- Zone de statut pour les messages du jeu -->
 	<div class="control-group game-status" id="game-status">
-		<span class="status-message">Press <kbd>SPACE</kbd> to start!</span>
+		<span class="status-message"></span>
 	</div>
 
 </div>

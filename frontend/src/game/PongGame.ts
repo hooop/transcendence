@@ -384,42 +384,53 @@ private renderScore(): void {
     this.ctx.restore()
 }
 
-   private renderMessages(): void {
+	// MESSAGE BARRE DE CONTROLE
+   private renderMessages(): void
+   {
 
-	this.statusElement = document.getElementById('game-status')
+		this.statusElement = document.getElementById('game-status')
 
-    if (!this.statusElement) {
-        console.warn('game-status element not found')
-        return
-    }
+		if (!this.statusElement)
+		{
+			console.warn('game-status element not found')
+			return
+		}
 	// Ne plus afficher les messages sur le canvas
 	// À la place, mettre à jour l'élément HTML
 
 
-	if (!this.state.isRunning && !this.state.winner) {
-		// Message de départ
-		const controls = this.isAIEnabled
-			? 'Left: W/S - Right: AI'
-			: 'Left: W/S - Right: Arrow keys'
-		this.statusElement.innerHTML = `
-			<span class="status-message">Commencer : <kbd>espace</kbd> | ${controls}</span>
-		`
-	} else if (this.state.winner) {
-		// Message de victoire
-		let winner = this.state.winner === 'left' ? 'Left Player' : 'Right Player'
-		if (this.isAIEnabled && this.state.winner === 'right') {
-			winner = 'AI'
+		if (!this.state.isRunning && !this.state.winner)
+		{
+			// Message de départ
+			const controls = this.isAIEnabled
+				? 'Gauche <kbd>w</kbd> <kbd>s</kbd>'
+				: 'Gauche <kbd>w</kbd> <kbd>s</kbd> - Droite <kbd>w</kbd> <kbd>s</kbd>'
+
+			this.statusElement.innerHTML = `
+				<span class="status-message">Démarrer <kbd>espace</kbd> | ${controls}</span>
+			`
 		}
-		this.statusElement.innerHTML = `
-			<span class="status-message winner-message">🏆 ${winner} wins! | Press <kbd>SPACE</kbd> to restart</span>
-		`
-	} else {
-		// Pendant le jeu, afficher le score
-		this.statusElement.innerHTML = `
-			<span class="status-message">Game in progress | Score: ${this.state.leftScore} - ${this.state.rightScore}</span>
-		`
+		else if (this.state.winner)
+		{
+			// Message de victoire
+			let winner = this.state.winner === 'left' ? 'Left Player' : 'Right Player'
+
+			if (this.isAIEnabled && this.state.winner === 'right')
+			{
+				winner = 'AI'
+			}
+			this.statusElement.innerHTML = `
+				<span class="status-message winner-message">🏆 ${winner} wins! | Press <kbd>SPACE</kbd> to restart</span>
+			`
+		}
+		else
+		{
+			// Pendant le jeu, afficher le score
+			this.statusElement.innerHTML = `
+				<span class="status-message">Game in progress | Score: ${this.state.leftScore} - ${this.state.rightScore}</span>
+			`
+		}
 	}
-}
 
     private gameLoop = (currentTime: number): void => {
         // Calculer deltaTime en secondes
