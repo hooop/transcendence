@@ -53,9 +53,9 @@ export class PongGame {
 			height: height,
 			paddleSpeed: 300,
 			ballSpeed: 300,
-			paddleHeight: 80,
+			paddleHeight: 100,
 			paddleWidth: 10,
-			ballSize: 15
+			ballSize: 20
 		}
 
 		// État initial
@@ -400,7 +400,7 @@ private renderScore(): void {
 			? 'Left: W/S - Right: AI'
 			: 'Left: W/S - Right: Arrow keys'
 		this.statusElement.innerHTML = `
-			<span class="status-message">Press <kbd>SPACE</kbd> to start! | ${controls}</span>
+			<span class="status-message">Commencer : <kbd>espace</kbd> | ${controls}</span>
 		`
 	} else if (this.state.winner) {
 		// Message de victoire

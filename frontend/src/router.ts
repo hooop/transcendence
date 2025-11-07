@@ -148,9 +148,10 @@ private handleRoute(): void {
 		})
 	}
 
-private renderGameModeSelection(): void {
-    // Ajouter la classe fullscreen
-    document.body.classList.add('fullscreen-game')
+private renderGameModeSelection(): void
+{
+	// Ajouter la classe fullscreen
+	document.body.classList.add('fullscreen-game')
 
     this.updatePageContent(`
         <!-- Barre de contrôle fixe en haut -->
@@ -592,14 +593,7 @@ private setupGameOptions(): void {
 				margin-right: auto;
 				}
 
-			kbd {
-				background: #333;
-				color: #00ff41;
-				padding: 0.2rem 0.4rem;
-				border-radius: 4px;
-				font-family: monospace;
-				font-weight: bold;
-			}
+
 			.controls-grid {
 				display: grid;
 				grid-template-columns: 1fr 1fr;
