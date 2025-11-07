@@ -78,6 +78,7 @@ export class PongGame {
 			console.log(`⚡ Ball will increase speed by 15% every ${this.speedIncreaseInterval / 1000}s`)
 		}
 
+		this.render()
 		console.log('🏓 Pong game initialized')
 	}
 

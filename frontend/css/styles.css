@@ -1219,7 +1219,7 @@ body.fullscreen-game .app-footer {
     left: 0;
     right: 0;
     bottom: 0;
-    background: #ff0000;
+    background: #000000;
 	border: 10px solid;
     display: flex;
     align-items: center;
