@@ -5,6 +5,10 @@ import { AuthPages } from './pages/AuthPages'
 import { DashboardPage } from './pages/DashboardPage'
 import { ApiService } from './services/api'
 
+import gameModeTemplate from './templates/game.html?raw';
+import homeTemplate from './templates/home.html?raw';
+
+
 export class Router {
 	private routes: Map<string, () => void> = new Map()
 	private currentGame: PongGame | null = null
@@ -80,37 +84,19 @@ private handleRoute(): void {
     }
 }
 
-	private renderHome(): void {
+	// HOME
+	private renderHome(): void
+	{
 		// Si l'utilisateur est connecté, rediriger vers le dashboard
 		const token = ApiService.getToken();
-		if (token) {
+		if (token)
+		{
 			this.navigate('/dashboard');
 			return;
 		}
 
 		// Sinon, afficher la page d'accueil avec login/register
-		this.updatePageContent(`
-<div class="page">
-	<h2>1972 : Une révolution naït</h2>
-	<p>
-		Il y a plus de 50 ans, dans les laboratoires d'Atari, naissait Pong.
-		Deux rectangles, une balle pixelisée, et une simplicité révolutionnaire qui allait changer
-		l'histoire du divertissement pour toujours.
-	</p>
-	<div class="welcome-header">
-		<img src="../img/pong_intro.png" alt="Pong header" class="welcome-image">
-	</div>
-	<h2>2025 : L'héritage continue</h2>
-	<p style="margin-bottom: 3rem;">
-		Aujourd'hui, SuperPong garde l'âme du jeu original :
-		anticipation, réflexes, stratégie. Mais maintenant, vous pouvez défier vos amis à distance,
-		gravir les échelons des tournois et prouver que vous avez ce qu'il faut pour devenir le champion ultime.
-	</p>
-	<div class="play-button-container">
-		<a href="/game" data-route class="btn btn-primary">Jouer</a>
-	</div>
-</div>
-		`)
+		this.updatePageContent(homeTemplate);
 	}
 
 	private renderLogin(): void
@@ -148,52 +134,18 @@ private handleRoute(): void {
 		})
 	}
 
-private renderGameModeSelection(): void
-{
-	// Ajouter la classe fullscreen
-	document.body.classList.add('fullscreen-game')
+	// GAME
+	private renderGameModeSelection(): void
+	{
+		document.body.classList.add('fullscreen-game');
 
-    this.updatePageContent(`
-        <!-- Barre de contrôle fixe en haut -->
-        <div class="game-control-bar">
-            <div class="control-group">
-                <span class="control-label">Mode solo</span>
-                <label class="toggle-switch">
-                    <input type="checkbox" id="mode-toggle">
-                    <span class="toggle-slider"></span>
-                </label>
-            </div>
+		this.updatePageContent(gameModeTemplate);
 
-            <div class="control-group" id="difficulty-group" style="display: none;">
-                <div class="difficulty-pills">
-                    <input type="radio" name="difficulty" id="diff-easy" value="easy">
-                    <label for="diff-easy" class="pill-label">Facile</label>
-
-                    <input type="radio" name="difficulty" id="diff-medium" value="medium" checked>
-                    <label for="diff-medium" class="pill-label">Moyen</label>
-
-                    <input type="radio" name="difficulty" id="diff-hard" value="hard">
-                    <label for="diff-hard" class="pill-label">Difficile</label>
-                </div>
-            </div>
-
-            <!-- Zone de statut pour les messages du jeu -->
-            <div class="control-group game-status" id="game-status">
-                <span class="status-message">Press <kbd>SPACE</kbd> to start!</span>
-            </div>
-        </div>
-
-        <!-- Canvas du jeu (prend tout l'espace restant) -->
-        <div class="game-canvas-container">
-            <canvas id="pong-canvas"></canvas>
-        </div>
-    `)
-
-    setTimeout(() => {
-        this.initPongGame(false, AIDifficulty.MEDIUM)
-        this.setupGameOptions()
-    }, 100)
-}
+		setTimeout(() => {
+			this.initPongGame(false, AIDifficulty.MEDIUM);
+			this.setupGameOptions();
+		}, 100);
+	}
 
 private setupGameOptions(): void {
 	let currentMode: 'friend' | 'ai' = 'friend'
