@@ -1140,11 +1140,12 @@ body.fullscreen-game .app-footer {
 .game-status {
 	flex-grow: 1;
 	display: flex;
-	justify-content: center;
+	justify-content: flex-end;
+	padding-right: 1rem;  /* Optionnel : ajoute un espace à droite */
 }
 
 .status-message {
-	color: var(--text-secondary);
+	color: var(--text-primary);
 	font-size: 1rem;
 	/* animation: pulse 2s infinite; */
 }
