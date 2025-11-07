@@ -1038,9 +1038,8 @@ body.fullscreen-game .app-footer {
     right: 0;
     height: 60px;
     background: rgb(0, 0, 0);
-    display: flex;
+    display: flex;  /* Garde flex */
     align-items: center;
-    justify-content: start;
     gap: 2rem;
     padding: 0 2rem;
     z-index: 100;
@@ -1137,49 +1136,66 @@ body.fullscreen-game .app-footer {
 
 /* Zone de statut */
 
+/* Zone de statut - messages et commandes séparés */
 .game-status {
-	flex-grow: 1;
-	display: flex;
-	justify-content: flex-end;
-	padding-right: 1rem;  /* Optionnel : ajoute un espace à droite */
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    padding: 0 2rem;
+    pointer-events: none;  /* Les clics passent à travers */
+    z-index: -1;  /* Passe derrière les contrôles */
 }
 
-.status-message {
-	color: var(--text-primary);
-	font-size: 1rem;
-	/* animation: pulse 2s infinite; */
+/* Messages dynamiques - centrés */
+.status-messages {
+	position: absolute;
+	left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    justify-content: center;
 }
 
-.winner-message {
-	color: var(--primary-color);
-	font-weight: 700;
-	/* Ò */
+/* Commandes - alignées à droite */
+.status-controls {
+    margin-left: auto;
 }
 
-@keyframes pulse {
-	0%, 100% { opacity: 1; }
-	50% { opacity: 0.7; }
+.status-messages,
+.status-controls {
+    pointer-events: auto;  /* Réactive les clics */
 }
 
-@keyframes celebrate {
-	0%, 100% { transform: scale(1); }
-	50% { transform: scale(1.05); }
+.status-messages {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
-.status-message kbd {
+
+.controls-text {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.status-message kbd,
+.controls-text kbd {
     display: inline-flex;
     justify-content: center;
     align-items: center;
     min-height: 1.875rem; /* 7.5 * 0.25rem = 30px */
-    padding: 0.25rem 0.375rem;
+    padding: 0.25rem 0.5rem;
     background: #000000;
-    color:  #fff;
-    border: 1px solid #fff;
-    border-radius: 0.375rem;
+    color: var(--text-secondary);
+    border: 1px solid var(--text-secondary);
+    border-radius: 0.4rem;
     font-family: monospace;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     font-weight: normal;
-    box-shadow: 0px 2px 0px 0px #fff;
+    box-shadow: 0px 3px 0px 0px var(--text-secondary);
 }
 
 /* ==== CONTAINER DU CANVAS ==== */

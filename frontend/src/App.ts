@@ -28,7 +28,7 @@ export class App {
 		</h1>
 		<ul class="nav-links">
 			<li><a href="/" data-route>Accueil</a></li>
-			<li><a href="/game" data-route>Jouer</a></li>
+			<li><a href="/game" data-route>Entrainement</a></li>
 			<li><a href="/tournament" data-route>Tournoi</a></li>
 		</ul>
 		<div class="auth-buttons">

@@ -194,8 +194,7 @@ private resizeCanvas(): void {
         'arrowup',     // Flèche haut
         'arrowdown',   // Flèche bas
         'w',           // W
-        's',           // S
-        'r'            // R pour restart
+        's'
     ]
     return gameKeys.includes(key.toLowerCase())
 }
@@ -386,51 +385,45 @@ private renderScore(): void {
 
 	// MESSAGE BARRE DE CONTROLE
    private renderMessages(): void
-   {
+{
+    const statusElement = document.getElementById('game-status')
+    const controlsElement = document.getElementById('game-controls')
 
-		this.statusElement = document.getElementById('game-status')
+    if (!statusElement || !controlsElement) {
+        console.warn('game-status or game-controls element not found')
+        return
+    }
 
-		if (!this.statusElement)
-		{
-			console.warn('game-status element not found')
-			return
-		}
-	// Ne plus afficher les messages sur le canvas
-	// À la place, mettre à jour l'élément HTML
+    // Commandes (toujours affichées à droite)
+    const controls = this.isAIEnabled
+        ? '<kbd>W</kbd> <kbd>S</kbd>'
+        : '<kbd>W</kbd> <kbd>S</kbd> &nbsp;&nbsp; <kbd>↑</kbd> <kbd>↓</kbd>'
 
+    controlsElement.innerHTML = `
+        <span class="controls-text"><kbd>Espace</kbd> &nbsp; ${controls}</span>
+    `
 
-		if (!this.state.isRunning && !this.state.winner)
-		{
-			// Message de départ
-			const controls = this.isAIEnabled
-				? '<kbd>w</kbd> <kbd>s</kbd>'
-				: '<kbd>w</kbd> <kbd>s</kbd> &nbsp;&nbsp; <kbd>↑</kbd> <kbd>↓</kbd>'
-
-			this.statusElement.innerHTML = `
-				<span class="status-message">Commandes : <kbd>espace</kbd> &nbsp; ${controls}</span>
-			`
-		}
-		else if (this.state.winner)
-		{
-			// Message de victoire
-			let winner = this.state.winner === 'left' ? 'Left Player' : 'Right Player'
-
-			if (this.isAIEnabled && this.state.winner === 'right')
-			{
-				winner = 'AI'
-			}
-			this.statusElement.innerHTML = `
-				<span class="status-message winner-message">🏆 ${winner} wins! | Press <kbd>SPACE</kbd> to restart</span>
-			`
-		}
-		else
-		{
-			// Pendant le jeu, afficher le score
-			this.statusElement.innerHTML = `
-				<span class="status-message">Game in progress | Score: ${this.state.leftScore} - ${this.state.rightScore}</span>
-			`
-		}
-	}
+    // Messages dynamiques (centrés)
+    if (!this.state.isRunning && !this.state.winner) {
+        statusElement.innerHTML = `
+            <span class="status-message"></span>
+        `
+    }
+    else if (this.state.winner) {
+        let winner = this.state.winner === 'left' ? 'Joueur de gauche' : 'Joueur de droite'
+        if (this.isAIEnabled && this.state.winner === 'right') {
+            winner = 'IA'
+        }
+        statusElement.innerHTML = `
+            <span class="status-message winner-message">${winner} a gagné !</span>
+        `
+    }
+    else {
+        statusElement.innerHTML = `
+            <span class="status-message">Partie en cours</span>
+        `
+    }
+}
 
     private gameLoop = (currentTime: number): void => {
         // Calculer deltaTime en secondes
@@ -483,10 +476,8 @@ destroy(): void {
         case ' ': // Espace
             if (!this.state.isRunning && !this.state.winner) {
                 this.start()
-            }
-            break
-        case 'r': // Restart
-            if (this.state.winner) {
+			}
+			else if (this.state.winner) {
                 this.restart()
             }
             break
