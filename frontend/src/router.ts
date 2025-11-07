@@ -164,7 +164,6 @@ private renderGameModeSelection(): void {
             </div>
 
             <div class="control-group" id="difficulty-group" style="display: none;">
-                <span class="control-label">Difficulté :</span>
                 <div class="difficulty-pills">
                     <input type="radio" name="difficulty" id="diff-easy" value="easy">
                     <label for="diff-easy" class="pill-label">Facile</label>
