@@ -403,11 +403,11 @@ private renderScore(): void {
 		{
 			// Message de départ
 			const controls = this.isAIEnabled
-				? 'Gauche <kbd>w</kbd> <kbd>s</kbd>'
-				: 'Gauche <kbd>w</kbd> <kbd>s</kbd> - Droite <kbd>w</kbd> <kbd>s</kbd>'
+				? '<kbd>w</kbd> <kbd>s</kbd>'
+				: '<kbd>w</kbd> <kbd>s</kbd> &nbsp;&nbsp; <kbd>↑</kbd> <kbd>↓</kbd>'
 
 			this.statusElement.innerHTML = `
-				<span class="status-message">Démarrer <kbd>espace</kbd> | ${controls}</span>
+				<span class="status-message">Commandes : <kbd>espace</kbd> &nbsp; ${controls}</span>
 			`
 		}
 		else if (this.state.winner)

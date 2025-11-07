@@ -1144,9 +1144,8 @@ body.fullscreen-game .app-footer {
 }
 
 .status-message {
-	color: var(--text-primary);
+	color: var(--text-secondary);
 	font-size: 1rem;
-	font-weight: 500;
 	/* animation: pulse 2s infinite; */
 }
 
@@ -1173,13 +1172,13 @@ body.fullscreen-game .app-footer {
     min-height: 1.875rem; /* 7.5 * 0.25rem = 30px */
     padding: 0.25rem 0.375rem;
     background: #000000;
-    color: #ffffff;
-    border: 1px solid #ffffff;
+    color:  #fff;
+    border: 1px solid #fff;
     border-radius: 0.375rem;
     font-family: monospace;
     font-size: 0.875rem;
     font-weight: normal;
-    box-shadow: 0px 2px 0px 0px rgba(255, 255, 255);
+    box-shadow: 0px 2px 0px 0px #fff;
 }
 
 /* ==== CONTAINER DU CANVAS ==== */
