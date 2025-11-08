@@ -383,46 +383,56 @@ private renderScore(): void {
     this.ctx.restore()
 }
 
-	// MESSAGE BARRE DE CONTROLE
-   private renderMessages(): void
+// MESSAGE BARRE DE CONTROLE
+private renderMessages(): void
 {
-    const statusElement = document.getElementById('game-status')
-    const controlsElement = document.getElementById('game-controls')
+	const statusElement = document.getElementById('game-status')
+	const controlsElement = document.getElementById('game-controls')
 
-    if (!statusElement || !controlsElement) {
-        console.warn('game-status or game-controls element not found')
-        return
-    }
+	if (!statusElement || !controlsElement)
+	{
+		console.warn('game-status or game-controls element not found')
+		return
+	}
 
-    // Commandes (toujours affichées à droite)
-    const controls = this.isAIEnabled
-        ? '<kbd>W</kbd> <kbd>S</kbd>'
-        : '<kbd>W</kbd> <kbd>S</kbd> &nbsp;&nbsp; <kbd>↑</kbd> <kbd>↓</kbd>'
+	// Commandes (toujours affichées à droite)
+	const controls = this.isAIEnabled
+		? '<kbd>W</kbd> <kbd>S</kbd>'
+		: '<kbd>W</kbd> <kbd>S</kbd> &nbsp;&nbsp; <kbd>↑</kbd> <kbd>↓</kbd>'
 
-    controlsElement.innerHTML = `
-        <span class="controls-text"><kbd>Espace</kbd> &nbsp; ${controls}</span>
-    `
+	controlsElement.innerHTML =
+	`
+		<span class="controls-text"><kbd>Espace</kbd> &nbsp; ${controls}</span>
+	`
 
-    // Messages dynamiques (centrés)
-    if (!this.state.isRunning && !this.state.winner) {
-        statusElement.innerHTML = `
-            <span class="status-message"></span>
-        `
-    }
-    else if (this.state.winner) {
-        let winner = this.state.winner === 'left' ? 'Joueur de gauche' : 'Joueur de droite'
-        if (this.isAIEnabled && this.state.winner === 'right') {
-            winner = 'IA'
-        }
-        statusElement.innerHTML = `
-            <span class="status-message winner-message">${winner} a gagné !</span>
-        `
-    }
-    else {
-        statusElement.innerHTML = `
-            <span class="status-message">Partie en cours</span>
-        `
-    }
+	// Messages dynamiques (centrés)
+	if (!this.state.isRunning && !this.state.winner)
+	{
+		statusElement.innerHTML =
+		`
+			<span class="status-message">Toucher Espace pour lancer une partie</span>
+		`
+	}
+	else if (this.state.winner)
+	{
+		let winner = this.state.winner === 'left' ? 'Joueur de gauche' : 'Joueur de droite'
+
+		if (this.isAIEnabled && this.state.winner === 'right')
+		{
+			winner = 'IA'
+		}
+		statusElement.innerHTML =
+		`
+			<span class="status-message winner-message">${winner} a gagné !</span>
+		`
+	}
+	else
+	{
+		statusElement.innerHTML =
+		`
+			<span class="status-message">Partie en cours</span>
+		`
+	}
 }
 
     private gameLoop = (currentTime: number): void => {
