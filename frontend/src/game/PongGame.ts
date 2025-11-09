@@ -506,37 +506,63 @@ export class PongGame
 	} */
 
 
-	private renderCountdown(): void
+private renderCountdown(): void
+{
+	this.ctx.save()
+
+	// Position au centre du canvas
+	const centerX = this.config.width / 2
+	const centerY = this.config.height / 2
+
+	// Calculer le temps depuis le début du countdown
+	const elapsed = (performance.now() - this.countdownStartTime) / 1000
+	const timeInCurrentCycle = elapsed % 1  // Temps dans la seconde en cours (0 à 1)
+
+	// Durée des animations (en secondes)
+	const fadeInDuration = 0.10   // 150ms pour apparaître
+	const fadeOutDuration = 0.10  // 150ms pour disparaître
+
+	let opacity = 1
+	let scale = 1
+
+	// Animation d'apparition (début de la seconde)
+	if (timeInCurrentCycle < fadeInDuration)
 	{
-		this.ctx.save()
-
-		// Configuration du texte
-		this.ctx.fillStyle = '#ffffffff'
-		this.ctx.font = '125px monospace'
-		this.ctx.textAlign = 'center'
-		this.ctx.textBaseline = 'middle'
-
-		// Position au centre du canvas
-		const centerX = this.config.width / 2
-		const centerY = this.config.height / 2
-
-		// Effet de pulsation
-		const scale = 1 /* + (Math.sin(performance.now() / 100) * 0.1) */
-		this.ctx.save()
-		this.ctx.translate(centerX, centerY)
-		this.ctx.scale(scale, scale)
-
-		// Afficher le chiffre du countdown
-		this.ctx.fillText(this.countdownValue.toString(), 0, 0)
-
-	/*    // Ajouter un contour pour plus de visibilité
-		this.ctx.strokeStyle = '#000'
-		this.ctx.lineWidth = 4
-		this.ctx.strokeText(this.countdownValue.toString(), 0, 0) */
-
-		this.ctx.restore()
-		this.ctx.restore()
+		const progress = timeInCurrentCycle / fadeInDuration
+		opacity = progress
+		scale = 0.8 + (progress * 0.2)  // De 0.8 à 1.0
 	}
+	// Animation de disparition (fin de la seconde)
+	else if (timeInCurrentCycle > (1 - fadeOutDuration))
+	{
+		const progress = (1 - timeInCurrentCycle) / fadeOutDuration
+		opacity = progress
+		scale = 0.8 + (progress * 0.2)  // De 1.0 à 0.8
+	}
+
+	this.ctx.save()
+	this.ctx.translate(centerX, centerY)
+	this.ctx.scale(scale, scale)
+	this.ctx.globalAlpha = opacity
+
+	// Dessiner le cercle blanc
+	this.ctx.beginPath()
+	this.ctx.arc(0, 0, 50, 0, Math.PI * 2)
+	this.ctx.fillStyle = '#fff'
+	this.ctx.fill()
+
+	// Configuration du texte en noir
+	this.ctx.fillStyle = '#000'
+	this.ctx.font = '80px Inter'
+	this.ctx.textAlign = 'center'
+	this.ctx.textBaseline = 'middle'
+
+	// Afficher le chiffre du countdown
+	this.ctx.fillText(this.countdownValue.toString(), 0, 0)
+
+	this.ctx.restore()
+	this.ctx.restore()
+}
 
 	// MESSAGE BARRE DE CONTROLE
 	private renderMessages(): void

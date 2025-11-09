@@ -1188,7 +1188,7 @@ body.fullscreen-game .app-footer {
 .status-message.score-display
 {
 	font-family: 'akira', monospace;  /* ou la font que tu veux */
-	font-size: 1.6rem;
+	font-size: 1.7rem;
 	letter-spacing: 0.1em;  /* optionnel : espacement des caractères */
 }
 
