@@ -733,6 +733,8 @@ private renderCountdown(): void
 		// Reset des objets
 		this.ball.reset()
 		this.ball.resetSpeed() // Réinitialiser la vitesse de la balle
+		this.leftPaddle.reset()  // Ajouter cette ligne
+		this.rightPaddle.reset() // Ajouter cette ligne
 
 		// Reset de l'IA et du timer d'accélération si activée
 		if (this.ai)
@@ -745,8 +747,6 @@ private renderCountdown(): void
 
 		console.log('🔄 Game reset')
 	}
-
-
 
 	private showVictoryModal(): void
 	{

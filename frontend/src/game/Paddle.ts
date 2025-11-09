@@ -34,6 +34,12 @@ export class Paddle {
         this.position.y = Math.max(minY, Math.min(maxY, newY))
     }
 
+	// Remet la position des raquettes par défaut
+	reset(): void {
+	this.position.y = this.config.height / 2
+	this.moveDirection = 0
+	}
+
     // Collision avec la balle
     checkCollision(ballPosition: Vector2D, ballSize: number): boolean {
         const ballRadius = ballSize / 2

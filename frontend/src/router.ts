@@ -31,11 +31,11 @@ export class Router
 
 		// Game routes
 		this.routes.set('/game', () => this.renderGameModeSelection())
-		this.routes.set('/game/vs-friend', () => this.renderGame(false))
+/* 		this.routes.set('/game/vs-friend', () => this.renderGame(false))
 		this.routes.set('/game/vs-ai', () => this.renderAIDifficultySelection())
 		this.routes.set('/game/vs-ai/easy', () => this.renderGame(true, AIDifficulty.EASY))
 		this.routes.set('/game/vs-ai/medium', () => this.renderGame(true, AIDifficulty.MEDIUM))
-		this.routes.set('/game/vs-ai/hard', () => this.renderGame(true, AIDifficulty.HARD))
+		this.routes.set('/game/vs-ai/hard', () => this.renderGame(true, AIDifficulty.HARD)) */
 		this.routes.set('/tournament', () => this.renderTournament())
 	}
 
@@ -100,12 +100,14 @@ private handleRoute(): void {
 		this.updatePageContent(homeTemplate);
 	}
 
+	// CONNEXION
 	private renderLogin(): void
 	{
 		this.updatePageContent(AuthPages.renderLogin())
 		setTimeout(() => AuthPages.setupLoginForm(), 100)
 	}
 
+	// INSCRIPTION
 	private renderRegister(): void
 	{
 		this.updatePageContent(AuthPages.renderRegister())
@@ -148,75 +150,77 @@ private handleRoute(): void {
 
 		this.updatePageContent(gameModeTemplate);
 
-		setTimeout(() => {
+		setTimeout(() =>
+		{
 			this.initPongGame(false, AIDifficulty.MEDIUM);
 			this.setupGameOptions();
 		}, 100);
 	}
 
-private setupGameOptions(): void {
-	let currentMode: 'friend' | 'ai' = 'friend'
-	let currentDifficulty: AIDifficulty = AIDifficulty.MEDIUM
+	private setupGameOptions(): void {
+		let currentMode: 'friend' | 'ai' = 'friend'
+		let currentDifficulty: AIDifficulty = AIDifficulty.MEDIUM
 
-	// Toggle mode Friend/AI
-	const modeToggle = document.getElementById('mode-toggle') as HTMLInputElement
-	const difficultySelect = document.getElementById('difficulty-select') as HTMLSelectElement
+		// Toggle mode Friend/AI
+		const modeToggle = document.getElementById('mode-toggle') as HTMLInputElement
+		const difficultySelect = document.getElementById('difficulty-select') as HTMLSelectElement
 
-	if (modeToggle && difficultySelect) {
-		// Au chargement, le select est désactivé (mode friend par défaut)
-		difficultySelect.disabled = true
+		if (modeToggle && difficultySelect) {
+			// Au chargement, le select est désactivé (mode friend par défaut)
+			difficultySelect.disabled = true
 
-		// Écouter le changement de mode
-		modeToggle.addEventListener('change', () => {
-			currentMode = modeToggle.checked ? 'ai' : 'friend'
+			// Écouter le changement de mode
+			modeToggle.addEventListener('change', () => {
+				currentMode = modeToggle.checked ? 'ai' : 'friend'
 
-			// Activer/désactiver le select selon le mode
-			difficultySelect.disabled = !modeToggle.checked
+				// Activer/désactiver le select selon le mode
+				difficultySelect.disabled = !modeToggle.checked
 
-			// Relancer le jeu avec le bon mode
-			if (this.currentGame) {
-				this.currentGame.destroy()
-			}
+				// Relancer le jeu avec le bon mode
+				if (this.currentGame) {
+					this.currentGame.destroy()
+				}
 
-			// Récupérer la difficulté actuelle du select
-			const selectValue = difficultySelect.value
-			if (selectValue === 'easy') currentDifficulty = AIDifficulty.EASY
-			else if (selectValue === 'medium') currentDifficulty = AIDifficulty.MEDIUM
-			else if (selectValue === 'hard') currentDifficulty = AIDifficulty.HARD
+				// Récupérer la difficulté actuelle du select
+				const selectValue = difficultySelect.value
+				if (selectValue === 'easy') currentDifficulty = AIDifficulty.EASY
+				else if (selectValue === 'medium') currentDifficulty = AIDifficulty.MEDIUM
+				else if (selectValue === 'hard') currentDifficulty = AIDifficulty.HARD
 
-			this.initPongGame(currentMode === 'ai', currentDifficulty)
-		})
+				this.initPongGame(currentMode === 'ai', currentDifficulty)
+			})
 
-		// Écouter les changements de difficulté
-		difficultySelect.addEventListener('change', () => {
-			const value = difficultySelect.value
+			// Écouter les changements de difficulté
+			difficultySelect.addEventListener('change', () => {
+				const value = difficultySelect.value
 
-			if (value === 'easy') currentDifficulty = AIDifficulty.EASY
-			else if (value === 'medium') currentDifficulty = AIDifficulty.MEDIUM
-			else if (value === 'hard') currentDifficulty = AIDifficulty.HARD
+				if (value === 'easy') currentDifficulty = AIDifficulty.EASY
+				else if (value === 'medium') currentDifficulty = AIDifficulty.MEDIUM
+				else if (value === 'hard') currentDifficulty = AIDifficulty.HARD
 
-			// Relancer le jeu si on est en mode AI
-			if (currentMode === 'ai' && this.currentGame) {
-				this.currentGame.destroy()
-				this.initPongGame(true, currentDifficulty)
-			}
-		})
-	}
+				// Relancer le jeu si on est en mode AI
+				if (currentMode === 'ai' && this.currentGame) {
+					this.currentGame.destroy()
+					this.initPongGame(true, currentDifficulty)
+				}
+			})
+		}
 
-	// Gestion des messages de statut du jeu
-	if (this.currentGame) {
-		this.currentGame.onStatusChange = (message: string, isWinner: boolean) => {
-			const statusElement = document.getElementById('game-status')
-			if (statusElement) {
-				statusElement.innerHTML = isWinner
-					? `<span class="status-message winner-message">${message}</span>`
-					: `<span class="status-message">${message}</span>`
+		// Gestion des messages de statut du jeu
+		if (this.currentGame) {
+			this.currentGame.onStatusChange = (message: string, isWinner: boolean) => {
+				const statusElement = document.getElementById('game-status')
+				if (statusElement) {
+					statusElement.innerHTML = isWinner
+						? `<span class="status-message winner-message">${message}</span>`
+						: `<span class="status-message">${message}</span>`
+				}
 			}
 		}
 	}
-}
 
-	private renderAIDifficultySelection(): void {
+/* 	private renderAIDifficultySelection(): void
+	{
 		this.updatePageContent(`
 			<div class="page">
 				<h2>🤖 Choose AI Difficulty</h2>
@@ -250,9 +254,9 @@ private setupGameOptions(): void {
 				</div>
 			</div>
 		`)
-	}
+	} */
 
-	private renderGame(isAI: boolean = false, difficulty: AIDifficulty = AIDifficulty.MEDIUM): void {
+/* 	private renderGame(isAI: boolean = false, difficulty: AIDifficulty = AIDifficulty.MEDIUM): void {
 	const modeText = isAI ? `VS AI (${difficulty})` : 'VS Friend'
 	const controlsText = isAI ? 'Right Player: <strong>AI</strong> 🤖' : 'Right Player: <kbd>↑</kbd> / <kbd>↓</kbd>'
 
@@ -284,7 +288,7 @@ private setupGameOptions(): void {
 </div>
 	`)
 	setTimeout(() => this.initPongGame(isAI, difficulty), 0)
-}
+} */
 
 	private renderTournament(): void {
 		if (!this.tournamentManager) {
