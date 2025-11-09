@@ -1,15 +1,16 @@
-import { PongGame } from './game/PongGame'
-import { TournamentManager } from './tournament/TournamentManager'
-import { AIDifficulty } from './game/AIPlayer'
-import { AuthPages } from './pages/AuthPages'
-import { DashboardPage } from './pages/DashboardPage'
-import { ApiService } from './services/api'
+import { PongGame }				from './game/pongGame.ts'
+import { TournamentManager }	from './tournament/TournamentManager'
+import { AIDifficulty }			from './game/AIPlayer'
+import { AuthPages }			from './pages/AuthPages'
+import { DashboardPage }		from './pages/DashboardPage'
+import { ApiService }			from './services/api'
 
-import gameModeTemplate from './templates/game.html?raw';
-import homeTemplate from './templates/home.html?raw';
+import gameModeTemplate			from './templates/game.html?raw';
+import homeTemplate				from './templates/home.html?raw';
 
 
-export class Router {
+export class Router
+{
 	private routes: Map<string, () => void> = new Map()
 	private currentGame: PongGame | null = null
 	private tournamentManager: TournamentManager | null = null
@@ -105,19 +106,23 @@ private handleRoute(): void {
 		setTimeout(() => AuthPages.setupLoginForm(), 100)
 	}
 
-	private renderRegister(): void {
+	private renderRegister(): void
+	{
 		this.updatePageContent(AuthPages.renderRegister())
 		setTimeout(() => AuthPages.setupRegisterForm(), 100)
 	}
 
-	private renderOAuthCallback(): void {
+	private renderOAuthCallback(): void
+	{
 		this.updatePageContent(AuthPages.renderOAuthCallback())
 	}
 
-	private renderDashboard(): void {
+	private renderDashboard(): void
+	{
 		// Vérifier l'authentification
 		const token = ApiService.getToken();
-		if (!token) {
+		if (!token)
+		{
 			this.navigate('/login');
 			return;
 		}
@@ -126,10 +131,12 @@ private handleRoute(): void {
 		this.updatePageContent('<div class="loading">Loading dashboard...</div>')
 
 		// Charger le dashboard de manière asynchrone
-		DashboardPage.render().then(html => {
+		DashboardPage.render().then(html =>
+		{
 			this.updatePageContent(html)
 			DashboardPage.setupEventListeners()
-		}).catch(() => {
+		}).catch(() =>
+		{
 			this.navigate('/login')
 		})
 	}

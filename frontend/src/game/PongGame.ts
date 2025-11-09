@@ -464,7 +464,7 @@ export class PongGame
 		}
 
 		// Dessiner le score
-		this.renderScore()
+	/* 	this.renderScore() */
 
 		// Afficher le countdown si actif
 		if (this.countdownActive)
@@ -476,7 +476,7 @@ export class PongGame
 		this.renderMessages()
 	}
 
-	private renderScore(): void
+/* 	private renderScore(): void
 	{
 		this.ctx.save()
 
@@ -503,7 +503,7 @@ export class PongGame
 		)
 
 		this.ctx.restore()
-	}
+	} */
 
 
 	private renderCountdown(): void
@@ -557,7 +557,7 @@ export class PongGame
 
 		controlsElement.innerHTML =
 		`
-			<span class="controls-text"><kbd>Espace</kbd> &nbsp; ${controls}</span>
+			<span class="controls-text">${controls}</span>
 		`
 
 		// Messages dynamiques (centrés)
@@ -565,14 +565,14 @@ export class PongGame
 		{
 			statusElement.innerHTML =
 			`
-				<span class="status-message">Get ready...</span>
+				<span class="status-message"></span>
 			`
 		}
 		else if (!this.state.isRunning && !this.state.winner)
 		{
 			statusElement.innerHTML =
 			`
-				<span class="status-message">Toucher Espace pour lancer une partie</span>
+				<span class="status-message start">Toucher <kbd>ESPACE</kbd> pour lancer une partie</span>
 			`
 		}
 		else if (this.state.winner)
@@ -592,7 +592,7 @@ export class PongGame
 		{
 			statusElement.innerHTML =
 			`
-				<span class="status-message">Partie en cours</span>
+				<span class="status-message score-display">${this.state.leftScore} . ${this.state.rightScore}</span>
 			`
 		}
 	}
