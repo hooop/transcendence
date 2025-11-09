@@ -378,20 +378,25 @@ export class PongGame
 	private checkScoring(): void
 	{
 		const outOfBounds = this.ball.isOutOfBounds()
-
 		if (outOfBounds === 'left')
 		{
 			// Point pour le joueur de droite
 			this.state.rightScore++
 			this.ball.reset()
 			this.ball.resetSpeed() // Réinitialiser la vitesse après un point
-
 			if (this.isAIEnabled)
 			{
 				this.lastSpeedIncrease = performance.now() // Réinitialiser le timer
 			}
-
 			console.log(`Score: ${this.state.leftScore} - ${this.state.rightScore}`)
+
+			// Vérifier la victoire
+			if (this.state.rightScore >= 5)
+			{
+				this.state.winner = 'right'
+				this.state.isRunning = false
+				this.showVictoryModal()
+			}
 		}
 		else if (outOfBounds === 'right')
 		{
@@ -399,12 +404,19 @@ export class PongGame
 			this.state.leftScore++
 			this.ball.reset()
 			this.ball.resetSpeed() // Réinitialiser la vitesse après un point
-
 			if (this.isAIEnabled)
 			{
 				this.lastSpeedIncrease = performance.now() // Réinitialiser le timer
 			}
 			console.log(`Score: ${this.state.leftScore} - ${this.state.rightScore}`)
+
+			// Vérifier la victoire
+			if (this.state.leftScore >= 5)
+			{
+				this.state.winner = 'left'
+				this.state.isRunning = false
+				this.showVictoryModal()
+			}
 		}
 	}
 
@@ -601,7 +613,7 @@ private renderCountdown(): void
 				<span class="status-message start">Toucher <kbd>ESPACE</kbd> pour lancer une partie</span>
 			`
 		}
-		else if (this.state.winner)
+		/* else if (this.state.winner)
 		{
 			let winner = this.state.winner === 'left' ? 'Joueur de gauche' : 'Joueur de droite'
 
@@ -613,7 +625,7 @@ private renderCountdown(): void
 			`
 				<span class="status-message winner-message">${winner} a gagné !</span>
 			`
-		}
+		} */
 		else
 		{
 			statusElement.innerHTML =
@@ -733,6 +745,52 @@ private renderCountdown(): void
 
 		console.log('🔄 Game reset')
 	}
+
+
+
+	private showVictoryModal(): void
+	{
+		// Déterminer le nom du gagnant
+		let winnerName = this.state.winner === 'left' ? 'Joueur de gauche' : 'Joueur de droite'
+
+		if (this.isAIEnabled && this.state.winner === 'right')
+		{
+			winnerName = 'IA'
+		}
+
+		// Récupérer les éléments de la modal
+		const modal = document.getElementById('victoryModal')
+		const winnerNameElement = document.getElementById('winnerName')
+		const modalScoreElement = document.getElementById('modalScore')
+		const closeButton = document.querySelector('.modal-close')
+		const overlay = document.querySelector('.modal-overlay')
+
+		if (!modal || !winnerNameElement || !modalScoreElement) return
+
+		// Remplir les informations
+		winnerNameElement.textContent = winnerName
+		modalScoreElement.textContent = `Score final : ${this.state.leftScore} - ${this.state.rightScore}`
+
+		// Afficher la modal
+		modal.style.display = 'flex'
+
+		// Event listener pour fermer la modal (croix)
+		closeButton?.addEventListener('click', () => {
+			modal.style.display = 'none'
+			this.restart()
+		})
+
+		// Event listener pour fermer la modal (clic sur overlay)
+		overlay?.addEventListener('click', (e) => {
+			if (e.target === overlay) {
+				modal.style.display = 'none'
+				this.restart()
+			}
+		})
+
+	}
+
+
 
 	// Méthodes pour gérer l'IA
 	enableAI(difficulty: AIDifficulty = AIDifficulty.MEDIUM): void

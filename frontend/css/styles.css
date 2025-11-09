@@ -453,6 +453,7 @@
 	line-height: 1;
 	font-weight: normal;
 	transition: all 0.2s;
+	border: 0;
 			}
 
 .btn:disabled {
@@ -498,8 +499,12 @@
 
 
 .btn-tertiary {
-    background: var(--tertiary-color);
-    color: white;
+    background: #000000;
+	color: #ffffff;
+}
+
+.btn-tertiary:hover:not(:disabled) {
+    background: #000000;
 }
 
 .btn-success {
@@ -1237,4 +1242,85 @@ body.fullscreen-game .app-footer {
 
 
 
+/* Victory Modal */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
 
+.modal-content {
+  background-color: white;
+  border-radius: 12px;
+  padding: 40px;
+  max-width: 500px;
+  width: 90%;
+  position: relative;
+  text-align: center;
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: #f0f0f0;
+  border-radius: 50%;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #4a4a4a;
+  line-height: 1;
+  font-family: Arial, Helvetica, sans-serif;
+  font-weight: normal;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+}
+
+.modal-close:hover {
+   background: #e1e1e1;
+}
+
+.modal-title {
+  font-family: 'Akira', sans-serif;
+  font-size: 1.2rem;
+  margin-bottom: 20px;
+  color: #000;
+}
+
+.modal-joueur {
+	font-family: 'Inter', Helvetica, sans-serif;
+  font-size: 16px;
+  color: #000;
+}
+
+.modal-score {
+  font-family: 'Inter', Helvetica, sans-serif;
+  font-size: 16px;
+  color: #000;
+  margin-bottom: 30px;
+}
+
+/* .modal-cta {
+  background-color: #000;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 15px 40px;
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.modal-cta:hover {
+  background-color: #333;
+} */
