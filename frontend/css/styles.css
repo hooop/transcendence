@@ -1186,16 +1186,16 @@ body.fullscreen-game .app-footer {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    min-height: 1.875rem; /* 7.5 * 0.25rem = 30px */
-    padding: 0.25rem 0.5rem;
+    min-height: 1.5rem; /* 7.5 * 0.25rem = 30px */
+    padding: 0rem 0.5rem;
     background: #000000;
-    color: var(--text-secondary);
-    border: 1px solid var(--text-secondary);
+    color: var(--text-primary);
+    border: 1px solid var(--text-primary);
     border-radius: 0.4rem;
     font-family: monospace;
-    font-size: 0.8rem;
+    font-size: 0.6rem;
     font-weight: normal;
-    box-shadow: 0px 3px 0px 0px var(--text-secondary);
+    box-shadow: 0px 3px 0px 0px var(--text-primary);
 }
 
 /* ==== CONTAINER DU CANVAS ==== */

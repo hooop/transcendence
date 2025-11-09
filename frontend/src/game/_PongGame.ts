@@ -35,7 +35,7 @@ export class PongGame
 
 	public onStatusChange?: (message: string, isWinner: boolean) => void
 
-    constructor(canvas: HTMLCanvasElement, aiEnabled: boolean = false, aiDifficulty: AIDifficulty = AIDifficulty.MEDIUM)
+	constructor(canvas: HTMLCanvasElement, aiEnabled: boolean = false, aiDifficulty: AIDifficulty = AIDifficulty.MEDIUM)
 	{
 		this.canvas = canvas
 		const ctx = canvas.getContext('2d')
@@ -61,7 +61,7 @@ export class PongGame
 			width: width,
 			height: height,
 			paddleSpeed: 300,
-			ballSpeed: 300,
+			ballSpeed: 320,
 			paddleHeight: 100,
 			paddleWidth: 10,
 			ballSize: 20
@@ -174,7 +174,6 @@ export class PongGame
 			}
 		)
 
-
 		// Créer les raquettes
 		this.leftPaddle = new Paddle(
 			this.config,
@@ -189,11 +188,11 @@ export class PongGame
 			{
 				x: this.config.width - 30,
 				y: this.config.height / 2
-				}
+			}
 		)
 	}
 
-    private setupEventListeners(): void
+	private setupEventListeners(): void
 	{
 		// Écouter les touches du clavier pour le mouvement
 		document.addEventListener(
@@ -262,6 +261,7 @@ export class PongGame
 			this.start()
 		}
 	}
+
 
 	// Ajouter cette nouvelle méthode pour identifier les touches de jeu :
 	private isGameKey(key: string): boolean
@@ -339,79 +339,73 @@ export class PongGame
 		this.rightPaddle.update(deltaTime)
 		this.ball.update(deltaTime)
 
-		// Vérifier les collisions avec les raquettes
-		this.checkPaddleCollisions()
-
-		// Vérifier si quelqu'un a marqué
-		this.checkScoring()
-
-		// Vérifier les conditions de victoire
-		this.checkWinCondition()
+		this.checkCollisions()
+		this.checkScore()
 	}
 
-	private checkPaddleCollisions(): void
+	private checkCollisions(): void
 	{
-		// Collision avec la raquette de gauche
-		if (this.ball.velocity.x < 0 &&
-			this.leftPaddle.checkCollision(this.ball.position, this.ball.size))
+		// Collision avec les murs haut et bas
+		if (this.ball.position.y - this.config.ballSize / 2 <= 0)
 		{
-			this.ball.velocity.x = -this.ball.velocity.x
-
-			// Ajouter un effet selon la position sur la raquette
-			const paddleCenter = this.leftPaddle.position.y
-			const hitPosition = (this.ball.position.y - paddleCenter) / (this.leftPaddle.height / 2)
-			this.ball.velocity.y += hitPosition * 100 // Effet
+			this.ball.position.y = this.config.ballSize / 2
+			this.ball.velocity.y *= -1
+		}
+		if (this.ball.position.y + this.config.ballSize / 2 >= this.config.height)
+		{
+			this.ball.position.y = this.config.height - this.config.ballSize / 2
+			this.ball.velocity.y *= -1
 		}
 
-		// Collision avec la raquette de droite
-		if (this.ball.velocity.x > 0 &&
-			this.rightPaddle.checkCollision(this.ball.position, this.ball.size))
+		// Collision avec paddle gauche
+		if (
+			this.ball.position.x - this.config.ballSize / 2 <= this.leftPaddle.position.x + this.config.paddleWidth &&
+			this.ball.position.y >= this.leftPaddle.position.y - this.config.paddleHeight / 2 &&
+			this.ball.position.y <= this.leftPaddle.position.y + this.config.paddleHeight / 2 &&
+			this.ball.velocity.x < 0)
 		{
-			this.ball.velocity.x = -this.ball.velocity.x
+			this.ball.velocity.x *= -1
+			// Ajouter de l'effet selon où la balle touche la raquette
+			const hitPoint = (this.ball.position.y - this.leftPaddle.position.y) / (this.config.paddleHeight / 2)
+			this.ball.velocity.y += hitPoint * 200
+		}
 
-			const paddleCenter = this.rightPaddle.position.y
-			const hitPosition = (this.ball.position.y - paddleCenter) / (this.rightPaddle.height / 2)
-			this.ball.velocity.y += hitPosition * 100
+		// Collision avec paddle droit
+		if (
+			this.ball.position.x + this.config.ballSize / 2 >= this.rightPaddle.position.x - this.config.paddleWidth &&
+			this.ball.position.y >= this.rightPaddle.position.y - this.config.paddleHeight / 2 &&
+			this.ball.position.y <= this.rightPaddle.position.y + this.config.paddleHeight / 2 &&
+			this.ball.velocity.x > 0)
+		{
+			this.ball.velocity.x *= -1
+			const hitPoint = (this.ball.position.y - this.rightPaddle.position.y) / (this.config.paddleHeight / 2)
+			this.ball.velocity.y += hitPoint * 200
 		}
 	}
 
-	private checkScoring(): void
+	private checkScore(): void
 	{
-		const outOfBounds = this.ball.isOutOfBounds()
+		const winScore = 5
 
-		if (outOfBounds === 'left')
+		// Point pour le joueur de droite
+		if (this.ball.position.x < 0)
 		{
-			// Point pour le joueur de droite
 			this.state.rightScore++
 			this.ball.reset()
-			this.ball.resetSpeed() // Réinitialiser la vitesse après un point
-
-			if (this.isAIEnabled)
-			{
-				this.lastSpeedIncrease = performance.now() // Réinitialiser le timer
-			}
-
-			console.log(`Score: ${this.state.leftScore} - ${this.state.rightScore}`)
+			/* this.state.isRunning = false */
+			console.log('🎯 Right player scores!')
 		}
-		else if (outOfBounds === 'right')
+
+		// Point pour le joueur de gauche
+		if (this.ball.position.x > this.config.width)
 		{
-			// Point pour le joueur de gauche
 			this.state.leftScore++
 			this.ball.reset()
-			this.ball.resetSpeed() // Réinitialiser la vitesse après un point
-
-			if (this.isAIEnabled)
-			{
-				this.lastSpeedIncrease = performance.now() // Réinitialiser le timer
-			}
-			console.log(`Score: ${this.state.leftScore} - ${this.state.rightScore}`)
+			/* this.state.isRunning = false */
+			console.log('🎯 Left player scores!')
 		}
-	}
 
-	private checkWinCondition(): void
-	{
-		const winScore = 5 // Premier à 5 points
-
+		// Vérifier la victoire
 		if (this.state.leftScore >= winScore)
 		{
 			this.state.winner = 'left'
@@ -426,7 +420,7 @@ export class PongGame
 		}
 	}
 
-    private render(): void
+	private render(): void
 	{
 		// Effacer l'écran
 		this.ctx.fillStyle = '#000'
@@ -557,7 +551,7 @@ export class PongGame
 
 		controlsElement.innerHTML =
 		`
-			<span class="controls-text"><kbd>Espace</kbd> &nbsp; ${controls}</span>
+			<span class="controls-text"><kbd>ESPACE</kbd> &nbsp; ${controls}</span>
 		`
 
 		// Messages dynamiques (centrés)
@@ -565,7 +559,7 @@ export class PongGame
 		{
 			statusElement.innerHTML =
 			`
-				<span class="status-message">Get ready...</span>
+				<span class="status-message">Match en 5 points</span>
 			`
 		}
 		else if (!this.state.isRunning && !this.state.winner)
@@ -615,8 +609,7 @@ export class PongGame
 	// API publique
 	start(): void
 	{
-		if (this.state.isRunning)
-			return
+		if (this.state.isRunning) return
 
 		this.state.isRunning = true
 		this.lastTime = performance.now()
@@ -670,12 +663,10 @@ export class PongGame
 	{
 		this.state.isRunning = false
 		this.countdownActive = false // Arrêter aussi le countdown
-
 		if (this.animationFrame)
 		{
 			cancelAnimationFrame(this.animationFrame)
 		}
-
 		console.log('⏹️ Game stopped')
 	}
 
@@ -737,7 +728,7 @@ export class PongGame
 		return { ...this.state }
 	}
 
-	getScore(): {left: number; right: number}
+	getScore(): { left: number; right: number }
 	{
 		return {
 			left: this.state.leftScore,
