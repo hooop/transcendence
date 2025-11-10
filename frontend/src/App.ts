@@ -32,7 +32,7 @@ export class App {
 			<li><a href="/tournament" data-route>Tournoi</a></li>
 		</ul>
 		<div class="auth-buttons">
-			<a href="/login" class="btn btn-secondary" data-route>Connexion</a>
+			<a href="/login" class="btn white-dashed-btn" data-route>Connexion</a>
 		</div>
 	</nav>
 </header>

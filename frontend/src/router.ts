@@ -1,4 +1,4 @@
-import { PongGame }				from './game/pongGame.ts'
+import { PongGame }				from './game/PongGame.ts'
 import { TournamentManager }	from './tournament/TournamentManager'
 import { AIDifficulty }			from './game/AIPlayer'
 import { AuthPages }			from './pages/AuthPages'
@@ -7,6 +7,8 @@ import { ApiService }			from './services/api'
 
 import gameModeTemplate			from './templates/game.html?raw';
 import homeTemplate				from './templates/home.html?raw';
+import tournamentTemplate		from './templates/tournament.html?raw';
+import tournamentConfigTemplate from './templates/tournament-config.html?raw';
 
 
 export class Router
@@ -219,81 +221,13 @@ private handleRoute(): void {
 		}
 	}
 
-/* 	private renderAIDifficultySelection(): void
+
+	private renderTournament(): void
 	{
-		this.updatePageContent(`
-			<div class="page">
-				<h2>🤖 Choose AI Difficulty</h2>
-				<div class="ai-difficulty-selector">
-					<div class="difficulty-buttons">
-						<a href="/game/vs-ai/easy" data-route class="difficulty-btn-link">
-							<div class="difficulty-btn">
-								<span class="difficulty-icon">😊</span>
-								<span class="difficulty-title">Easy</span>
-								<span class="difficulty-desc">Perfect for beginners</span>
-							</div>
-						</a>
-						<a href="/game/vs-ai/medium" data-route class="difficulty-btn-link">
-							<div class="difficulty-btn">
-								<span class="difficulty-icon">😐</span>
-								<span class="difficulty-title">Medium</span>
-								<span class="difficulty-desc">Balanced challenge</span>
-							</div>
-						</a>
-						<a href="/game/vs-ai/hard" data-route class="difficulty-btn-link">
-							<div class="difficulty-btn">
-								<span class="difficulty-icon">😈</span>
-								<span class="difficulty-title">Hard</span>
-								<span class="difficulty-desc">Expert level</span>
-							</div>
-						</a>
-					</div>
-				</div>
-				<div class="back-button-container">
-					<a href="/game" data-route class="btn btn-secondary">← Back to Mode Selection</a>
-				</div>
-			</div>
-		`)
-	} */
-
-/* 	private renderGame(isAI: boolean = false, difficulty: AIDifficulty = AIDifficulty.MEDIUM): void {
-	const modeText = isAI ? `VS AI (${difficulty})` : 'VS Friend'
-	const controlsText = isAI ? 'Right Player: <strong>AI</strong> 🤖' : 'Right Player: <kbd>↑</kbd> / <kbd>↓</kbd>'
-
-	this.updatePageContent(`
-<div class="page">
-	<!-- Barre de contrôle fixe en haut -->
-	<div class="game-control-bar">
-		<div class="control-group">
-			<span class="control-label">🎮 ${modeText}</span>
-		</div>
-		<div class="control-group">
-			<span class="control-label">Left: <kbd>W</kbd>/<kbd>S</kbd></span>
-		</div>
-		<div class="control-group">
-			<span class="control-label">${controlsText}</span>
-		</div>
-		<div class="control-group game-status" id="game-status">
-			<span class="status-message">Press <kbd>SPACE</kbd> to start!</span>
-		</div>
-		<div class="control-group" style="margin-left: auto;">
-			<a href="/game" data-route class="btn btn-secondary" style="padding: 0.4rem 1rem; font-size: 0.85rem;">← Back</a>
-		</div>
-	</div>
-
-	<!-- Container du canvas en plein écran -->
-	<div class="game-canvas-container">
-		<canvas id="pong-canvas"></canvas>
-	</div>
-</div>
-	`)
-	setTimeout(() => this.initPongGame(isAI, difficulty), 0)
-} */
-
-	private renderTournament(): void {
-		if (!this.tournamentManager) {
+		if (!this.tournamentManager)
+		{
 			this.tournamentManager = new TournamentManager({
-				name: 'Pong Championship',
+				name: 'Tournoi des champions',
 				maxPlayers: 8,
 				minPlayers: 2
 			})
@@ -301,103 +235,110 @@ private handleRoute(): void {
 
 		const state = this.tournamentManager.getState()
 
-		this.updatePageContent(`
-			<div class="page tournament-page">
-				<h2>🏆 ${state.name}</h2>
-				${this.renderTournamentContent(state)}
-			</div>
-		`)
+		// Charger le template HTML principal
+		this.updatePageContent(tournamentTemplate)
 
+/* 		// Mettre à jour le titre
+		const titleElement = document.getElementById('tournament-title')
+
+		if (titleElement)
+		{
+			titleElement.textContent = `${state.name}`
+		} */
+
+		// Injecter le contenu selon l'état
+		this.renderTournamentContent(state)
+
+		// Attacher les événements
 		setTimeout(() => this.setupTournamentEvents(), 0)
 	}
 
-	private renderTournamentContent(state: any): string {
-		switch (state.status) {
-			case 'registration':
-				return this.renderRegistration(state)
-			case 'ready':
-				return this.renderReady(state)
-			case 'ongoing':
-				return this.renderOngoing(state)
-			case 'completed':
-				return this.renderCompleted(state)
-			default:
-				return '<p>Unknown tournament state</p>'
+
+	private renderTournamentContent(state: any): void
+	{
+		const contentContainer = document.getElementById('tournament-content')
+		if (!contentContainer)
+		{
+			console.error('Tournament content container not found!')
+			return
 		}
+
+		let html = ''
+
+		switch (state.status)
+		{
+			case 'registration':
+				html = this.renderRegistration(state)
+				break
+			case 'ready':
+				html = this.renderReady(state)
+				break
+			case 'ongoing':
+				html = this.renderOngoing(state)
+				break
+			case 'completed':
+				html = this.renderCompleted(state)
+				break
+			default:
+				html = '<p>Unknown tournament state</p>'
+		}
+
+		contentContainer.innerHTML = html
 	}
 
-	private renderRegistration(state: any): string {
+	private renderRegistration(state: any): string
+	{
 		const canStart = this.tournamentManager?.canStart()
-
-		// Vérifier si c'est une puissance de 2
 		const isPowerOfTwo = (n: number) => n > 0 && (n & (n - 1)) === 0
 		const isValid = isPowerOfTwo(state.players.length)
-		const playerCountClass = isValid ? 'valid-count' : 'invalid-count'
 
-		// Calculer les puissances de 2 valides (max 8)
-		const validCounts = [2, 4, 8]
-		const validCountsText = validCounts.join(', ')
+		// Charger le template HTML
+		let html = tournamentConfigTemplate
 
-		return `
-			<div class="tournament-section">
-				<h3>📝 Player Registration</h3>
-				<p class="player-count ${playerCountClass}">
-					Players: ${state.players.length}/${state.maxPlayers}
-					${isValid ? '✅' : '⚠️'}
-				</p>
-				<p class="valid-counts-hint">
-					Valid player counts: ${validCountsText}
-				</p>
+		// Mettre à jour le compteur de joueurs
+		html = html.replace(
+			'id="player-count-info" class="player-count-text"',
+			`id="player-count-info" class="player-count-text ${isValid ? 'valid-count' : ''}"`
+		)
+		html = html.replace(
+			'<span id="player-count-number">0</span>',
+			`<span id="player-count-number">${state.players.length}</span>`
+		)
+		html = html.replace(
+			'<span id="max-players">8</span>',
+			`<span id="max-players">${state.maxPlayers}</span>`
+		)
 
-				<div class="registration-form">
-					<input type="text" id="player-alias" placeholder="Enter your alias..." maxlength="20" autocomplete="off">
-					<button id="join-tournament" class="btn btn-primary">➕ Add Player</button>
+		// Remplacer la liste des joueurs
+		const playersList = state.players.length === 0
+			? '<p class="empty-state-tournament">Aucun joueur inscrit</p>'
+			: state.players.map((player: any) => `
+				<div class="player-item">
+					<span class="player-alias">
+						${player.isAI ? '🤖' : '👤'} ${player.alias}
+					</span>
+					<button class="btn-remove-player" data-remove-player="${player.id}">✕</button>
 				</div>
+			`).join('')
 
-				<div class="ai-registration">
-					<h4>🤖 Add AI Players</h4>
-					<div class="ai-buttons">
-						<button id="add-ai-easy" class="btn-ai btn-ai-easy" title="Add Easy AI">
-							<span class="ai-icon">😊</span>
-							<span>Easy AI</span>
-						</button>
-						<button id="add-ai-medium" class="btn-ai btn-ai-medium" title="Add Medium AI">
-							<span class="ai-icon">😐</span>
-							<span>Medium AI</span>
-						</button>
-						<button id="add-ai-hard" class="btn-ai btn-ai-hard" title="Add Hard AI">
-							<span class="ai-icon">😈</span>
-							<span>Hard AI</span>
-						</button>
-					</div>
-				</div>
+		html = html.replace(
+			/<div id="players-list-content">[\s\S]*?<\/div>/,
+			`<div id="players-list-content">${playersList}</div>`
+		)
 
-				<div class="players-list">
-					<h4>👥 Registered Players:</h4>
-					${state.players.length === 0 ?
-						'<p class="empty-state">No players yet. Be the first to join!</p>' :
-						state.players.map((player: any) => `
-							<div class="player-item ${player.isAI ? 'player-ai' : 'player-human'}">
-								<span class="player-alias">
-									${player.isAI ? '🤖' : '🎮'} ${player.alias}
-								</span>
-								<button class="btn-small btn-danger" data-remove-player="${player.id}">Remove</button>
-							</div>
-						`).join('')
-					}
-				</div>
-				${canStart?.canStart ? `
-					<div class="tournament-actions">
-						<button id="start-tournament" class="btn btn-success">
-							🚀 Start Tournament (${state.players.length} players)
-						</button>
-					</div>
-				` : `
-					<p class="info-message">${canStart?.reason || 'Cannot start tournament'}</p>
-				`}
-				<button id="reset-tournament" class="btn btn-secondary">🔄 Reset Tournament</button>
-			</div>
-		`
+		// Remplacer le container d'actions (bouton Start ou message)
+		const actionsContent = canStart?.canStart
+			? `<button id="start-tournament" class="btn-start-tournament">
+					Commencer le tournoi
+				</button>`
+			: `<p class="info-message">${canStart?.reason || 'Impossible de démarrer le tournoi'}</p>`
+
+		html = html.replace(
+			'<!-- Sera injecté dynamiquement -->',
+			actionsContent
+		)
+
+		return html
 	}
 
 	private renderReady(state: any): string {
@@ -454,7 +395,7 @@ private handleRoute(): void {
 				</div>
 				${this.renderBracket(state)}
 				<div class="tournament-actions">
-					<button id="new-tournament" class="btn btn-primary">🔄 New Tournament</button>
+					<button id="new-tournament" class="btn white-btn">🔄 New Tournament</button>
 				</div>
 			</div>
 		`
@@ -834,66 +775,84 @@ private handleRoute(): void {
 		document.head.appendChild(style)
 	}
 
-	private setupTournamentEvents(): void {
-		// Bouton pour rejoindre le tournoi
-		const joinBtn = document.getElementById('join-tournament')
-		if (joinBtn) {
-			joinBtn.addEventListener('click', () => {
+	private setupTournamentEvents(): void
+	{
+		// Toggle AI
+		const aiToggle = document.getElementById('ai-toggle') as HTMLInputElement
+		const aiDifficultySelect = document.getElementById('ai-difficulty-select') as HTMLSelectElement
+		const playerAliasInput = document.getElementById('player-alias') as HTMLInputElement
+
+		if (aiToggle && aiDifficultySelect)
+		{
+			aiToggle.addEventListener('change', () => {
+				if (aiToggle.checked) {
+					aiDifficultySelect.disabled = false
+					if (playerAliasInput && !playerAliasInput.value.trim()) {
+						playerAliasInput.value = 'AI Player'
+					}
+				} else {
+					aiDifficultySelect.disabled = true
+					if (playerAliasInput && playerAliasInput.value === 'AI Player') {
+						playerAliasInput.value = ''
+					}
+				}
+			})
+		}
+
+		// Soumettre le formulaire
+		const addPlayerForm = document.getElementById('add-player-form')
+		if (addPlayerForm)
+		{
+			addPlayerForm.addEventListener('submit', (e) => {
+				e.preventDefault()
+
 				const input = document.getElementById('player-alias') as HTMLInputElement
-				if (input && input.value.trim()) {
-					const result = this.tournamentManager?.addPlayer(input.value.trim())
-					if (result?.success) {
+				const isAI = aiToggle?.checked || false
+
+				if (input && input.value.trim())
+				{
+					let result
+
+					if (isAI)
+					{
+						// Ajouter une IA - lire la difficulté depuis le select
+						const difficulty = aiDifficultySelect.value as 'easy' | 'medium' | 'hard'
+						result = this.tournamentManager?.addAI(difficulty)
+					}
+					else
+					{
+						// Ajouter un joueur humain
+						result = this.tournamentManager?.addPlayer(input.value.trim())
+					}
+
+					if (result?.success)
+					{
 						input.value = ''
+						if (aiToggle)
+						{
+							aiToggle.checked = false
+							if (aiDifficultySelect)
+							{
+								aiDifficultySelect.disabled = true
+							}
+						}
 						this.renderTournament()
-					} else {
+					}
+					else
+					{
 						alert(result?.message || 'Failed to add player')
 					}
 				}
 			})
 		}
 
-		// Boutons pour ajouter des IA
-		const addEasyAI = document.getElementById('add-ai-easy')
-		if (addEasyAI) {
-			addEasyAI.addEventListener('click', () => {
-				const result = this.tournamentManager?.addAI('easy')
-				if (result?.success) {
-					this.renderTournament()
-				} else {
-					alert(result?.message || 'Failed to add AI')
-				}
-			})
-		}
-
-		const addMediumAI = document.getElementById('add-ai-medium')
-		if (addMediumAI) {
-			addMediumAI.addEventListener('click', () => {
-				const result = this.tournamentManager?.addAI('medium')
-				if (result?.success) {
-					this.renderTournament()
-				} else {
-					alert(result?.message || 'Failed to add AI')
-				}
-			})
-		}
-
-		const addHardAI = document.getElementById('add-ai-hard')
-		if (addHardAI) {
-			addHardAI.addEventListener('click', () => {
-				const result = this.tournamentManager?.addAI('hard')
-				if (result?.success) {
-					this.renderTournament()
-				} else {
-					alert(result?.message || 'Failed to add AI')
-				}
-			})
-		}
-
 		// Bouton pour démarrer le tournoi
 		const startBtn = document.getElementById('start-tournament')
-		if (startBtn) {
+		if (startBtn)
+		{
 			startBtn.addEventListener('click', () => {
-				if (this.tournamentManager?.startTournament()) {
+				if (this.tournamentManager?.startTournament())
+				{
 					this.renderTournament()
 				}
 			})
@@ -901,9 +860,11 @@ private handleRoute(): void {
 
 		// Bouton pour reset le tournoi
 		const resetBtn = document.getElementById('reset-tournament')
-		if (resetBtn) {
+		if (resetBtn)
+		{
 			resetBtn.addEventListener('click', () => {
-				if (confirm('Reset the tournament? All progress will be lost.')) {
+				if (confirm('Reset the tournament? All progress will be lost.'))
+				{
 					this.tournamentManager?.reset()
 					this.renderTournament()
 				}
@@ -914,7 +875,8 @@ private handleRoute(): void {
 		document.querySelectorAll('[data-remove-player]').forEach(btn => {
 			btn.addEventListener('click', (e) => {
 				const playerId = (e.target as HTMLElement).getAttribute('data-remove-player')
-				if (playerId && this.tournamentManager?.removePlayer(playerId)) {
+				if (playerId && this.tournamentManager?.removePlayer(playerId))
+				{
 					this.renderTournament()
 				}
 			})
@@ -934,7 +896,6 @@ private handleRoute(): void {
 				}
 			})
 		}
-
 
 		// Bouton pour nouveau tournoi
 		const newTournamentBtn = document.getElementById('new-tournament')
