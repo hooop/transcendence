@@ -360,26 +360,26 @@ private handleRoute(): void {
         bracketHtml += `
             <div class="bracket-round round-${round}">
                 <h5 class="round-title">${roundName}</h5>
-                <div class="matches-column">
-                    ${matches.map((match, index) => {
-                        const p1Class = match.winner?.id === match.player1.id ? 'winner' : (match.status === 'completed' ? 'loser' : '')
-                        const p2Class = match.winner?.id === match.player2.id ? 'winner' : (match.status === 'completed' ? 'loser' : '')
+					<div class="matches-column">
+						${matches.map((match, index) => {
+							const p1Class = match.winner?.id === match.player1.id ? 'winner' : (match.status === 'completed' ? 'loser' : '')
+							const p2Class = match.winner?.id === match.player2.id ? 'winner' : (match.status === 'completed' ? 'loser' : '')
 
-						return `
-							<div class="bracket-match-wrapper">
-								<div class="bracket-match ${match.status}">
-									<div class="match-player ${p1Class}">
-										${match.player1.alias} ${match.score.player1} ─┐
+							return `
+								<div class="bracket-match-wrapper">
+									<div class="bracket-match ${match.status}">
+										<div class="match-player ${p1Class}">
+											${match.player1.alias} ${match.score.player1} ─┐
+										</div>
+										<div class="match-player ${p2Class}">
+											${match.player2.alias} ${match.score.player2} ─┘
+										</div>
 									</div>
-									<div class="match-player ${p2Class}">
-										${match.player2.alias} ${match.score.player2} ─┘
-									</div>
+
 								</div>
-								${round < rounds ? '<div class="bracket-connector"></div>' : ''}
-							</div>
-						`
-                    }).join('')}
-                </div>
+							`
+						}).join('')}
+					</div>
             </div>
         `
     }
