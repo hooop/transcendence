@@ -138,10 +138,9 @@ export class TournamentManager {
         // Vérifier que le nombre de joueurs est une puissance de 2 (2, 4, 8, 16, etc.)
         if (!this.isPowerOfTwo(this.state.players.length)) {
             const nextValid = this.getNextPowerOfTwo(this.state.players.length)
-            const prevValid = nextValid / 2
             return {
                 canStart: false,
-                reason: `Need 2, 4, 8, 16... players. Add ${prevValid - this.state.players.length} or ${nextValid - this.state.players.length} more players (currently ${this.state.players.length})`
+                reason: `${nextValid - this.state.players.length} more players (currently ${this.state.players.length})`
             }
         }
 

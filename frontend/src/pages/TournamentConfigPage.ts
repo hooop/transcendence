@@ -30,13 +30,20 @@ export class TournamentConfigPage
 		const canStart = tournamentManager.canStart()
 
 		// 1. Mettre à jour le compteur de joueurs
-		const playerCountNumber = document.getElementById('player-count-number')
-		const playerCountInfo = document.getElementById('player-count-info')
+const playerCountNumber = document.getElementById('player-count-number')
+const playerCountLabel = document.getElementById('player-label')
+const playerCountInfo = document.getElementById('player-count-info')
 
-		if (playerCountNumber)
-		{
-			playerCountNumber.textContent = state.players.length.toString()
-		}
+if (playerCountNumber)
+{
+	playerCountNumber.textContent = state.players.length.toString()
+}
+
+// Ajouter le "s" si plus d’un joueur
+if (playerCountLabel)
+{
+	playerCountLabel.textContent = state.players.length > 1 ? 'joueurs' : 'joueur'
+}
 
 		// Ajouter la classe valid-count si le nombre est valide
 		const isPowerOfTwo = (n: number) => n > 0 && (n & (n - 1)) === 0
@@ -68,24 +75,15 @@ export class TournamentConfigPage
 
 		}
 
-		// 3. Mettre à jour les actions (bouton Start ou message d'erreur)
+		// 3. Mettre à jour les actions (bouton toujours présent, disabled si conditions non remplies)
 		const actionsContainer = document.getElementById('tournament-actions-container')
 		if (actionsContainer)
 		{
-			if (canStart.canStart)
-			{
-				actionsContainer.innerHTML = `
-					<button id="start-tournament" class="btn-start-tournament">
-						Commencer le tournoi
-					</button>
-				`
-			}
-			else
-			{
-				actionsContainer.innerHTML = `
-					<p class="info-message">${canStart.reason || 'Impossible de démarrer le tournoi'}</p>
-				`
-			}
+			actionsContainer.innerHTML = `
+				<button id="start-tournament" class="btn-start-tournament" ${!canStart.canStart ? 'disabled' : ''}>
+					Commencer le tournoi
+				</button>
+			`
 		}
 	}
 

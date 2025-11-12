@@ -352,6 +352,33 @@
   overflow: hidden;
 }
 
+/* Les deux moitiés prennent chacune 50% de l’espace */
+.login-container > .login-form {
+  flex: 1; /* équivaut à width: 50%; */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Optionnel : si tu veux un fond blanc et texte noir sur la partie gauche */
+.login-container > .login-form:first-child {
+	background-image: url("../img/gradient.png");
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+	position: relative; /* nécessaire si on veut positionner son contenu interne */
+	color: black;
+}
+
+/* Optionnel : pour différencier la partie droite */
+.login-container > .login-form:last-child {
+  background: var(--bg-form);
+  color: white;
+
+
+}
+
+
 .login-image {
   flex: 1;
   min-width: 0;
@@ -364,25 +391,24 @@
   height: 100%;
   object-fit: cover;
 }
-
 .login-form {
   flex: 1;
   min-width: 0;
   display: flex;
-  align-items: top;
+  align-items: flex-start; /* "top" n'est pas valide, utilise flex-start */
   justify-content: center;
-  padding: 40px 40px 0px 40px;
   padding: 32px 20px;
-  background: var(--bg-form);
   font-family: 'Inter', Helvetica, sans-serif;
   font-size: 14px;
-  color:  var(--text-secondary);
+  color: var(--text-secondary);
+
 }
+
 
 .login-form-content {
   width: 100%;
   max-width: 300px;
-  background-color: var(--bg-form);
+	height: 100%;
 }
 
 .login-form-content h2 {
@@ -1703,9 +1729,9 @@ body.fullscreen-game .app-footer {
     display: flex;
     justify-content: space-between;
     align-items: center;
-	color: var(--text-primary);
+	color: black;
 	font-size: 14px;
-	padding: 0;
+	padding: 5px;
 
 }
 
@@ -1718,7 +1744,7 @@ body.fullscreen-game .app-footer {
 
 .player-alias {
 	flex: 1;
-	color: var(--text-primary);
+	color: black;
     font-size: 14px;
 }
 
@@ -1820,11 +1846,11 @@ body.fullscreen-game .app-footer {
 	height: 50px;
 	padding: 0px;
 	margin-top: 24px;
-	background: var(--text-primary);
-	color: var(--color-black);
+	background: var(--bg-input);
+	color: white;
 	border-radius: 6px;
 	font-size: 14px;
-	font-weight: 600;
+	font-weight: 500;
 	text-decoration: none;
 	cursor: pointer;
 	transition: opacity 0.3s;
@@ -1832,6 +1858,13 @@ body.fullscreen-game .app-footer {
 
 .btn-start-tournament:hover {
 	opacity: 0.9;
+}
+
+.btn-start-tournament:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: var(--bg-input) !important;
+    color: var(--text-secondary) !important;
 }
 
 /* Bouton Reset (style OAuth mais inversé) */
@@ -1848,27 +1881,51 @@ body.fullscreen-game .app-footer {
 	color: var(--text-primary) !important;
 }
 
-/* Liste des joueurs congig tournoi */
 .tournament-players-list {
-	margin-top: 20px;
-
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%; /* ou la hauteur que tu veux */
 }
 
-.tournament-players-list p{
-	margin: 0;
-
+.tournament-players-list .players-top {
+  flex: 1;
+  display: flex;           /* rend le conteneur flex */
+  flex-direction: column;  /* empile le contenu verticalement */
+  justify-content: flex-start; /* aligne tout en haut */
+  margin: 0;
+  padding: 0;
 }
+
+.players-top h2 {
+	color: black;
+}
+
+
+#reset-tournament {
+  align-self: left;
+  margin-bottom: 10px;
+  color: black;
+  text-decoration: none;
+    font-family: 'Inter', Helvetica, sans-serif;
+	font-size: 14px;
+  cursor: pointer;
+}
+
+
+
 
 .player-count-text {
-	font-family: 'Inter', sans-serif;
-	color: var(--text-secondary);
-	font-size: 0.875rem;
-	margin: 0;
-	text-align: left;
+  color: black;
+  font-family: akira;
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 0;
+  padding: 0;
 }
 
 .player-count-text.valid-count {
-	color: var(--text-primary);
+	color: black;
 }
 
 #players-list-content {
@@ -1876,6 +1933,7 @@ body.fullscreen-game .app-footer {
 	flex-direction: column;
 	gap: 0px;
 	text-align: left;
+	width: 100%;
 }
 
 
@@ -1883,10 +1941,9 @@ body.fullscreen-game .app-footer {
 .btn-remove-player {
 	background: none;
 	border: none;
-	color: var(--text-secondary);
+	color: black;
 	cursor: pointer;
 	font-size: 18px;
-	padding: 0;
 	width: 24px;
 	height: 24px;
 	display: flex;
@@ -1896,7 +1953,7 @@ body.fullscreen-game .app-footer {
 }
 
 .btn-remove-player:hover {
-	color: #ff4444;
+	color: black;
 }
 
 .empty-state-tournament {

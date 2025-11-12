@@ -1,8 +1,22 @@
 <div class="login-container">
 
 	<!-- Côté gauche : Image -->
-	<div class="login-image">
-		<img src="../img/tournament_5.png" alt="Tournament" />
+	<div class="login-form">
+		<!-- <img src="../img/tournament_5.png" alt="Tournament" /> -->
+		 <!-- Liste des joueurs -->
+		<div class="login-form-content">
+			<div class="tournament-players-list">
+				<div class="players-top">
+					<h2 id="player-count-info">
+						<span id="player-count-number"></span> <span id="player-label"></span>
+					</h2>
+					<p class="subtitle">Jouez à 2, 4 ou 8 joueurs max</p>
+					<div id="players-list-content"></div>
+				</div>
+
+				<a href="#" id="reset-tournament">Réinitialiser le tournoi</a>
+			</div>
+		</div>
 	</div>
 
 	<!-- Côté droit : Formulaire -->
@@ -11,7 +25,7 @@
 		<div class="login-form-content">
 
 			<h2>Configuration</h2>
-			<p class="subtitle">Défiez vos amis, entre 2 et 8 joueurs</p>
+			<p class="subtitle">Défiez vos amis</p>
 
 			<form id="add-player-form">
 
@@ -59,19 +73,7 @@
 
 			</form>
 
-			<!-- Liste des joueurs -->
-			<div class="tournament-players-list">
 
-				<p id="player-count-info" class="player-count-text">
-					<span id="player-count-number"></span> joueur(s)
-				</p>
-
-				<div id="players-list-content">
-					<!-- Sera injecté dynamiquement -->
-				</div>
-
-
-			</div>
 
 			<!-- Bouton Commencer -->
 			<div id="tournament-actions-container">
@@ -79,8 +81,8 @@
 			</div>
 
 			<!-- Bouton Réinitialiser -->
-			 <p id="reset-tournament" class="signup-link">Réinitialiser le tournoi</p>
-
+			<!--  <p id="reset-tournament" class="signup-link">Réinitialiser le tournoi</p>
+ -->
 			<!-- <button id="reset-tournament" class="btn-oauth btn-reset">Réinitialiser le tournoi</button> -->
 
 
