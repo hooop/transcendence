@@ -10,30 +10,39 @@
 
 		<div class="login-form-content">
 
-			<h2>Configurez le tournoi</h2>
+			<h2>Configuration</h2>
 			<p class="subtitle">Défiez vos amis, entre 2 et 8 joueurs</p>
 
 			<form id="add-player-form">
 
 				<!-- Joueur IA Toggle + Dropdown -->
 				<div class="form-group">
+
 					<label>Joueur IA</label>
 					<div class="tournament-ai-row">
-						<label class="toggle-switch">
-							<input type="checkbox" id="ai-toggle">
-							<span class="toggle-slider"></span>
-						</label>
-						<select id="ai-difficulty-select" class="dropdown" disabled>
-							<option value="easy">Facile</option>
-							<option value="medium" selected>Moyen</option>
-							<option value="hard">Difficile</option>
-						</select>
+
+						<div class="control-group">
+							<label class="toggle-switch">
+								<input type="checkbox" id="ai-toggle">
+								<span class="toggle-slider"></span>
+							</label>
+						</div>
+
+						<div class="control-group">
+							<select id="ai-difficulty-select" class="dropdown" disabled>
+								<option value="" disabled selected>Difficulté</option>
+								<option value="easy">Facile</option>
+								<option value="medium">Moyen</option>
+								<option value="hard">Difficile</option>
+							</select>
+						</div>
+
 					</div>
 				</div>
 
 				<!-- Pseudo -->
 				<div class="form-group">
-					<label for="player-alias">Votre pseudo</label>
+					<label for="player-alias">Votre pseudo *</label>
 					<input
 						type="text"
 						id="player-alias"
@@ -50,6 +59,20 @@
 
 			</form>
 
+			<!-- Liste des joueurs -->
+			<div class="tournament-players-list">
+
+				<p id="player-count-info" class="player-count-text">
+					<span id="player-count-number"></span> joueur(s)
+				</p>
+
+				<div id="players-list-content">
+					<!-- Sera injecté dynamiquement -->
+				</div>
+
+
+			</div>
+
 			<!-- Bouton Commencer -->
 			<div id="tournament-actions-container">
 				<!-- Sera injecté dynamiquement -->
@@ -57,17 +80,10 @@
 
 			<!-- Bouton Réinitialiser -->
 			 <p id="reset-tournament" class="signup-link">Réinitialiser le tournoi</p>
+
 			<!-- <button id="reset-tournament" class="btn-oauth btn-reset">Réinitialiser le tournoi</button> -->
 
-			<!-- Liste des joueurs -->
-			<div class="tournament-players-list">
-				<p id="player-count-info" class="player-count-text">
-					<span id="player-count-number">0</span>/<span id="max-players">8</span> joueurs
-				</p>
-				<div id="players-list-content">
-					<!-- Sera injecté dynamiquement -->
-				</div>
-			</div>
+
 
 		</div>
 	</div>

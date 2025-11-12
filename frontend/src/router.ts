@@ -4,11 +4,11 @@ import { AIDifficulty }			from './game/AIPlayer'
 import { AuthPages }			from './pages/AuthPages'
 import { DashboardPage }		from './pages/DashboardPage'
 import { ApiService }			from './services/api'
+import { TournamentConfigPage } from './pages/TournamentConfigPage'
 
 import gameModeTemplate			from './templates/game.html?raw';
 import homeTemplate				from './templates/home.html?raw';
 import tournamentTemplate		from './templates/tournament.html?raw';
-import tournamentConfigTemplate from './templates/tournament-config.html?raw';
 
 
 export class Router
@@ -238,14 +238,6 @@ private handleRoute(): void {
 		// Charger le template HTML principal
 		this.updatePageContent(tournamentTemplate)
 
-/* 		// Mettre à jour le titre
-		const titleElement = document.getElementById('tournament-title')
-
-		if (titleElement)
-		{
-			titleElement.textContent = `${state.name}`
-		} */
-
 		// Injecter le contenu selon l'état
 		this.renderTournamentContent(state)
 
@@ -268,7 +260,7 @@ private handleRoute(): void {
 		switch (state.status)
 		{
 			case 'registration':
-				html = this.renderRegistration(state)
+				html = this.renderRegistration()
 				break
 			case 'ready':
 				html = this.renderReady(state)
@@ -286,59 +278,17 @@ private handleRoute(): void {
 		contentContainer.innerHTML = html
 	}
 
-	private renderRegistration(state: any): string
+	private renderRegistration(): string
 	{
-		const canStart = this.tournamentManager?.canStart()
-		const isPowerOfTwo = (n: number) => n > 0 && (n & (n - 1)) === 0
-		const isValid = isPowerOfTwo(state.players.length)
+		// Charger le template de configuration
+		const html = TournamentConfigPage.render()
 
-		// Charger le template HTML
-		let html = tournamentConfigTemplate
+		// Insérer dans le DOM temporairement pour manipulation
+		const tempDiv = document.createElement('div')
+		tempDiv.innerHTML = html
 
-		// Mettre à jour le compteur de joueurs
-		html = html.replace(
-			'id="player-count-info" class="player-count-text"',
-			`id="player-count-info" class="player-count-text ${isValid ? 'valid-count' : ''}"`
-		)
-		html = html.replace(
-			'<span id="player-count-number">0</span>',
-			`<span id="player-count-number">${state.players.length}</span>`
-		)
-		html = html.replace(
-			'<span id="max-players">8</span>',
-			`<span id="max-players">${state.maxPlayers}</span>`
-		)
-
-		// Remplacer la liste des joueurs
-		const playersList = state.players.length === 0
-			? '<p class="empty-state-tournament">Aucun joueur inscrit</p>'
-			: state.players.map((player: any) => `
-				<div class="player-item">
-					<span class="player-alias">
-						${player.isAI ? '🤖' : '👤'} ${player.alias}
-					</span>
-					<button class="btn-remove-player" data-remove-player="${player.id}">✕</button>
-				</div>
-			`).join('')
-
-		html = html.replace(
-			/<div id="players-list-content">[\s\S]*?<\/div>/,
-			`<div id="players-list-content">${playersList}</div>`
-		)
-
-		// Remplacer le container d'actions (bouton Start ou message)
-		const actionsContent = canStart?.canStart
-			? `<button id="start-tournament" class="btn-start-tournament">
-					Commencer le tournoi
-				</button>`
-			: `<p class="info-message">${canStart?.reason || 'Impossible de démarrer le tournoi'}</p>`
-
-		html = html.replace(
-			'<!-- Sera injecté dynamiquement -->',
-			actionsContent
-		)
-
-		return html
+		// Retourner le HTML
+		return tempDiv.innerHTML
 	}
 
 	private renderReady(state: any): string {
@@ -665,15 +615,7 @@ private handleRoute(): void {
 			}
 
 			/* Players List */
-			.player-item {
-				display: flex;
-				justify-content: space-between;
-				align-items: center;
-				padding: 0.75rem;
-				margin: 0.5rem 0;
-				border-radius: 6px;
-				background: #2a2a2a;
-			}
+
 			.player-ai {
 				border-left: 3px solid #00bcd4;
 			}
@@ -776,136 +718,45 @@ private handleRoute(): void {
 	}
 
 	private setupTournamentEvents(): void
-	{
-		// Toggle AI
-		const aiToggle = document.getElementById('ai-toggle') as HTMLInputElement
-		const aiDifficultySelect = document.getElementById('ai-difficulty-select') as HTMLSelectElement
-		const playerAliasInput = document.getElementById('player-alias') as HTMLInputElement
+{
+    const state = this.tournamentManager?.getState()
 
-		if (aiToggle && aiDifficultySelect)
-		{
-			aiToggle.addEventListener('change', () => {
-				if (aiToggle.checked) {
-					aiDifficultySelect.disabled = false
-					if (playerAliasInput && !playerAliasInput.value.trim()) {
-						playerAliasInput.value = 'AI Player'
-					}
-				} else {
-					aiDifficultySelect.disabled = true
-					if (playerAliasInput && playerAliasInput.value === 'AI Player') {
-						playerAliasInput.value = ''
-					}
-				}
-			})
-		}
+    // Si on est en registration, utiliser la nouvelle page
+    if (state?.status === 'registration') {
+        TournamentConfigPage.update(this.tournamentManager!)
+        TournamentConfigPage.setupEventListeners(
+            this.tournamentManager!,
+            () => this.renderTournament()
+        )
+        return
+    }
 
-		// Soumettre le formulaire
-		const addPlayerForm = document.getElementById('add-player-form')
-		if (addPlayerForm)
-		{
-			addPlayerForm.addEventListener('submit', (e) => {
-				e.preventDefault()
+    // Pour les autres états (ready, ongoing, completed), garder le code existant
 
-				const input = document.getElementById('player-alias') as HTMLInputElement
-				const isAI = aiToggle?.checked || false
+    // Bouton pour démarrer un match
+    const startMatchBtn = document.getElementById('start-match')
+    if (startMatchBtn) {
+        startMatchBtn.addEventListener('click', (e) => {
+            const matchId = (e.target as HTMLElement).getAttribute('data-match-id')
+            if (matchId) {
+                const match = this.tournamentManager?.startMatch(matchId)
+                if (match) {
+                    this.renderTournament()
+                    setTimeout(() => this.initTournamentGame(match), 0)
+                }
+            }
+        })
+    }
 
-				if (input && input.value.trim())
-				{
-					let result
-
-					if (isAI)
-					{
-						// Ajouter une IA - lire la difficulté depuis le select
-						const difficulty = aiDifficultySelect.value as 'easy' | 'medium' | 'hard'
-						result = this.tournamentManager?.addAI(difficulty)
-					}
-					else
-					{
-						// Ajouter un joueur humain
-						result = this.tournamentManager?.addPlayer(input.value.trim())
-					}
-
-					if (result?.success)
-					{
-						input.value = ''
-						if (aiToggle)
-						{
-							aiToggle.checked = false
-							if (aiDifficultySelect)
-							{
-								aiDifficultySelect.disabled = true
-							}
-						}
-						this.renderTournament()
-					}
-					else
-					{
-						alert(result?.message || 'Failed to add player')
-					}
-				}
-			})
-		}
-
-		// Bouton pour démarrer le tournoi
-		const startBtn = document.getElementById('start-tournament')
-		if (startBtn)
-		{
-			startBtn.addEventListener('click', () => {
-				if (this.tournamentManager?.startTournament())
-				{
-					this.renderTournament()
-				}
-			})
-		}
-
-		// Bouton pour reset le tournoi
-		const resetBtn = document.getElementById('reset-tournament')
-		if (resetBtn)
-		{
-			resetBtn.addEventListener('click', () => {
-				if (confirm('Reset the tournament? All progress will be lost.'))
-				{
-					this.tournamentManager?.reset()
-					this.renderTournament()
-				}
-			})
-		}
-
-		// Boutons pour supprimer des joueurs
-		document.querySelectorAll('[data-remove-player]').forEach(btn => {
-			btn.addEventListener('click', (e) => {
-				const playerId = (e.target as HTMLElement).getAttribute('data-remove-player')
-				if (playerId && this.tournamentManager?.removePlayer(playerId))
-				{
-					this.renderTournament()
-				}
-			})
-		})
-
-		// Bouton pour démarrer un match
-		const startMatchBtn = document.getElementById('start-match')
-		if (startMatchBtn) {
-			startMatchBtn.addEventListener('click', (e) => {
-				const matchId = (e.target as HTMLElement).getAttribute('data-match-id')
-				if (matchId) {
-					const match = this.tournamentManager?.startMatch(matchId)
-					if (match) {
-						this.renderTournament()
-						setTimeout(() => this.initTournamentGame(match), 0)
-					}
-				}
-			})
-		}
-
-		// Bouton pour nouveau tournoi
-		const newTournamentBtn = document.getElementById('new-tournament')
-		if (newTournamentBtn) {
-			newTournamentBtn.addEventListener('click', () => {
-				this.tournamentManager?.reset()
-				this.renderTournament()
-			})
-		}
-	}
+    // Bouton pour nouveau tournoi
+    const newTournamentBtn = document.getElementById('new-tournament')
+    if (newTournamentBtn) {
+        newTournamentBtn.addEventListener('click', () => {
+            this.tournamentManager?.reset()
+            this.renderTournament()
+        })
+    }
+}
 
 	private initTournamentGame(match: any): void {
 		const canvas = document.getElementById('tournament-canvas') as HTMLCanvasElement

@@ -4,6 +4,8 @@ import { App } from './App.ts'
 import { ChatService } from './services/ChatService'
 import { ChatButton } from './components/ChatButton'
 
+import '../css/styles.scss'
+
 class TranscendenceApp {
     private app: App
     private router: Router

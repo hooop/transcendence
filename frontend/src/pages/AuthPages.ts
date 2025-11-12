@@ -1,177 +1,22 @@
 import { ApiService } from '../services/api'
 
-export class AuthPages {
+import loginTemplate from '../templates/login.html?raw'
+import registerTemplate from '../templates/register.html?raw'
 
-    // Page de connexion
-    static renderLogin(): string {
-        return `
-<div class="login-container">
+export class AuthPages
+{
 
-	<!-- Côté gauche : Image -->
+	// Injection html page login
+	static renderLogin(): string
+	{
+		return loginTemplate;
+	}
 
-	<div class="login-image">
-		<img src="../img/login_2.png" alt="Connexion" />
-	</div>
-
-	<!-- Côté droit : Formulaire -->
-
-	<div class="login-form">
-
-		<div class="login-form-content">
-
-			<h2>Connexion</h2>
-			<p class="subtitle">Connectez-vous a votre compte</p>
-
-			<form id="login-form">
-
-			<div class="form-group">
-					<label for="username">Nom d'utilisateur ou email</label>
-					<input
-						type="text"
-						id="username"
-						name="username"
-						required
-						placeholder="Nom d'utilisateur ou email"
-						autocomplete="username"
-					/>
-			</div>
-
-			<div class="form-group">
-				<label for="password">Mot de passe</label>
-				<input
-					type="password"
-					id="password"
-					name="password"
-					required
-					placeholder="Mot de passe"
-					autocomplete="current-password"
-				/>
-			</div>
-
-			<div id="login-error" class="error-message" style="display: none;"></div>
-
-			<button type="submit" class="btn-login">Se connecter</button>
-
-			</form>
-
-			<div class="divider">
-				<span>ou</span>
-			</div>
-
-			<a href="http://localhost:3000/api/auth/42" class="btn-oauth">
-
-				Se connecter avec
-				<span class="oauth-icon">
-					<img src="../img/42_Logo.svg" alt="42" width="30" height="30" />
-				</span>
-			</a>
-
-			<p class="signup-link">
-				Pas encore de compte ?
-				<a href="/register" data-route>Creer un compte</a>
-			</p>
-		</div>
-	</div>
-</div>
-        `;
-    }
-
-    // Page d'inscription
-    static renderRegister(): string {
-        return `
- <div class="login-container">
-
-	<!-- Côté gauche : Image -->
-
-	<div class="login-image">
-		<img src="../img/inscription.png" alt="Inscription" />
-	</div>
-
-	<!-- Côté droit : Formulaire -->
-
-	<div class="login-form">
-
-		<div class="login-form-content">
-
-			<h2>Inscription</h2>
-			<p class="subtitle">Créez un compte</p>
-
-			<form id="register-form">
-
-			<div class="form-group">
-				<label for="username">Nom d'utilisateur *</label>
-				<input
-					type="text"
-					id="username"
-					name="username"
-					required
-					placeholder="Choisir un nom d'utilisateur"
-					autocomplete="username"
-					minlength="3"
-				/>
-			</div>
-
-			<div class="form-group">
-				<label for="email">Email *</label>
-				<input
-					type="email"
-					id="email"
-					name="email"
-					required
-					placeholder="your.email@example.com"
-					autocomplete="email"
-				/>
-			</div>
-
-			<div class="form-group">
-				<label for="display_name">Pseudo</label>
-				<input
-					type="text"
-					id="display_name"
-					name="display_name"
-					placeholder="Choisir un pseudo (facultatif)"
-				/>
-			</div>
-
-			<div class="form-group">
-				<label for="password">Mot de passe *</label>
-				<input
-					type="password"
-					id="password"
-					name="password"
-					required
-					placeholder="Minimum 8 caractères"
-					autocomplete="new-password"
-					minlength="8"
-				/>
-			</div>
-
-			<div id="register-error" class="error-message" style="display: none;"></div>
-
-			<button type="submit" class="btn-login">S'inscrire</button>
-
-			</form>
-
-			<div class="divider">
-				<span>ou</span>
-			</div>
-
-			<a href="http://localhost:3000/api/auth/42" class="btn-oauth">
-				Se connecter avec
-				<span class="oauth-icon">
-					<img src="../img/42_Logo.svg" alt="42" width="30" height="30" />
-				</span>
-			</a>
-
-			<p class="signup-link">
-				Déjà un compte ?
-				<a href="/login" data-route>Connectez-vous</a>
-			</p>
-		</div>
-	</div>
-</div>
-        `;
-    }
+	// Injection html page d'inscription
+	static renderRegister(): string
+	{
+		return registerTemplate;
+	}
 
     // Page de callback OAuth42
     static renderOAuthCallback(): string {
@@ -218,12 +63,46 @@ export class AuthPages {
         `;
     }
 
-    // Gérer la soumission du formulaire de connexion
-    static setupLoginForm(): void {
-        const form = document.getElementById('login-form') as HTMLFormElement;
-        const errorDiv = document.getElementById('login-error') as HTMLDivElement;
+	// Gérer la soumission du formulaire de connexion
+	static setupLoginForm(): void
+	{
+		const form = document.getElementById('login-form') as HTMLFormElement;
+		const errorDiv = document.getElementById('login-error') as HTMLDivElement;
 
-        if (form) {
+		// Toggle password visibility
+		const passwordInput = document.getElementById('password') as HTMLInputElement;
+		const togglePasswordBtn = document.querySelector('.toggle-password') as HTMLButtonElement;
+
+		if (togglePasswordBtn && passwordInput)
+		{
+			togglePasswordBtn.addEventListener('click', () => {
+				const isPassword = passwordInput.type === 'password';
+				passwordInput.type = isPassword ? 'text' : 'password';
+
+				// Changer l'icône SVG
+				const eyeIcon = togglePasswordBtn.querySelector('.eye-icon') as SVGElement;
+				if (isPassword)
+				{
+					// Œil avec barre (masqué)
+					eyeIcon.innerHTML = `
+						<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+						<circle cx="12" cy="12" r="3"/>
+						<line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2"/>
+					`;
+				}
+				else
+				{
+					// Œil normal (visible)
+					eyeIcon.innerHTML = `
+						<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+						<circle cx="12" cy="12" r="3"/>
+					`;
+				}
+			});
+		}
+
+        if (form)
+		{
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
 
@@ -239,12 +118,15 @@ export class AuthPages {
                 submitBtn.disabled = true;
                 submitBtn.textContent = 'Signing in...';
 
-                try {
+                try
+				{
                     await ApiService.login(username, password);
 
                     // Rediriger vers le dashboard
                     window.location.href = '/dashboard';
-                } catch (error: any) {
+                }
+				catch (error: any)
+				{
                     errorDiv.textContent = error.message || 'Login failed';
                     errorDiv.style.display = 'block';
 

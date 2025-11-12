@@ -1,0 +1,99 @@
+<div class="login-container">
+
+	<!-- Côté gauche : Image -->
+
+	<div class="login-image">
+		<img src="../img/inscription.png" alt="Inscription" />
+	</div>
+
+	<!-- Côté droit : Formulaire -->
+
+	<div class="login-form">
+
+		<div class="login-form-content">
+
+			<h2>Inscription</h2>
+			<p class="subtitle">Créez un compte</p>
+
+			<form id="register-form">
+
+			<div class="form-group">
+				<label for="username">Nom d'utilisateur *</label>
+				<input
+					type="text"
+					id="username"
+					name="username"
+					required
+					placeholder="Choisir un nom d'utilisateur"
+					autocomplete="username"
+					minlength="3"
+				/>
+			</div>
+
+			<div class="form-group">
+				<label for="email">Email *</label>
+				<input
+					type="email"
+					id="email"
+					name="email"
+					required
+					placeholder="your.email@example.com"
+					autocomplete="email"
+				/>
+			</div>
+
+			<div class="form-group">
+				<label for="display_name">Pseudo</label>
+				<input
+					type="text"
+					id="display_name"
+					name="display_name"
+					placeholder="Choisir un pseudo (facultatif)"
+				/>
+			</div>
+
+			<div class="form-group">
+				<label for="password">Mot de passe *</label>
+				<div class="password-input-wrapper">
+					<input
+						type="password"
+						id="password"
+						name="password"
+						required
+						placeholder="Minimum 8 caractères"
+						autocomplete="new-password"
+						minlength="8"
+					/>
+					<button type="button" class="toggle-password" aria-label="Afficher le mot de passe">
+							<svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+								<circle cx="12" cy="12" r="3"/>
+							</svg>
+					</button>
+				</div>
+			</div>
+
+			<div id="register-error" class="error-message" style="display: none;"></div>
+
+			<button type="submit" class="btn-login">S'inscrire</button>
+
+			</form>
+
+			<div class="divider">
+				<span>ou</span>
+			</div>
+
+				<a href="http://localhost:3000/api/auth/42" class="btn-oauth">
+					<span class="oauth-text">Se connecter avec</span>
+					<span class="oauth-icon">
+						<img src="../img/42_Logo.svg" alt="42" width="30" height="30" />
+					</span>
+				</a>
+
+			<p class="signup-link">
+				Déjà un compte ?
+				<a href="/login" data-route>Connectez-vous</a>
+			</p>
+		</div>
+	</div>
+</div>

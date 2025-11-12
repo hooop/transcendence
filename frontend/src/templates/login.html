@@ -1,0 +1,75 @@
+<div class="login-container">
+
+	<!-- Côté gauche : Image -->
+
+	<div class="login-image">
+		<img src="../img/login_2.png" alt="Connexion" />
+	</div>
+
+	<!-- Côté droit : Formulaire -->
+
+	<div class="login-form">
+
+		<div class="login-form-content">
+
+			<h2>Connexion</h2>
+			<p class="subtitle">Connectez-vous a votre compte</p>
+
+			<form id="login-form">
+
+				<div class="form-group">
+						<label for="username">Nom d'utilisateur ou email</label>
+						<input
+							type="text"
+							id="username"
+							name="username"
+							required
+							placeholder="Nom d'utilisateur ou email"
+							autocomplete="username"
+						/>
+				</div>
+
+				<div class="form-group">
+					<label for="password">Mot de passe</label>
+					<div class="password-input-wrapper">
+						<input
+							type="password"
+							id="password"
+							name="password"
+							required
+							placeholder="Mot de passe"
+							autocomplete="current-password"
+						/>
+						<button type="button" class="toggle-password" aria-label="Afficher le mot de passe">
+							<svg class="eye-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+								<circle cx="12" cy="12" r="3"/>
+							</svg>
+						</button>
+					</div>
+				</div>
+
+			</form>
+
+			<div id="login-error" class="error-message" style="display: none;"></div>
+
+			<button type="submit" class="btn-login">Se connecter</button>
+
+			<div class="divider">
+				<span>ou</span>
+			</div>
+
+				<a href="http://localhost:3000/api/auth/42" class="btn-oauth">
+					<span class="oauth-text">Se connecter avec</span>
+					<span class="oauth-icon">
+						<img src="../img/42_Logo.svg" alt="42" width="30" height="30" />
+					</span>
+				</a>
+
+			<p class="signup-link">
+				Pas encore de compte ?
+				<a href="/register" data-route>Creer un compte</a>
+			</p>
+		</div>
+	</div>
+</div>

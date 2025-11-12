@@ -1,5 +1,17 @@
+/*
+* Gère la logique pure d'un tournoi :
+
+* ajouter/retirer un joueur
+* Savoir si on peut démarrer le tournoi (règles : 2, 4, 8 joueurs)
+* Comment générer les matchs
+* Qui joue contre qui
+* Qui a gagné
+* L'état actuel du tournoi (registration, ready, ongoing, completed)
+*/
+
 import { TournamentState, TournamentConfig, Player, Match } from './types'
 import { PongGame } from '../game/PongGame'
+
 
 export class TournamentManager {
     private state: TournamentState
@@ -119,7 +131,7 @@ export class TournamentManager {
         if (this.state.players.length < this.config.minPlayers) {
             return {
                 canStart: false,
-                reason: `Need at least ${this.config.minPlayers} players (currently ${this.state.players.length})`
+                reason: `Au moins ${this.config.minPlayers} joueurs (currently ${this.state.players.length})`
             }
         }
 
