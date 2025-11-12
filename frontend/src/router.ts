@@ -9,6 +9,7 @@ import { TournamentConfigPage } from './pages/TournamentConfigPage'
 import gameModeTemplate			from './templates/game.html?raw';
 import homeTemplate				from './templates/home.html?raw';
 import tournamentTemplate		from './templates/tournament.html?raw';
+import tournamentReadyTemplate from './templates/tournament-ready.html?raw';
 
 
 export class Router
@@ -257,7 +258,7 @@ private handleRoute(): void {
 
 		let html = ''
 
-		switch (state.status)
+		switch (state.status) // REMETTRE STATE.STATUS EN MINUSUCULE COMME PARAMETRE
 		{
 			case 'registration':
 				html = this.renderRegistration()
@@ -291,27 +292,20 @@ private handleRoute(): void {
 		return tempDiv.innerHTML
 	}
 
-	private renderReady(state: any): string {
+	private renderReady(state: any): string
+	{
 		const nextMatch = this.tournamentManager?.getNextMatch()
 		if (!nextMatch) return '<p>No matches available</p>'
 
-		return `
-			<div class="tournament-section">
-				<h3>⚡ Ready to Play</h3>
-				<div class="next-match">
-					<h4>🏓 Next Match:</h4>
-					<div class="match-card">
-						<div class="player">${nextMatch.player1.alias}</div>
-						<div class="vs">VS</div>
-						<div class="player">${nextMatch.player2.alias}</div>
-					</div>
-					<button id="start-match" data-match-id="${nextMatch.id}" class="btn btn-primary">
-						🎮 Start Match
-					</button>
-				</div>
-				${this.renderBracket(state)}
-			</div>
-		`
+		let html = tournamentReadyTemplate
+
+		// Remplacer les placeholders
+		html = html.replace('{{PLAYER1_ALIAS}}', nextMatch.player1.alias)
+		html = html.replace('{{PLAYER2_ALIAS}}', nextMatch.player2.alias)
+		html = html.replace('{{MATCH_ID}}', nextMatch.id)
+		html = html.replace('{{BRACKET_CONTENT}}', this.renderBracket(state))
+
+		return html
 	}
 
 	private renderOngoing(state: any): string {
@@ -338,10 +332,10 @@ private handleRoute(): void {
 	private renderCompleted(state: any): string {
 		return `
 			<div class="tournament-section">
-				<h3>🏆 Tournament Complete!</h3>
+				<h3>Tournoi terminé</h3>
 				<div class="winner-announcement">
-					<h2>👑 Champion: ${state.winner?.alias || 'Unknown'}</h2>
-					<p>Congratulations! 🎉</p>
+					<h2>Champion: ${state.winner?.alias || 'Unknown'}</h2>
+					<p>Congratulations!</p>
 				</div>
 				${this.renderBracket(state)}
 				<div class="tournament-actions">
@@ -351,61 +345,61 @@ private handleRoute(): void {
 		`
 	}
 
+
+
 	private renderBracket(_state: any): string {
-		const rounds = this.tournamentManager?.getRounds() || 0
-		if (rounds === 0) return ''
+    const rounds = this.tournamentManager?.getRounds() || 0
+    if (rounds === 0) return ''
 
-		let bracketHtml = '<div class="tournament-bracket"><h4>📊 Tournament Bracket</h4><div class="bracket-container">'
+    let bracketHtml = '<div class="tournament-bracket"><div class="bracket-container">'
 
-		for (let round = 1; round <= rounds; round++) {
-			const matches = this.tournamentManager?.getMatchesForRound(round) || []
-			const roundName = this.getRoundName(round, rounds)
+    for (let round = 1; round <= rounds; round++) {
+        const matches = this.tournamentManager?.getMatchesForRound(round) || []
+        const roundName = this.getRoundName(round)
 
-			bracketHtml += `
-				<div class="bracket-round round-${round}">
-					<h5 class="round-title">${roundName}</h5>
-					<div class="matches-column">
-						${matches.map(match => {
-							const p1Class = match.winner?.id === match.player1.id ? 'winner' : (match.status === 'completed' ? 'loser' : '')
-							const p2Class = match.winner?.id === match.player2.id ? 'winner' : (match.status === 'completed' ? 'loser' : '')
-							const statusIcon = match.status === 'completed' ? '✅' : (match.status === 'playing' ? '🏓' : '⏳')
+        bracketHtml += `
+            <div class="bracket-round round-${round}">
+                <h5 class="round-title">${roundName}</h5>
+                <div class="matches-column">
+                    ${matches.map((match, index) => {
+                        const p1Class = match.winner?.id === match.player1.id ? 'winner' : (match.status === 'completed' ? 'loser' : '')
+                        const p2Class = match.winner?.id === match.player2.id ? 'winner' : (match.status === 'completed' ? 'loser' : '')
 
-							return `
+						return `
+							<div class="bracket-match-wrapper">
 								<div class="bracket-match ${match.status}">
 									<div class="match-player ${p1Class}">
-										<span class="player-name">
-											${match.player1.isAI ? '🤖' : '🎮'} ${match.player1.alias}
-										</span>
-										<span class="player-score">${match.score.player1}</span>
-									</div>
-									<div class="match-divider">
-										<span class="vs-text">VS</span>
-										<span class="status-icon">${statusIcon}</span>
+										${match.player1.alias} ${match.score.player1} ─┐
 									</div>
 									<div class="match-player ${p2Class}">
-										<span class="player-name">
-											${match.player2.isAI ? '🤖' : '🎮'} ${match.player2.alias}
-										</span>
-										<span class="player-score">${match.score.player2}</span>
+										${match.player2.alias} ${match.score.player2} ─┘
 									</div>
 								</div>
-							`
-						}).join('')}
-					</div>
-				</div>
-			`
-		}
+								${round < rounds ? '<div class="bracket-connector"></div>' : ''}
+							</div>
+						`
+                    }).join('')}
+                </div>
+            </div>
+        `
+    }
 
-		bracketHtml += '</div></div>'
-		return bracketHtml
-	}
+    bracketHtml += '</div></div>'
+    return bracketHtml
+}
 
-	private getRoundName(round: number, totalRounds: number): string {
-		const roundsFromEnd = totalRounds - round
 
-		if (roundsFromEnd === 0) return '🏆 Final'
-		if (roundsFromEnd === 1) return '🥈 Semi-Finals'
-		if (roundsFromEnd === 2) return '🥉 Quarter-Finals'
+
+	private getRoundName(round: number): string {
+		// Calculer le nombre total de rounds théoriques basé sur le nombre de joueurs
+		const totalPlayers = this.tournamentManager?.getState().players.length || 0
+		const theoreticalTotalRounds = Math.log2(totalPlayers)
+
+		const roundsFromEnd = theoreticalTotalRounds - round
+
+		if (roundsFromEnd === 0) return 'Finale'
+		if (roundsFromEnd === 1) return 'Demi finale'
+		if (roundsFromEnd === 2) return 'Quart de finale'
 
 		return `Round ${round}`
 	}
@@ -555,12 +549,10 @@ private handleRoute(): void {
 				margin-bottom: 0.5rem;
 				font-weight: bold;
 			}
+
 			.player-count.valid-count {
 				color: #00ff41;
-			}
-			.player-count.invalid-count {
-				color: #ff9800;
-			}
+
 			.valid-counts-hint {
 				font-size: 0.9rem;
 				color: #999;
@@ -623,96 +615,8 @@ private handleRoute(): void {
 				border-left: 3px solid #00ff41;
 			}
 
-			/* Tournament Bracket */
-			.tournament-bracket {
-				margin: 2rem 0;
-				padding: 1.5rem;
-				background: #1a1a1a;
-				border-radius: 8px;
-			}
-			.tournament-bracket h4 {
-				color: #00ff41;
-				margin-bottom: 1.5rem;
-				text-align: center;
-			}
-			.bracket-container {
-				display: flex;
-				gap: 2rem;
-				overflow-x: auto;
-				padding: 1rem 0;
-			}
-			.bracket-round {
-				flex-shrink: 0;
-				min-width: 250px;
-			}
-			.round-title {
-				color: #00ff41;
-				text-align: center;
-				margin-bottom: 1rem;
-				padding: 0.5rem;
-				background: #2a2a2a;
-				border-radius: 6px;
-			}
-			.matches-column {
-				display: flex;
-				flex-direction: column;
-				gap: 1.5rem;
-			}
-			.bracket-match {
-				background: #2a2a2a;
-				border-radius: 8px;
-				padding: 1rem;
-				border: 2px solid #444;
-				transition: all 0.3s ease;
-			}
-			.bracket-match.playing {
-				border-color: #00ff41;
-				box-shadow: 0 0 20px rgba(0, 255, 65, 0.3);
-			}
-			.bracket-match.completed {
-				border-color: #666;
-			}
-			.match-player {
-				display: flex;
-				justify-content: space-between;
-				align-items: center;
-				padding: 0.5rem;
-				border-radius: 4px;
-				background: #1a1a1a;
-				margin: 0.25rem 0;
-			}
-			.match-player.winner {
-				background: #1a3a1a;
-				border: 1px solid #00ff41;
-				font-weight: bold;
-			}
-			.match-player.loser {
-				opacity: 0.5;
-			}
-			.player-name {
-				flex: 1;
-			}
-			.player-score {
-				font-size: 1.2rem;
-				font-weight: bold;
-				color: #00ff41;
-				margin-left: 1rem;
-			}
-			.match-divider {
-				text-align: center;
-				padding: 0.5rem 0;
-				display: flex;
-				justify-content: center;
-				align-items: center;
-				gap: 0.5rem;
-			}
-			.vs-text {
-				color: #666;
-				font-size: 0.8rem;
-			}
-			.status-icon {
-				font-size: 1.2rem;
-			}
+
+
 		`
 		document.head.appendChild(style)
 	}
