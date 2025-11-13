@@ -329,20 +329,51 @@ private handleRoute(): void {
 		`
 	}
 
-	private renderCompleted(state: any): string {
+	private renderCompleted(state: any): string
+	{
+		// Récupérer la finale (dernier match du dernier round)
+		const totalRounds = this.tournamentManager?.getRounds() || 0
+		const finaleMatches = this.tournamentManager?.getMatchesForRound(totalRounds) || []
+		const finale = finaleMatches[0]
+
+		// Générer le message selon le score
+		let message = ''
+		if (finale && finale.winner)
+		{
+			const winnerScore = finale.winner.id === finale.player1.id ? finale.score.player1 : finale.score.player2
+			const loserScore = finale.winner.id === finale.player1.id ? finale.score.player2 : finale.score.player1
+			const loserName = finale.winner.id === finale.player1.id ? finale.player2.alias : finale.player1.alias
+			const scoreDiff = winnerScore - loserScore
+
+			if (scoreDiff >= 4)
+			{
+				message = `Bulle parfaite ! ${loserName} s'est fait humilier ${winnerScore}-${loserScore} !`
+			}
+			else if (scoreDiff >= 2)
+			{
+				message = `Victoire convaincante ${winnerScore}-${loserScore} !`
+			}
+			else
+			{
+				message = `Match ultra serré ! Score final : ${winnerScore}-${loserScore}. Bravo aux deux joueurs !`
+			}
+		}
+
 		return `
-			<div class="tournament-section">
-				<h3>Tournoi terminé</h3>
-				<div class="winner-announcement">
-					<h2>Champion: ${state.winner?.alias || 'Unknown'}</h2>
-					<p>Congratulations!</p>
-				</div>
+			<div class="page">
+				<h2>Bravo ${state.winner?.alias || 'Unknown'} !</h2>
+				<p>${message}</p>
 				${this.renderBracket(state)}
-				<div class="tournament-actions">
-					<button id="new-tournament" class="btn white-btn">🔄 New Tournament</button>
-				</div>
+				<button id="new-tournament" class="btn white-btn">Nouveau Tournoi</button>
 			</div>
 		`
+	}
+
+
+	private padPlayerName(name: string, maxLength: number): string
+	{
+		const padding = maxLength - name.length
+		return name + '&nbsp;'.repeat(Math.max(0, padding))
 	}
 
 
@@ -353,40 +384,47 @@ private handleRoute(): void {
 		if (rounds === 0) return ''
 
 		let bracketHtml = '<div class="tournament-bracket"><div class="bracket-container">'
-
 		const nextMatch = this.tournamentManager?.getNextMatch()
 
-		for (let round = 1; round <= rounds; round++)
-		{
+		for (let round = 1; round <= rounds; round++) {
 			const matches = this.tournamentManager?.getMatchesForRound(round) || []
 			const roundName = this.getRoundName(round)
+
+			// Calculer la longueur max des pseudos dans ce round
+			const maxNameLength = matches.length > 0
+				? Math.max(...matches.flatMap(m => [m.player1.alias.length, m.player2.alias.length]))
+				: 0
 
 			bracketHtml += `
 				<div class="bracket-round round-${round}">
 					<h5 class="round-title">${roundName}</h5>
-						<div class="matches-column">
-							${matches.map((match, index) => {
-								const p1Class = match.winner?.id === match.player1.id ? 'winner' : (match.status === 'completed' ? 'loser' : '')
-								const p2Class = match.winner?.id === match.player2.id ? 'winner' : (match.status === 'completed' ? 'loser' : '')
+					<div class="matches-column">
+						${matches.map((match, index) => {
+							const p1Class = match.winner?.id === match.player1.id ? 'winner' : (match.status === 'completed' ? 'loser' : '')
+							const p2Class = match.winner?.id === match.player2.id ? 'winner' : (match.status === 'completed' ? 'loser' : '')
 
-								// Vérifier si c'est le prochain match
-								const isNextMatch = nextMatch && match.id === nextMatch.id
-								const arrow = isNextMatch ? '<span class="next-match-arrow">▶</span>' : ''
+							// Vérifier si c'est le prochain match
+							const isNextMatch = nextMatch && match.id === nextMatch.id
+							const arrow = isNextMatch ? '<span class="next-match-arrow">▶</span>' : ''
 
-								return `
-									<div class="bracket-match-wrapper">
-										<div class="bracket-match ${match.status}">
-											<div class="match-player ${p1Class}">
-												${arrow}${match.player1.alias} ${match.score.player1} ─┐
-											</div>
-											<div class="match-player ${p2Class}">
-												${arrow}${match.player2.alias} ${match.score.player2} ─┘
-											</div>
+							// Padder les pseudos
+							const p1Name = this.padPlayerName(match.player1.alias, maxNameLength)
+							const p2Name = this.padPlayerName(match.player2.alias, maxNameLength)
+
+							return `
+								<div class="bracket-match-wrapper">
+									<div class="bracket-match ${match.status}">
+										<div class="match-player ${p1Class}">
+											${arrow}${p1Name} ${match.score.player1} ─┐
+										</div>
+										<div class="match-player ${p2Class}">
+											${arrow}${p2Name} ${match.score.player2} ─┘
 										</div>
 									</div>
-								`
-								}).join('')}
-						</div>
+								</div>
+							`
+						}).join('')}
+					</div>
 				</div>
 			`
 		}

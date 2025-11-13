@@ -138,9 +138,9 @@ if (playerCountLabel)
 
 					if (isAI)
 					{
-						// Ajouter une IA
-						const difficulty = aiDifficultySelect.value as 'easy' | 'medium' | 'hard'
-						result = tournamentManager.addAI(difficulty)
+					// Ajouter une IA
+					const difficulty = (aiDifficultySelect.value || 'medium') as 'easy' | 'medium' | 'hard'
+					result = tournamentManager.addAI(difficulty)
 					}
 					else
 					{
