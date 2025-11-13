@@ -805,9 +805,13 @@ private handleRoute(): void {
 		const winner = Math.random() < player1WinChance ? match.player1 : match.player2
 		const loser = winner.id === match.player1.id ? match.player2 : match.player1
 
-		// Score du gagnant: entre 5 et 7
+		/* // Score du gagnant: entre 5 et 7
 		const winnerScore = 5 + Math.floor(Math.random() * 3)
 		// Score du perdant: entre 0 et 4
+		const loserScore = Math.floor(Math.random() * 5) */
+
+		// Modification pour score du gagnant toujour à 5
+		const winnerScore = 5
 		const loserScore = Math.floor(Math.random() * 5)
 
 		const score = winner.id === match.player1.id
