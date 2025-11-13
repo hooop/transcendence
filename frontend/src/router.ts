@@ -700,50 +700,69 @@ private handleRoute(): void {
 	}
 
 	private setupTournamentEvents(): void
-{
-    const state = this.tournamentManager?.getState()
+	{
+		const state = this.tournamentManager?.getState()
 
-    // Si on est en registration, utiliser la nouvelle page
-    if (state?.status === 'registration') {
-        TournamentConfigPage.update(this.tournamentManager!)
-        TournamentConfigPage.setupEventListeners(
-            this.tournamentManager!,
-            () => this.renderTournament()
-        )
-        return
-    }
+		// Si on est en registration, utiliser la nouvelle page
+		if (state?.status === 'registration') {
+			TournamentConfigPage.update(this.tournamentManager!)
+			TournamentConfigPage.setupEventListeners(
+				this.tournamentManager!,
+				() => this.renderTournament()
+			)
+			return
+		}
 
-    // Pour les autres états (ready, ongoing, completed), garder le code existant
+		// Pour les autres états (ready, ongoing, completed), garder le code existant
 
-    // Bouton pour démarrer un match
-    const startMatchBtn = document.getElementById('start-match')
-    if (startMatchBtn) {
-        startMatchBtn.addEventListener('click', (e) => {
-            const matchId = (e.target as HTMLElement).getAttribute('data-match-id')
-            if (matchId) {
-                const match = this.tournamentManager?.startMatch(matchId)
-                if (match) {
-                    this.renderTournament()
-                    setTimeout(() => this.initTournamentGame(match), 0)
-                }
-            }
-        })
-    }
+		// Bouton pour démarrer un match
+		const startMatchBtn = document.getElementById('start-match')
+		if (startMatchBtn) {
+			startMatchBtn.addEventListener('click', (e) => {
+				const matchId = (e.target as HTMLElement).getAttribute('data-match-id')
+				if (matchId)
+				{
+					const match = this.tournamentManager?.startMatch(matchId)
+					if (match) {
+						// Vérifier si c'est IA vs IA
+						if (match.player1.isAI && match.player2.isAI) {
+							// Pas de renderTournament qui affiche le fullscreen
+							this.simulateAIMatch(match)
+						} else {
+							// Match avec au moins un humain
+							this.renderTournament()
+							setTimeout(() => this.initTournamentGame(match), 0)
+						}
+					}
+				}
+			})
+		}
 
-    // Bouton pour nouveau tournoi
-    const newTournamentBtn = document.getElementById('new-tournament')
-    if (newTournamentBtn) {
-        newTournamentBtn.addEventListener('click', () => {
-            this.tournamentManager?.reset()
-            this.renderTournament()
-        })
-    }
-}
+		// Bouton pour nouveau tournoi
+		const newTournamentBtn = document.getElementById('new-tournament')
+		if (newTournamentBtn) {
+			newTournamentBtn.addEventListener('click', () => {
+				this.tournamentManager?.reset()
+				this.renderTournament()
+			})
+		}
+	}
 
 
 
 	private initTournamentGame(match: any): void
 	{
+				// Déterminer si le match implique des IA
+		const player1IsAI = match.player1.isAI
+		const player2IsAI = match.player2.isAI
+
+
+		// Si les deux joueurs sont des IA, on simule automatiquement
+		if (player1IsAI && player2IsAI) {
+			this.simulateAIMatch(match)
+			return
+		}
+
 		// 1. Activer le mode fullscreen
 		document.body.classList.add('fullscreen-game')
 
@@ -761,9 +780,7 @@ private handleRoute(): void {
 			this.currentGame.destroy()
 		}
 
-		// Déterminer si le match implique des IA
-		const player1IsAI = match.player1.isAI
-		const player2IsAI = match.player2.isAI
+
 
 		// Si les deux sont des IA ou si le joueur de droite est une IA, activer l'IA
 		let aiEnabled = false
@@ -784,11 +801,7 @@ private handleRoute(): void {
 			}
 		}
 
-		// Si les deux joueurs sont des IA, on simule automatiquement
-		if (player1IsAI && player2IsAI) {
-			this.simulateAIMatch(match)
-			return
-		}
+
 
 		// Créer le jeu avec ou sans IA
 		// Calculer les flags d'affichage des contrôles
