@@ -1395,7 +1395,11 @@ body.fullscreen-game .app-footer {
 
 
 
-
+.next-match-arrow {
+    position: absolute;
+    left: -25px;
+    color: var(--text-primary);
+}
 
 
 

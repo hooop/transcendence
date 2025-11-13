@@ -347,46 +347,53 @@ private handleRoute(): void {
 
 
 
-	private renderBracket(_state: any): string {
-    const rounds = this.tournamentManager?.getRounds() || 0
-    if (rounds === 0) return ''
+	private renderBracket(_state: any): string
+	{
+		const rounds = this.tournamentManager?.getRounds() || 0
+		if (rounds === 0) return ''
 
-    let bracketHtml = '<div class="tournament-bracket"><div class="bracket-container">'
+		let bracketHtml = '<div class="tournament-bracket"><div class="bracket-container">'
 
-    for (let round = 1; round <= rounds; round++) {
-        const matches = this.tournamentManager?.getMatchesForRound(round) || []
-        const roundName = this.getRoundName(round)
+		const nextMatch = this.tournamentManager?.getNextMatch()
 
-        bracketHtml += `
-            <div class="bracket-round round-${round}">
-                <h5 class="round-title">${roundName}</h5>
-					<div class="matches-column">
-						${matches.map((match, index) => {
-							const p1Class = match.winner?.id === match.player1.id ? 'winner' : (match.status === 'completed' ? 'loser' : '')
-							const p2Class = match.winner?.id === match.player2.id ? 'winner' : (match.status === 'completed' ? 'loser' : '')
+		for (let round = 1; round <= rounds; round++)
+		{
+			const matches = this.tournamentManager?.getMatchesForRound(round) || []
+			const roundName = this.getRoundName(round)
 
-							return `
-								<div class="bracket-match-wrapper">
-									<div class="bracket-match ${match.status}">
-										<div class="match-player ${p1Class}">
-											${match.player1.alias} ${match.score.player1} ─┐
-										</div>
-										<div class="match-player ${p2Class}">
-											${match.player2.alias} ${match.score.player2} ─┘
+			bracketHtml += `
+				<div class="bracket-round round-${round}">
+					<h5 class="round-title">${roundName}</h5>
+						<div class="matches-column">
+							${matches.map((match, index) => {
+								const p1Class = match.winner?.id === match.player1.id ? 'winner' : (match.status === 'completed' ? 'loser' : '')
+								const p2Class = match.winner?.id === match.player2.id ? 'winner' : (match.status === 'completed' ? 'loser' : '')
+
+								// Vérifier si c'est le prochain match
+								const isNextMatch = nextMatch && match.id === nextMatch.id
+								const arrow = isNextMatch ? '<span class="next-match-arrow">▶</span>' : ''
+
+								return `
+									<div class="bracket-match-wrapper">
+										<div class="bracket-match ${match.status}">
+											<div class="match-player ${p1Class}">
+												${arrow}${match.player1.alias} ${match.score.player1} ─┐
+											</div>
+											<div class="match-player ${p2Class}">
+												${arrow}${match.player2.alias} ${match.score.player2} ─┘
+											</div>
 										</div>
 									</div>
+								`
+								}).join('')}
+						</div>
+				</div>
+			`
+		}
 
-								</div>
-							`
-						}).join('')}
-					</div>
-            </div>
-        `
-    }
-
-    bracketHtml += '</div></div>'
-    return bracketHtml
-}
+		bracketHtml += '</div></div>'
+		return bracketHtml
+	}
 
 
 
