@@ -223,6 +223,49 @@ private handleRoute(): void {
 	}
 
 
+	private hideGameControlsForTournament(): void
+	{
+		// Masquer le toggle mode (Friend/AI)
+		const modeToggle = document.getElementById('mode-toggle') as HTMLInputElement
+		const modeToggleWrapper = modeToggle?.closest('.control-group') as HTMLElement
+
+		if (modeToggleWrapper) {
+			modeToggleWrapper.style.display = 'none'
+		}
+
+		// Masquer le select de difficulté
+		const difficultySelect = document.getElementById('difficulty-select') as HTMLSelectElement
+		const difficultyWrapper = difficultySelect?.closest('.control-group') as HTMLElement
+
+		if (difficultyWrapper) {
+			difficultyWrapper.style.display = 'none'
+		}
+	}
+
+
+	private showGameControlsAfterTournament(): void
+	{
+		// Réafficher le toggle mode
+		const modeToggle = document.getElementById('mode-toggle') as HTMLInputElement
+		const modeToggleWrapper = modeToggle?.closest('.control-group') as HTMLElement
+
+		if (modeToggleWrapper) {
+			modeToggleWrapper.style.display = 'flex'
+		}
+
+		// Réafficher le select de difficulté
+		const difficultySelect = document.getElementById('difficulty-select') as HTMLSelectElement
+		const difficultyWrapper = difficultySelect?.closest('.control-group') as HTMLElement
+
+		if (difficultyWrapper) {
+			difficultyWrapper.style.display = 'flex'
+		}
+	}
+
+
+
+
+
 	private renderTournament(): void
 	{
 		if (!this.tournamentManager)
@@ -308,25 +351,10 @@ private handleRoute(): void {
 		return html
 	}
 
-	private renderOngoing(state: any): string {
-		const currentMatch = state.currentMatch
-		if (!currentMatch) return '<p>No ongoing match</p>'
-
-		return `
-			<div class="tournament-section">
-				<h3>🏓 Match in Progress</h3>
-				<div class="current-match">
-					<div class="match-header">
-						<span class="player">${currentMatch.player1.alias}</span>
-						<span class="vs">VS</span>
-						<span class="player">${currentMatch.player2.alias}</span>
-					</div>
-					<div class="game-container">
-						<canvas id="tournament-canvas"></canvas>
-					</div>
-				</div>
-			</div>
-		`
+	private renderOngoing(_state: any): string
+	{
+    // Réutiliser le template fullscreen
+    	return gameModeTemplate
 	}
 
 	private renderCompleted(state: any): string
@@ -345,17 +373,21 @@ private handleRoute(): void {
 			const loserName = finale.winner.id === finale.player1.id ? finale.player2.alias : finale.player1.alias
 			const scoreDiff = winnerScore - loserScore
 
-			if (scoreDiff >= 4)
+			if (scoreDiff === 5)
 			{
-				message = `Bulle parfaite ! ${loserName} s'est fait humilier ${winnerScore}-${loserScore} !`
+				message = `Bulle parfaite ! ${loserName} s'est fait punir ${winnerScore} - ${loserScore} !`
 			}
-			else if (scoreDiff >= 2)
+			else if (scoreDiff >= 3)  // 5-0, 5-1, 5-2
 			{
-				message = `Victoire convaincante ${winnerScore}-${loserScore} !`
+				message = `Victoire écrasante ${winnerScore} - ${loserScore} !`
 			}
-			else
+			else if (scoreDiff === 2)  // 5-3
 			{
-				message = `Match ultra serré ! Score final : ${winnerScore}-${loserScore}. Bravo aux deux joueurs !`
+				message = `Beau match, ${state.winner?.alias} a prit le dessus ${winnerScore} - ${loserScore} !`
+			}
+			else  // 5-4
+			{
+				message = `Match ultra serré ! Score final : ${winnerScore} - ${loserScore}. Bravo aux deux joueurs !`
 			}
 		}
 
@@ -707,12 +739,22 @@ private handleRoute(): void {
     }
 }
 
-	private initTournamentGame(match: any): void {
-		const canvas = document.getElementById('tournament-canvas') as HTMLCanvasElement
+
+
+	private initTournamentGame(match: any): void
+	{
+		// 1. Activer le mode fullscreen
+		document.body.classList.add('fullscreen-game')
+
+		// 2. Utiliser le canvas de la page game (pong-canvas)
+		const canvas = document.getElementById('pong-canvas') as HTMLCanvasElement
 		if (!canvas) {
-			console.error('Tournament canvas not found!')
+			console.error('Pong canvas not found!')
 			return
 		}
+
+		// 3. Masquer les contrôles de mode en tournoi
+		this.hideGameControlsForTournament()
 
 		if (this.currentGame) {
 			this.currentGame.destroy()
@@ -754,7 +796,7 @@ private handleRoute(): void {
 		const checkGameEnd = setInterval(() => {
 			if (this.currentGame) {
 				const score = this.currentGame.getScore()
-				// Si un joueur atteint 5 points (condition typique de fin)
+				// Si un joueur atteint 5 points
 				if (score.left >= 5 || score.right >= 5) {
 					clearInterval(checkGameEnd)
 
@@ -774,8 +816,12 @@ private handleRoute(): void {
 					}
 
 					setTimeout(() => {
+						// Nettoyer le mode fullscreen
+						document.body.classList.remove('fullscreen-game')
+						this.showGameControlsAfterTournament()
+
 						this.renderTournament()
-					}, 2000) // Attendre 2 secondes pour montrer le score final
+					}, 2000)
 				}
 			} else {
 				clearInterval(checkGameEnd)
@@ -785,6 +831,10 @@ private handleRoute(): void {
 		canvas.focus()
 		console.log(`🎮 Tournament game ready! ${aiEnabled ? '(vs AI)' : '(vs Player)'}`)
 	}
+
+
+
+
 
 	private simulateAIMatch(match: any): void {
 		console.log('🤖 Simulating AI vs AI match...')
