@@ -17,6 +17,7 @@ export class Router
 	private routes: Map<string, () => void> = new Map()
 	private currentGame: PongGame | null = null
 	private tournamentManager: TournamentManager | null = null
+	private isTournamentGameActive: boolean = false
 
 	constructor() {
 		this.setupRoutes()
@@ -54,9 +55,25 @@ export class Router
 			}
 		})
 
-		window.addEventListener('popstate', () => {
-			this.handleRoute()
-		})
+		window.addEventListener('popstate', (e) => {
+    if (this.isTournamentGameActive) {
+        if (confirm('Quitter cette page annulera le tournoi en cours. Êtes-vous sur de vouloi retourner à l\'accueil ?')) {
+            this.isTournamentGameActive = false
+            if (this.currentGame) {
+                this.currentGame.destroy()
+                this.currentGame = null
+            }
+            this.tournamentManager?.reset()
+            document.body.classList.remove('fullscreen-game')
+            this.navigate('/')
+        } else {
+            e.preventDefault()
+            history.pushState({}, '', '/game')
+        }
+    } else {
+        this.handleRoute()
+    }
+})
 
 		this.handleRoute()
 	}
@@ -750,123 +767,107 @@ private handleRoute(): void {
 
 
 
-	private initTournamentGame(match: any): void
-	{
-		// Forcer l'IA à droite si présente
-		if (match.player1.isAI && !match.player2.isAI)
-		{
-			// Inverser les joueurs
-			const temp = match.player1
-			match.player1 = match.player2
-			match.player2 = temp
-		}
+private initTournamentGame(match: any): void
+{
+    this.isTournamentGameActive = true
 
-		// Déterminer si le match implique des IA
-		const player1IsAI = match.player1.isAI
-		const player2IsAI = match.player2.isAI
+    // Forcer l'IA à droite si présente
+    if (match.player1.isAI && !match.player2.isAI)
+    {
+        const temp = match.player1
+        match.player1 = match.player2
+        match.player2 = temp
+    }
 
+    const player1IsAI = match.player1.isAI
+    const player2IsAI = match.player2.isAI
 
-		// Si les deux joueurs sont des IA, on simule automatiquement
-		if (player1IsAI && player2IsAI) {
-			this.simulateAIMatch(match)
-			return
-		}
+    if (player1IsAI && player2IsAI) {
+        this.simulateAIMatch(match)
+        return
+    }
 
-		// 1. Activer le mode fullscreen
-		document.body.classList.add('fullscreen-game')
+    document.body.classList.add('fullscreen-game')
 
-		// 2. Utiliser le canvas de la page game (pong-canvas)
-		const canvas = document.getElementById('pong-canvas') as HTMLCanvasElement
-		if (!canvas) {
-			console.error('Pong canvas not found!')
-			return
-		}
+    const canvas = document.getElementById('pong-canvas') as HTMLCanvasElement
+    if (!canvas) {
+        console.error('Pong canvas not found!')
+        return
+    }
 
-		// 3. Masquer les contrôles de mode en tournoi
-		this.hideGameControlsForTournament(match)
+    this.hideGameControlsForTournament(match)
 
-		if (this.currentGame) {
-			this.currentGame.destroy()
-		}
+    if (this.currentGame) {
+        this.currentGame.destroy()
+    }
 
+    let aiEnabled = false
+    let aiDifficulty = AIDifficulty.MEDIUM
 
+    if (player2IsAI) {
+        aiEnabled = true
+        switch (match.player2.aiDifficulty) {
+            case 'easy':
+                aiDifficulty = AIDifficulty.EASY
+                break
+            case 'hard':
+                aiDifficulty = AIDifficulty.HARD
+                break
+            default:
+                aiDifficulty = AIDifficulty.MEDIUM
+        }
+    }
 
-		// Si les deux sont des IA ou si le joueur de droite est une IA, activer l'IA
-		let aiEnabled = false
-		let aiDifficulty = AIDifficulty.MEDIUM
+    const showLeftControls = !player1IsAI
+    const showRightControls = !player2IsAI
 
-		if (player2IsAI) {
-			aiEnabled = true
-			// Mapper la difficulté de l'IA
-			switch (match.player2.aiDifficulty) {
-				case 'easy':
-					aiDifficulty = AIDifficulty.EASY
-					break
-				case 'hard':
-					aiDifficulty = AIDifficulty.HARD
-					break
-				default:
-					aiDifficulty = AIDifficulty.MEDIUM
-			}
-		}
+    this.currentGame = new PongGame(
+        canvas,
+        aiEnabled,
+        aiDifficulty,
+        true,
+        showLeftControls,
+        showRightControls,
+        match.player1.alias,
+        match.player2.alias
+    )
 
+    const checkGameEnd = setInterval(() => {
+        if (this.currentGame) {
+            const score = this.currentGame.getScore()
+            if (score.left >= 5 || score.right >= 5) {
+                clearInterval(checkGameEnd)
 
+                const winnerId = score.left > score.right ? match.player1.id : match.player2.id
 
-		// Créer le jeu avec ou sans IA
-		// Calculer les flags d'affichage des contrôles
-		const showLeftControls = !player1IsAI  // Afficher W/S si joueur 1 est humain
-		const showRightControls = !player2IsAI // Afficher flèches si joueur 2 est humain
+                this.tournamentManager?.endMatch(match.id, winnerId, {
+                    player1: score.left,
+                    player2: score.right
+                })
 
-		// Créer le jeu avec ou sans IA
-		// Créer le jeu avec les noms des joueurs
-		this.currentGame = new PongGame(
-			canvas,
-			aiEnabled,
-			aiDifficulty,
-			true,
-			showLeftControls,
-			showRightControls,
-			match.player1.alias,
-			match.player2.alias
-		)
+                const backBtn = document.getElementById('backToTournament')
+                if (backBtn) {
+                    backBtn.onclick = () => {
+                        this.isTournamentGameActive = false  // AJOUTER ICI
 
-// Attendre la fin du jeu
-const checkGameEnd = setInterval(() => {
-	if (this.currentGame) {
-		const score = this.currentGame.getScore()
-		if (score.left >= 5 || score.right >= 5) {
-			clearInterval(checkGameEnd)
+                        if (this.currentGame) {
+                            this.currentGame.destroy()
+                            this.currentGame = null
+                        }
+                        document.body.classList.remove('fullscreen-game')
+                        this.showGameControlsAfterTournament()
+                        this.renderTournament()
+                    }
+                }
+            }
+        } else {
+            clearInterval(checkGameEnd)
+        }
+    }, 100)
 
-			const winnerId = score.left > score.right ? match.player1.id : match.player2.id
-
-			// Enregistrer le résultat
-			this.tournamentManager?.endMatch(match.id, winnerId, {
-				player1: score.left,
-				player2: score.right
-			})
-
-			// Attacher le listener sur le bouton de la modale
-			const backBtn = document.getElementById('backToTournament')
-			if (backBtn) {
-				backBtn.onclick = () => {
-					if (this.currentGame) {
-						this.currentGame.destroy()
-						this.currentGame = null
-					}
-					document.body.classList.remove('fullscreen-game')
-					this.showGameControlsAfterTournament()
-					this.renderTournament()
-				}
-			}
-		}
-	} else {
-		clearInterval(checkGameEnd)
-	}
-}, 100)
-
-		canvas.focus()
-		console.log(`🎮 Tournament game ready! ${aiEnabled ? '(vs AI)' : '(vs Player)'}`)
-	}
+    canvas.focus()
+    console.log(`🎮 Tournament game ready! ${aiEnabled ? '(vs AI)' : '(vs Player)'}`)
+}
 
 
 
