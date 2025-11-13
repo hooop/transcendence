@@ -31,11 +31,27 @@ export class PongGame
 	private countdownValue: number = 3
 	private countdownStartTime: number = 0
 
+	private isTournamentMode: boolean = false
+	private showLeftControls: boolean = true
+	private showRightControls: boolean = true
+
+	private player1Name: string = ''
+	private player2Name: string = ''
+
 	/* private statusElement: HTMLElement | null = null */
 
 	public onStatusChange?: (message: string, isWinner: boolean) => void
 
-    constructor(canvas: HTMLCanvasElement, aiEnabled: boolean = false, aiDifficulty: AIDifficulty = AIDifficulty.MEDIUM)
+    constructor(
+				canvas: HTMLCanvasElement,
+				aiEnabled: boolean = false,
+				aiDifficulty: AIDifficulty = AIDifficulty.MEDIUM,
+				isTournamentMode: boolean = false,
+				showLeftControls: boolean = true,
+				showRightControls: boolean = true,
+				player1Name: string = '',
+    			player2Name: string = ''
+			)
 	{
 		this.canvas = canvas
 		const ctx = canvas.getContext('2d')
@@ -43,6 +59,12 @@ export class PongGame
 		this.ctx = ctx
 
 		this.isAIEnabled = aiEnabled
+
+		this.isTournamentMode = isTournamentMode
+		this.showLeftControls = showLeftControls
+		this.showRightControls = showRightControls
+		this.player1Name = player1Name
+		this.player2Name = player2Name
 
 		// MODIFIÉ : Calculer les dimensions avec fallback
 		const container = this.canvas.parentElement
@@ -588,10 +610,46 @@ private renderCountdown(): void
 			return
 		}
 
-		// Commandes (toujours affichées à droite)
-		const controls = this.isAIEnabled
-			? '<kbd>W</kbd> <kbd>S</kbd>'
-			: '<kbd>W</kbd> <kbd>S</kbd> &nbsp;&nbsp; <kbd>↑</kbd> <kbd>↓</kbd>'
+		// Gérer l'affichage des infos du match (mode tournoi uniquement)
+		const matchInfoContainer = document.getElementById('match-info-container')
+		const matchInfoElement = document.getElementById('match-info')
+
+		if (matchInfoContainer && matchInfoElement)
+		{
+			if (this.isTournamentMode && this.player1Name && this.player2Name)
+			{
+				// Afficher les noms des joueurs en mode tournoi
+				matchInfoContainer.style.display = 'flex'
+				matchInfoElement.textContent = `${this.player1Name} vs ${this.player2Name}`
+			}
+			else
+			{
+				// Cacher en mode entraînement
+				matchInfoContainer.style.display = 'none'
+			}
+		}
+
+		// Commandes (gestion selon le mode)
+		let controls = ''
+
+		if (this.isTournamentMode) {
+			// Mode tournoi : afficher séparément gauche et droite
+			if (this.showLeftControls && this.showRightControls) {
+				// Les deux : à gauche et à droite
+				controls = '<kbd>W</kbd> <kbd>S</kbd> &nbsp;&nbsp; <kbd>↑</kbd> <kbd>↓</kbd>'
+			} else if (this.showLeftControls) {
+				// Uniquement gauche
+				controls = '<kbd>W</kbd> <kbd>S</kbd>'
+			} else if (this.showRightControls) {
+				// Uniquement droite
+				controls = '<kbd>↑</kbd> <kbd>↓</kbd>'
+			}
+		} else {
+			// Mode entraînement : tout à droite comme avant
+			controls = this.isAIEnabled
+				? '<kbd>W</kbd> <kbd>S</kbd>'
+				: '<kbd>W</kbd> <kbd>S</kbd> &nbsp;&nbsp; <kbd>↑</kbd> <kbd>↓</kbd>'
+		}
 
 		controlsElement.innerHTML =
 		`
@@ -613,19 +671,6 @@ private renderCountdown(): void
 				<span class="status-message start">Toucher <kbd>ESPACE</kbd> pour lancer une partie</span>
 			`
 		}
-		/* else if (this.state.winner)
-		{
-			let winner = this.state.winner === 'left' ? 'Joueur de gauche' : 'Joueur de droite'
-
-			if (this.isAIEnabled && this.state.winner === 'right')
-			{
-				winner = 'IA'
-			}
-			statusElement.innerHTML =
-			`
-				<span class="status-message winner-message">${winner} a gagné !</span>
-			`
-		} */
 		else
 		{
 			statusElement.innerHTML =

@@ -223,8 +223,7 @@ private handleRoute(): void {
 	}
 
 
-	private hideGameControlsForTournament(): void
-	{
+	private hideGameControlsForTournament(_match: any): void {
 		// Masquer le toggle mode (Friend/AI)
 		const modeToggle = document.getElementById('mode-toggle') as HTMLInputElement
 		const modeToggleWrapper = modeToggle?.closest('.control-group') as HTMLElement
@@ -240,6 +239,8 @@ private handleRoute(): void {
 		if (difficultyWrapper) {
 			difficultyWrapper.style.display = 'none'
 		}
+
+		// Les contrôles sont maintenant gérés directement par PongGame
 	}
 
 
@@ -498,7 +499,7 @@ private handleRoute(): void {
 		if (this.currentGame) {
 			this.currentGame.destroy()
 		}
-		this.currentGame = new PongGame(canvas, isAI, difficulty)
+		this.currentGame = new PongGame(canvas, isAI, difficulty, false, true, true)
 		setTimeout(() => {
 			canvas.focus()
 		}, 100)
@@ -754,7 +755,7 @@ private handleRoute(): void {
 		}
 
 		// 3. Masquer les contrôles de mode en tournoi
-		this.hideGameControlsForTournament()
+		this.hideGameControlsForTournament(match)
 
 		if (this.currentGame) {
 			this.currentGame.destroy()
@@ -790,7 +791,22 @@ private handleRoute(): void {
 		}
 
 		// Créer le jeu avec ou sans IA
-		this.currentGame = new PongGame(canvas, aiEnabled, aiDifficulty)
+		// Calculer les flags d'affichage des contrôles
+		const showLeftControls = !player1IsAI  // Afficher W/S si joueur 1 est humain
+		const showRightControls = !player2IsAI // Afficher flèches si joueur 2 est humain
+
+		// Créer le jeu avec ou sans IA
+		// Créer le jeu avec les noms des joueurs
+		this.currentGame = new PongGame(
+			canvas,
+			aiEnabled,
+			aiDifficulty,
+			true,
+			showLeftControls,
+			showRightControls,
+			match.player1.alias,
+			match.player2.alias
+		)
 
 		// Attendre la fin du jeu
 		const checkGameEnd = setInterval(() => {

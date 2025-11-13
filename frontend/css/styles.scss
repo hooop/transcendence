@@ -1315,6 +1315,15 @@ body.fullscreen-game .app-footer {
     font-weight: 500;
 }
 
+.match-info-label {
+    font-family: 'akira', 'Arial', monospace;
+    color: var(--text-primary);
+    font-size: 0.9rem;
+    font-weight: normal;
+    letter-spacing: 0.05em; /* Optionnel : espacement des caractères comme le score */
+}
+
+
 /* TOGGLE SWITCH */
 
 .toggle-switch {
