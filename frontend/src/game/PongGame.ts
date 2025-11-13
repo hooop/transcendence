@@ -794,46 +794,69 @@ private renderCountdown(): void
 	}
 
 	private showVictoryModal(): void
+{
+	// Mode tournoi : modale spéciale
+	if (this.isTournamentMode)
 	{
-		// Déterminer le nom du gagnant
-		let winnerName = this.state.winner === 'left' ? 'Joueur de gauche' : 'Joueur de droite'
+		const modal = document.getElementById('tournamentVictoryModal')
+		const messageElement = document.getElementById('tournamentMessage')
 
-		if (this.isAIEnabled && this.state.winner === 'right')
+		if (!modal || !messageElement) return
+
+		// Déterminer qui a gagné
+		const humanWon = (this.state.winner === 'left' && !this.player1Name.includes('IA')) ||
+		                 (this.state.winner === 'right' && !this.player2Name.includes('IA'))
+
+		const winnerName = this.state.winner === 'left' ? this.player1Name : this.player2Name
+
+		if (humanWon)
 		{
-			winnerName = 'IA'
+			messageElement.textContent = `Bravo ${winnerName}, tu passes au tour suivant !`
+		}
+		else
+		{
+			// Trouver le nom du joueur humain perdant
+			const loserName = this.state.winner === 'left' ? this.player2Name : this.player1Name
+			messageElement.textContent = `Dommage ${loserName}, le tournoi s'arrête ici pour toi.`
 		}
 
-		// Récupérer les éléments de la modal
-		const modal = document.getElementById('victoryModal')
-		const winnerNameElement = document.getElementById('winnerName')
-		const modalScoreElement = document.getElementById('modalScore')
-		const closeButton = document.querySelector('.modal-close')
-		const overlay = document.querySelector('.modal-overlay')
-
-		if (!modal || !winnerNameElement || !modalScoreElement) return
-
-		// Remplir les informations
-		winnerNameElement.textContent = winnerName
-		modalScoreElement.textContent = `Score final : ${this.state.leftScore} - ${this.state.rightScore}`
-
-		// Afficher la modal
 		modal.style.display = 'flex'
+		return
+	}
 
-		// Event listener pour fermer la modal (croix)
-		closeButton?.addEventListener('click', () => {
+	// Mode entraînement : modale classique
+	let winnerName = this.state.winner === 'left' ? 'Joueur de gauche' : 'Joueur de droite'
+
+	if (this.isAIEnabled && this.state.winner === 'right')
+	{
+		winnerName = 'IA'
+	}
+
+	const modal = document.getElementById('victoryModal')
+	const winnerNameElement = document.getElementById('winnerName')
+	const modalScoreElement = document.getElementById('modalScore')
+	const closeButton = document.querySelector('.modal-close')
+	const overlay = document.querySelector('.modal-overlay')
+
+	if (!modal || !winnerNameElement || !modalScoreElement) return
+
+	winnerNameElement.textContent = winnerName
+	modalScoreElement.textContent = `Score final : ${this.state.leftScore} - ${this.state.rightScore}`
+
+	modal.style.display = 'flex'
+
+	closeButton?.addEventListener('click', () => {
+		modal.style.display = 'none'
+		this.restart()
+	})
+
+	overlay?.addEventListener('click', (e) => {
+		if (e.target === overlay) {
 			modal.style.display = 'none'
 			this.restart()
-		})
-
-		// Event listener pour fermer la modal (clic sur overlay)
-		overlay?.addEventListener('click', (e) => {
-			if (e.target === overlay) {
-				modal.style.display = 'none'
-				this.restart()
-			}
-		})
-
-	}
+		}
+	})
+}
 
 
 

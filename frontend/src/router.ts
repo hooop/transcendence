@@ -752,7 +752,16 @@ private handleRoute(): void {
 
 	private initTournamentGame(match: any): void
 	{
-				// Déterminer si le match implique des IA
+		// Forcer l'IA à droite si présente
+		if (match.player1.isAI && !match.player2.isAI)
+		{
+			// Inverser les joueurs
+			const temp = match.player1
+			match.player1 = match.player2
+			match.player2 = temp
+		}
+
+		// Déterminer si le match implique des IA
 		const player1IsAI = match.player1.isAI
 		const player2IsAI = match.player2.isAI
 
@@ -821,41 +830,39 @@ private handleRoute(): void {
 			match.player2.alias
 		)
 
-		// Attendre la fin du jeu
-		const checkGameEnd = setInterval(() => {
-			if (this.currentGame) {
-				const score = this.currentGame.getScore()
-				// Si un joueur atteint 5 points
-				if (score.left >= 5 || score.right >= 5) {
-					clearInterval(checkGameEnd)
+// Attendre la fin du jeu
+const checkGameEnd = setInterval(() => {
+	if (this.currentGame) {
+		const score = this.currentGame.getScore()
+		if (score.left >= 5 || score.right >= 5) {
+			clearInterval(checkGameEnd)
 
-					// Déterminer le gagnant
-					const winnerId = score.left > score.right ? match.player1.id : match.player2.id
+			const winnerId = score.left > score.right ? match.player1.id : match.player2.id
 
-					// Enregistrer le résultat
-					this.tournamentManager?.endMatch(match.id, winnerId, {
-						player1: score.left,
-						player2: score.right
-					})
+			// Enregistrer le résultat
+			this.tournamentManager?.endMatch(match.id, winnerId, {
+				player1: score.left,
+				player2: score.right
+			})
 
-					// Nettoyer et revenir à la vue tournoi
+			// Attacher le listener sur le bouton de la modale
+			const backBtn = document.getElementById('backToTournament')
+			if (backBtn) {
+				backBtn.onclick = () => {
 					if (this.currentGame) {
 						this.currentGame.destroy()
 						this.currentGame = null
 					}
-
-					setTimeout(() => {
-						// Nettoyer le mode fullscreen
-						document.body.classList.remove('fullscreen-game')
-						this.showGameControlsAfterTournament()
-
-						this.renderTournament()
-					}, 2000)
+					document.body.classList.remove('fullscreen-game')
+					this.showGameControlsAfterTournament()
+					this.renderTournament()
 				}
-			} else {
-				clearInterval(checkGameEnd)
 			}
-		}, 100)
+		}
+	} else {
+		clearInterval(checkGameEnd)
+	}
+}, 100)
 
 		canvas.focus()
 		console.log(`🎮 Tournament game ready! ${aiEnabled ? '(vs AI)' : '(vs Player)'}`)

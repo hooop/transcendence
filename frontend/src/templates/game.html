@@ -41,13 +41,23 @@
 	<canvas id="pong-canvas"></canvas>
 </div>
 
-<!-- Modal de victoire -->
+<!-- Modal entrainement -->
 <div id="victoryModal" class="modal-overlay" style="display: none;">
   <div class="modal-content">
     <button class="modal-close">&times;</button>
-    <h2 class="modal-title">Bravo</h2>
+    <h2 class="modal-title">Fin du match</h2>
 	<p class="modal-joueur"><span id="winnerName"></span> a gagné !</p>
     <p class="modal-score" id="modalScore"></p>
-    <a href="/tournament" data-route class="btn btn-tertiary">Jouer en tournoi</a>
+    <a href="/game" data-route class="btn btn-tertiary">Rejouer</a>
+	<a href="/" data-route class="btn btn-tertiary">Accueil</a>
+  </div>
+</div>
+
+<!-- Modal tournoi -->
+<div id="tournamentVictoryModal" class="modal-overlay" style="display: none;">
+  <div class="modal-content">
+    <h2 class="modal-title">Fin du match</h2>
+    <p class="modal-joueur" id="tournamentMessage"></p>
+    <button id="backToTournament" class="btn btn-tertiary">Retourner au tournoi</button>
   </div>
 </div>
