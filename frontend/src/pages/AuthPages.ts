@@ -138,51 +138,72 @@ export class AuthPages
         }
     }
 
-    // Gérer la soumission du formulaire d'inscription
-    static setupRegisterForm(): void {
-        const form = document.getElementById('register-form') as HTMLFormElement;
-        const errorDiv = document.getElementById('register-error') as HTMLDivElement;
+	// Gérer la soumission du formulaire d'inscription
+	static setupRegisterForm(): void {
+		const form = document.getElementById('register-form') as HTMLFormElement;
+		const errorDiv = document.getElementById('register-error') as HTMLDivElement;
 
-        if (form) {
-            form.addEventListener('submit', async (e) => {
-                e.preventDefault();
+		if (form)
+		{
+			// Toggle password visibility
+			const passwordInput = document.getElementById('password') as HTMLInputElement;
+			const togglePasswordBtn = document.querySelector('.toggle-password') as HTMLButtonElement;
 
-                const formData = new FormData(form);
-                const username = formData.get('username') as string;
-                const email = formData.get('email') as string;
-                const display_name = formData.get('display_name') as string;
-                const password = formData.get('password') as string;
-                const password_confirm = formData.get('password_confirm') as string;
+			if (togglePasswordBtn && passwordInput) {
+				togglePasswordBtn.addEventListener('click', () => {
+					const isPassword = passwordInput.type === 'password';
+					passwordInput.type = isPassword ? 'text' : 'password';
 
-                // Validation
-                if (password !== password_confirm) {
-                    errorDiv.textContent = 'Passwords do not match';
-                    errorDiv.style.display = 'block';
-                    return;
-                }
+					const eyeIcon = togglePasswordBtn.querySelector('.eye-icon') as SVGElement;
+					if (isPassword) {
+						eyeIcon.innerHTML = `
+							<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+							<circle cx="12" cy="12" r="3"/>
+							<line x1="3" y1="3" x2="21" y2="21" stroke="currentColor" stroke-width="2"/>
+						`;
+					} else {
+						eyeIcon.innerHTML = `
+							<path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+							<circle cx="12" cy="12" r="3"/>
+						`;
+					}
+				});
+			}
 
-                // Cacher les erreurs précédentes
-                errorDiv.style.display = 'none';
+			form.addEventListener('submit', async (e) => {
+				e.preventDefault();
 
-                // Désactiver le bouton
-                const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Creating account...';
+				const formData = new FormData(form);
+				const username = formData.get('username') as string;
+				const email = formData.get('email') as string;
+				const display_name = formData.get('display_name') as string;
+				const password = formData.get('password') as string;
 
-                try {
-                    await ApiService.register(username, email, password, display_name || undefined);
+				// Cacher les erreurs précédentes
+				errorDiv.style.display = 'none';
 
-                    // Rediriger vers le dashboard
-                    window.location.href = '/dashboard';
-                } catch (error: any) {
-                    errorDiv.textContent = error.message || 'Registration failed';
-                    errorDiv.style.display = 'block';
+				// Désactiver le bouton
+				const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
+				submitBtn.disabled = true;
+				submitBtn.textContent = 'Creating account...';
 
-                    // Réactiver le bouton
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Create Account';
-                }
-            });
-        }
-    }
+				try
+				{
+					await ApiService.register(username, email, password, display_name || undefined);
+
+					// Rediriger vers le dashboard
+					window.location.href = '/dashboard';
+				}
+				catch (error: any)
+				{
+					errorDiv.textContent = error.message || 'Registration failed';
+					errorDiv.style.display = 'block';
+
+					// Réactiver le bouton
+					submitBtn.disabled = false;
+					submitBtn.textContent = 'S\'inscrire';
+				}
+			});
+		}
+	}
 }
