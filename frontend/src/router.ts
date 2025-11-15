@@ -45,7 +45,8 @@ export class Router
 		this.routes.set('/tournament', () => this.renderTournament())
 	}
 
-	start(): void {
+	start(): void
+	{
 		document.addEventListener('click', (e) => {
 			const target = e.target as HTMLAnchorElement
 			if (target.matches('[data-route]')) {
@@ -58,26 +59,27 @@ export class Router
 		})
 
 		window.addEventListener('popstate', (e) => {
-    if (this.isTournamentGameActive) {
-        if (confirm('Quitter cette page annulera le tournoi en cours. Êtes-vous sur de vouloi retourner à l\'accueil ?')) {
-            this.isTournamentGameActive = false
-            if (this.currentGame) {
-                this.currentGame.destroy()
-                this.currentGame = null
-            }
-            this.tournamentManager?.reset()
-            document.body.classList.remove('fullscreen-game')
-            this.navigate('/')
-        } else {
-            e.preventDefault()
-            history.pushState({}, '', '/game')
-        }
-    } else {
-        this.handleRoute()
-    }
-})
+		if (this.isTournamentGameActive) {
+			if (confirm('Quitter cette page annulera le tournoi en cours. Êtes-vous sur de vouloi retourner à l\'accueil ?')) {
+				this.isTournamentGameActive = false
+				if (this.currentGame) {
+					this.currentGame.destroy()
+					this.currentGame = null
+				}
+				this.tournamentManager?.reset()
+				document.body.classList.remove('fullscreen-game')
+				this.navigate('/')
+			} else {
+				e.preventDefault()
+				history.pushState({}, '', '/game')
+			}
+		} else {
+			this.handleRoute()
+		}
+	})
 
-		this.handleRoute()
+			this.handleRoute()
+			this.updateHeaderAuth()
 	}
 
 	navigate(path: string): void {
@@ -102,6 +104,7 @@ private handleRoute(): void {
 
     if (handler) {
         handler()
+		this.updateHeaderAuth()
     } else {
         this.navigate('/')
     }
@@ -781,6 +784,54 @@ private handleRoute(): void {
 			})
 		}
 	}
+
+
+	private updateHeaderAuth(): void {
+    const token = ApiService.getToken();
+    const authButtons = document.getElementById('auth-buttons');
+    const userHeaderInfo = document.getElementById('user-header-info');
+
+    if (token) {
+        // Utilisateur connecté
+        if (authButtons) authButtons.style.display = 'none';
+        if (userHeaderInfo) userHeaderInfo.style.display = 'flex';
+
+        // Charger les infos utilisateur
+        ApiService.getMe().then(user => {
+            const avatarEl = document.getElementById('header-user-avatar');
+            const nameEl = document.getElementById('header-user-name');
+
+            if (avatarEl) {
+                if (user.avatar_url) {
+                    avatarEl.innerHTML = `<img src="${user.avatar_url}" alt="${user.username}">`;
+                } else {
+                    avatarEl.textContent = user.username.charAt(0).toUpperCase();
+                }
+            }
+
+            if (nameEl) {
+                nameEl.textContent = user.display_name || user.username;
+            }
+        }).catch(() => {
+            // En cas d'erreur, afficher les boutons de connexion
+            if (authButtons) authButtons.style.display = 'flex';
+            if (userHeaderInfo) userHeaderInfo.style.display = 'none';
+        });
+
+        // Gérer le logout
+        const logoutBtn = document.getElementById('header-logout-btn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                await ApiService.logout();
+                window.location.href = '/';
+            });
+        }
+    } else {
+        // Utilisateur non connecté
+        if (authButtons) authButtons.style.display = 'flex';
+        if (userHeaderInfo) userHeaderInfo.style.display = 'none';
+    }
+}
 
 
 

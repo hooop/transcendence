@@ -12,12 +12,7 @@ export class DashboardPage {
                     <!-- Header -->
                     <header class="dashboard-header">
                         <div class="header-content">
-                            <h1>🏓 ft_transcendence</h1>
-                            <div class="user-info">
-                                <span class="user-avatar">${this.getAvatarOrInitial(user)}</span>
-                                <span class="user-name">${user.display_name || user.username}</span>
-                                <button id="logout-btn" class="btn btn-small">Logout</button>
-                            </div>
+
                         </div>
                     </header>
 
