@@ -36,6 +36,23 @@ export interface FriendRequest {
     avatar_url?: string;
 }
 
+export interface Match {
+    id: string;
+    player1_id: string;
+    player1_username: string;
+    player1_display_name: string;
+    player2_id: string;
+    player2_username: string;
+    player2_display_name: string;
+    player1_score: number;
+    player2_score: number;
+    winner_username?: string;
+    status: string;
+    game_mode: string;
+    duration_seconds?: number;
+    ended_at: string;
+}
+
 export class ApiService {
     private static token: string | null = localStorage.getItem('token');
 
@@ -259,5 +276,96 @@ export class ApiService {
             const error = await response.json();
             throw new Error(error.error || 'Failed to delete avatar');
         }
+    }
+
+    // ===== Match History =====
+
+    static async getUserMatches(userId: string, limit: number = 10): Promise<Match[]> {
+        const response = await fetch(`${API_URL}/api/users/${userId}/matches?limit=${limit}`, {
+            headers: this.getHeaders(),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch match history');
+        }
+
+        return await response.json();
+    }
+
+    // ===== Online Game =====
+
+    static async getRooms(): Promise<any> {
+        const response = await fetch(`${API_URL}/api/game/rooms`, {
+            headers: this.getHeaders(),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to fetch rooms');
+        }
+
+        return await response.json();
+    }
+
+    static async createRoom(roomName: string, password?: string, maxScore: number = 5): Promise<any> {
+        const response = await fetch(`${API_URL}/api/game/rooms`, {
+            method: 'POST',
+            headers: this.getHeaders(),
+            body: JSON.stringify({ roomName, password, maxScore }),
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to create room');
+        }
+
+        return await response.json();
+    }
+
+    static async joinRoom(roomId: string, password?: string): Promise<any> {
+        const response = await fetch(`${API_URL}/api/game/rooms/${roomId}/join`, {
+            method: 'POST',
+            headers: this.getHeaders(),
+            body: JSON.stringify({ password }),
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to join room');
+        }
+
+        return await response.json();
+    }
+
+    static async leaveRoom(roomId: string): Promise<void> {
+        const response = await fetch(`${API_URL}/api/game/rooms/${roomId}/leave`, {
+            method: 'DELETE',
+            headers: this.getHeaders(),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to leave room');
+        }
+    }
+
+    static async saveMatch(matchData: {
+        roomId: string;
+        winnerId: string;
+        player1Id: string;
+        player2Id: string;
+        player1Score: number;
+        player2Score: number;
+        duration: number;
+    }): Promise<any> {
+        const response = await fetch(`${API_URL}/api/game/match`, {
+            method: 'POST',
+            headers: this.getHeaders(),
+            body: JSON.stringify(matchData),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to save match');
+        }
+
+        return await response.json();
     }
 }

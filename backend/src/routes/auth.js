@@ -15,12 +15,11 @@ async function authRoutes(fastify, options) {
 
     try {
       // Vérifier si l'utilisateur existe déjà
-      const existingUser = await fastify.pg.query(
-        'SELECT id FROM users WHERE username = $1 OR email = $2',
-        [username, email]
-      );
+      const existingUser = fastify.db.prepare(
+        'SELECT id FROM users WHERE username = ? OR email = ?'
+      ).get(username, email);
 
-      if (existingUser.rows.length > 0) {
+      if (existingUser) {
         return reply.status(409).send({
           error: 'Username ou email déjà utilisé',
         });
@@ -30,20 +29,22 @@ async function authRoutes(fastify, options) {
       const passwordHash = await bcrypt.hash(password, 10);
 
       // Créer l'utilisateur
-      const result = await fastify.pg.query(
+      const insertUser = fastify.db.prepare(
         `INSERT INTO users (username, email, password_hash, display_name)
-         VALUES ($1, $2, $3, $4)
-         RETURNING id, username, email, display_name, created_at`,
-        [username, email, passwordHash, display_name || username]
+         VALUES (?, ?, ?, ?)`
       );
 
-      const user = result.rows[0];
+      insertUser.run(username, email, passwordHash, display_name || username);
+
+      // Récupérer l'utilisateur créé par son username
+      const user = fastify.db.prepare(
+        'SELECT id, username, email, display_name, created_at FROM users WHERE username = ?'
+      ).get(username);
 
       // Créer les statistiques de jeu pour l'utilisateur
-      await fastify.pg.query(
-        'INSERT INTO game_stats (user_id) VALUES ($1)',
-        [user.id]
-      );
+      fastify.db.prepare(
+        'INSERT INTO game_stats (user_id) VALUES (?)'
+      ).run(user.id);
 
       // Générer un token JWT
       const token = fastify.jwt.sign({
@@ -81,18 +82,15 @@ async function authRoutes(fastify, options) {
 
     try {
       // Récupérer l'utilisateur
-      const result = await fastify.pg.query(
-        'SELECT * FROM users WHERE username = $1 OR email = $1',
-        [username]
-      );
+      const user = fastify.db.prepare(
+        'SELECT * FROM users WHERE username = ? OR email = ?'
+      ).get(username, username);
 
-      if (result.rows.length === 0) {
+      if (!user) {
         return reply.status(401).send({
           error: 'Identifiants invalides',
         });
       }
-
-      const user = result.rows[0];
 
       // Vérifier le mot de passe
       const validPassword = await bcrypt.compare(password, user.password_hash);
@@ -104,10 +102,9 @@ async function authRoutes(fastify, options) {
       }
 
       // Mettre à jour le statut en ligne
-      await fastify.pg.query(
-        'UPDATE users SET is_online = true WHERE id = $1',
-        [user.id]
-      );
+      fastify.db.prepare(
+        'UPDATE users SET is_online = 1 WHERE id = ?'
+      ).run(user.id);
 
       // Générer un token JWT
       const token = fastify.jwt.sign({
@@ -140,10 +137,9 @@ async function authRoutes(fastify, options) {
   }, async (request, reply) => {
     try {
       // Mettre à jour le statut hors ligne
-      await fastify.pg.query(
-        'UPDATE users SET is_online = false, last_seen = CURRENT_TIMESTAMP WHERE id = $1',
-        [request.user.id]
-      );
+      fastify.db.prepare(
+        'UPDATE users SET is_online = 0, last_seen = CURRENT_TIMESTAMP WHERE id = ?'
+      ).run(request.user.id);
 
       return { message: 'Déconnexion réussie' };
     } catch (error) {
@@ -159,21 +155,20 @@ async function authRoutes(fastify, options) {
     onRequest: [fastify.authenticate],
   }, async (request, reply) => {
     try {
-      const result = await fastify.pg.query(
+      const user = fastify.db.prepare(
         `SELECT u.id, u.username, u.email, u.display_name, u.avatar_url,
                 u.is_online, u.created_at,
                 gs.total_matches, gs.wins, gs.losses, gs.ranking_points
          FROM users u
          LEFT JOIN game_stats gs ON u.id = gs.user_id
-         WHERE u.id = $1`,
-        [request.user.id]
-      );
+         WHERE u.id = ?`
+      ).get(request.user.id);
 
-      if (result.rows.length === 0) {
+      if (!user) {
         return reply.status(404).send({ error: 'Utilisateur non trouvé' });
       }
 
-      return result.rows[0];
+      return user;
     } catch (error) {
       fastify.log.error(error);
       return reply.status(500).send({

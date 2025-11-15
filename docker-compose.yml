@@ -1,27 +1,6 @@
 version: '3.8'
 
 services:
-  # Base de donnees PostgreSQL
-  postgres:
-    image: postgres:15-alpine
-    container_name: ft_transcendence_db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER:-transcendence}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-transcendence123}
-      POSTGRES_DB: ${POSTGRES_DB:-transcendence}
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "5432:5432"
-    networks:
-      - transcendence_network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-transcendence}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # Backend Fastify
   backend:
     build:
@@ -32,7 +11,7 @@ services:
     environment:
       NODE_ENV: ${NODE_ENV:-development}
       PORT: ${BACKEND_PORT:-3000}
-      DATABASE_URL: postgresql://${POSTGRES_USER:-transcendence}:${POSTGRES_PASSWORD:-transcendence123}@postgres:5432/${POSTGRES_DB:-transcendence}
+      SQLITE_PATH: ${SQLITE_PATH:-./data/transcendence.db}
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-this}
       OAUTH42_CLIENT_ID: ${OAUTH42_CLIENT_ID}
       OAUTH42_CLIENT_SECRET: ${OAUTH42_CLIENT_SECRET}
@@ -42,12 +21,10 @@ services:
       - "3000:3000"
     volumes:
       - ./backend:/app
+      - ./data:/app/data
       - /app/node_modules
     networks:
       - transcendence_network
-    depends_on:
-      postgres:
-        condition: service_healthy
     command: npm run dev
 
   # Frontend
@@ -66,10 +43,6 @@ services:
       - transcendence_network
     depends_on:
       - backend
-
-volumes:
-  postgres_data:
-    driver: local
 
 networks:
   transcendence_network:

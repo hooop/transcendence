@@ -5,6 +5,7 @@ import { AuthPages }			from './pages/AuthPages'
 import { DashboardPage }		from './pages/DashboardPage'
 import { ApiService }			from './services/api'
 import { TournamentConfigPage } from './pages/TournamentConfigPage'
+import { OnlineGamePage }		from './pages/OnlineGamePage'
 
 import gameModeTemplate			from './templates/game.html?raw';
 import homeTemplate				from './templates/home.html?raw';
@@ -35,6 +36,7 @@ export class Router
 
 		// Game routes
 		this.routes.set('/game', () => this.renderGameModeSelection())
+		this.routes.set('/online', () => this.renderOnlineGame())
 /* 		this.routes.set('/game/vs-friend', () => this.renderGame(false))
 		this.routes.set('/game/vs-ai', () => this.renderAIDifficultySelection())
 		this.routes.set('/game/vs-ai/easy', () => this.renderGame(true, AIDifficulty.EASY))
@@ -161,6 +163,21 @@ private handleRoute(): void {
 		{
 			this.navigate('/login')
 		})
+	}
+
+	private renderOnlineGame(): void
+	{
+		// Vérifier l'authentification
+		const token = ApiService.getToken();
+		if (!token)
+		{
+			this.navigate('/login');
+			return;
+		}
+
+		// Afficher la page de jeu en ligne
+		this.updatePageContent(OnlineGamePage.render())
+		OnlineGamePage.setupEventListeners()
 	}
 
 	// GAME

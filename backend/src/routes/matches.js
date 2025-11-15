@@ -19,17 +19,18 @@ async function matchesRoutes(fastify, options) {
         LEFT JOIN users w ON m.winner_id = w.id
       `;
 
-      const params = [limit];
+      const params = [];
 
       if (status) {
-        query += ' WHERE m.status = $2';
+        query += ' WHERE m.status = ?';
         params.push(status);
       }
 
-      query += ' ORDER BY m.created_at DESC LIMIT $1';
+      query += ' ORDER BY m.created_at DESC LIMIT ?';
+      params.push(limit);
 
-      const result = await fastify.pg.query(query, params);
-      return result.rows;
+      const result = fastify.db.prepare(query).all(...params);
+      return result;
 
     } catch (error) {
       fastify.log.error(error);
@@ -60,26 +61,28 @@ async function matchesRoutes(fastify, options) {
 
     try {
       // Vérifier que player2 existe
-      const userCheck = await fastify.pg.query(
-        'SELECT id FROM users WHERE id = $1',
-        [player2_id]
-      );
+      const userCheck = fastify.db.prepare(
+        'SELECT id FROM users WHERE id = ?'
+      ).get(player2_id);
 
-      if (userCheck.rows.length === 0) {
+      if (!userCheck) {
         return reply.status(404).send({
           error: 'Joueur 2 non trouvé',
         });
       }
 
       // Créer le match
-      const result = await fastify.pg.query(
+      const insertResult = fastify.db.prepare(
         `INSERT INTO matches (player1_id, player2_id, game_mode, status, started_at)
-         VALUES ($1, $2, $3, 'pending', CURRENT_TIMESTAMP)
-         RETURNING *`,
-        [player1_id, player2_id, game_mode]
-      );
+         VALUES (?, ?, ?, 'pending', CURRENT_TIMESTAMP)`
+      ).run(player1_id, player2_id, game_mode);
 
-      return reply.status(201).send(result.rows[0]);
+      // Récupérer le match créé
+      const match = fastify.db.prepare(
+        'SELECT * FROM matches WHERE id = ?'
+      ).get(insertResult.lastInsertRowid);
+
+      return reply.status(201).send(match);
 
     } catch (error) {
       fastify.log.error(error);
@@ -94,7 +97,7 @@ async function matchesRoutes(fastify, options) {
     const { id } = request.params;
 
     try {
-      const result = await fastify.pg.query(
+      const result = fastify.db.prepare(
         `SELECT m.*,
                 p1.username as player1_username, p1.display_name as player1_display_name,
                 p2.username as player2_username, p2.display_name as player2_display_name,
@@ -103,15 +106,14 @@ async function matchesRoutes(fastify, options) {
          JOIN users p1 ON m.player1_id = p1.id
          JOIN users p2 ON m.player2_id = p2.id
          LEFT JOIN users w ON m.winner_id = w.id
-         WHERE m.id = $1`,
-        [id]
-      );
+         WHERE m.id = ?`
+      ).get(id);
 
-      if (result.rows.length === 0) {
+      if (!result) {
         return reply.status(404).send({ error: 'Match non trouvé' });
       }
 
-      return result.rows[0];
+      return result;
 
     } catch (error) {
       fastify.log.error(error);
@@ -130,12 +132,11 @@ async function matchesRoutes(fastify, options) {
 
     try {
       // Vérifier que le match existe et que l'utilisateur est un des joueurs
-      const matchCheck = await fastify.pg.query(
-        'SELECT * FROM matches WHERE id = $1 AND (player1_id = $2 OR player2_id = $2)',
-        [id, request.user.id]
-      );
+      const matchCheck = fastify.db.prepare(
+        'SELECT * FROM matches WHERE id = ? AND (player1_id = ? OR player2_id = ?)'
+      ).get(id, request.user.id, request.user.id);
 
-      if (matchCheck.rows.length === 0) {
+      if (!matchCheck) {
         return reply.status(404).send({
           error: 'Match non trouvé ou vous n\'êtes pas autorisé à le modifier',
         });
@@ -144,25 +145,24 @@ async function matchesRoutes(fastify, options) {
       // Construire la requête de mise à jour
       const updates = [];
       const values = [];
-      let paramCount = 1;
 
       if (player1_score !== undefined) {
-        updates.push(`player1_score = $${paramCount++}`);
+        updates.push(`player1_score = ?`);
         values.push(player1_score);
       }
       if (player2_score !== undefined) {
-        updates.push(`player2_score = $${paramCount++}`);
+        updates.push(`player2_score = ?`);
         values.push(player2_score);
       }
       if (status) {
-        updates.push(`status = $${paramCount++}`);
+        updates.push(`status = ?`);
         values.push(status);
         if (status === 'completed') {
           updates.push(`ended_at = CURRENT_TIMESTAMP`);
         }
       }
       if (winner_id) {
-        updates.push(`winner_id = $${paramCount++}`);
+        updates.push(`winner_id = ?`);
         values.push(winner_id);
       }
 
@@ -174,53 +174,54 @@ async function matchesRoutes(fastify, options) {
 
       values.push(id);
 
-      const result = await fastify.pg.query(
-        `UPDATE matches SET ${updates.join(', ')} WHERE id = $${paramCount} RETURNING *`,
-        values
-      );
+      fastify.db.prepare(
+        `UPDATE matches SET ${updates.join(', ')} WHERE id = ?`
+      ).run(...values);
+
+      // Récupérer le match mis à jour
+      const match = fastify.db.prepare(
+        'SELECT * FROM matches WHERE id = ?'
+      ).get(id);
 
       // Si le match est terminé, mettre à jour les statistiques
       if (status === 'completed' && winner_id) {
-        const match = result.rows[0];
         const loser_id = winner_id === match.player1_id ? match.player2_id : match.player1_id;
 
         // Mettre à jour les stats du gagnant
-        await fastify.pg.query(
+        fastify.db.prepare(
           `UPDATE game_stats SET
            total_matches = total_matches + 1,
            wins = wins + 1,
-           total_points_scored = total_points_scored + $1,
-           total_points_conceded = total_points_conceded + $2,
+           total_points_scored = total_points_scored + ?,
+           total_points_conceded = total_points_conceded + ?,
            win_streak = win_streak + 1,
-           best_win_streak = GREATEST(best_win_streak, win_streak + 1),
+           best_win_streak = MAX(best_win_streak, win_streak + 1),
            ranking_points = ranking_points + 25
-           WHERE user_id = $3`,
-          [
-            winner_id === match.player1_id ? match.player1_score : match.player2_score,
-            winner_id === match.player1_id ? match.player2_score : match.player1_score,
-            winner_id
-          ]
+           WHERE user_id = ?`
+        ).run(
+          winner_id === match.player1_id ? match.player1_score : match.player2_score,
+          winner_id === match.player1_id ? match.player2_score : match.player1_score,
+          winner_id
         );
 
         // Mettre à jour les stats du perdant
-        await fastify.pg.query(
+        fastify.db.prepare(
           `UPDATE game_stats SET
            total_matches = total_matches + 1,
            losses = losses + 1,
-           total_points_scored = total_points_scored + $1,
-           total_points_conceded = total_points_conceded + $2,
+           total_points_scored = total_points_scored + ?,
+           total_points_conceded = total_points_conceded + ?,
            win_streak = 0,
-           ranking_points = GREATEST(ranking_points - 15, 0)
-           WHERE user_id = $3`,
-          [
-            loser_id === match.player1_id ? match.player1_score : match.player2_score,
-            loser_id === match.player1_id ? match.player2_score : match.player1_score,
-            loser_id
-          ]
+           ranking_points = MAX(ranking_points - 15, 0)
+           WHERE user_id = ?`
+        ).run(
+          loser_id === match.player1_id ? match.player1_score : match.player2_score,
+          loser_id === match.player1_id ? match.player2_score : match.player1_score,
+          loser_id
         );
       }
 
-      return result.rows[0];
+      return match;
 
     } catch (error) {
       fastify.log.error(error);
@@ -237,12 +238,11 @@ async function matchesRoutes(fastify, options) {
     const { id } = request.params;
 
     try {
-      const result = await fastify.pg.query(
-        'DELETE FROM matches WHERE id = $1 AND (player1_id = $2 OR player2_id = $2) RETURNING id',
-        [id, request.user.id]
-      );
+      const result = fastify.db.prepare(
+        'DELETE FROM matches WHERE id = ? AND (player1_id = ? OR player2_id = ?)'
+      ).run(id, request.user.id, request.user.id);
 
-      if (result.rows.length === 0) {
+      if (result.changes === 0) {
         return reply.status(404).send({
           error: 'Match non trouvé ou vous n\'êtes pas autorisé à le supprimer',
         });

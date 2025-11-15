@@ -3,16 +3,16 @@ async function usersRoutes(fastify, options) {
   // GET /api/users - Liste des utilisateurs
   fastify.get('/', async (request, reply) => {
     try {
-      const result = await fastify.pg.query(
+      const result = fastify.db.prepare(
         `SELECT u.id, u.username, u.display_name, u.avatar_url, u.is_online,
                 gs.wins, gs.losses, gs.ranking_points
          FROM users u
          LEFT JOIN game_stats gs ON u.id = gs.user_id
          ORDER BY gs.ranking_points DESC
          LIMIT 50`
-      );
+      ).all();
 
-      return result.rows;
+      return result;
     } catch (error) {
       fastify.log.error(error);
       return reply.status(500).send({
@@ -26,7 +26,7 @@ async function usersRoutes(fastify, options) {
     const { id } = request.params;
 
     try {
-      const result = await fastify.pg.query(
+      const result = fastify.db.prepare(
         `SELECT u.id, u.username, u.display_name, u.avatar_url, u.is_online,
                 u.created_at,
                 gs.total_matches, gs.wins, gs.losses, gs.draws,
@@ -34,15 +34,14 @@ async function usersRoutes(fastify, options) {
                 gs.win_streak, gs.best_win_streak, gs.ranking_points
          FROM users u
          LEFT JOIN game_stats gs ON u.id = gs.user_id
-         WHERE u.id = $1`,
-        [id]
-      );
+         WHERE u.id = ?`
+      ).get(id);
 
-      if (result.rows.length === 0) {
+      if (!result) {
         return reply.status(404).send({ error: 'Utilisateur non trouvé' });
       }
 
-      return result.rows[0];
+      return result;
     } catch (error) {
       fastify.log.error(error);
       return reply.status(500).send({
@@ -57,7 +56,7 @@ async function usersRoutes(fastify, options) {
     const { limit = 10 } = request.query;
 
     try {
-      const result = await fastify.pg.query(
+      const result = fastify.db.prepare(
         `SELECT m.id, m.player1_score, m.player2_score, m.status,
                 m.game_mode, m.duration_seconds, m.ended_at,
                 p1.id as player1_id, p1.username as player1_username,
@@ -69,13 +68,12 @@ async function usersRoutes(fastify, options) {
          JOIN users p1 ON m.player1_id = p1.id
          JOIN users p2 ON m.player2_id = p2.id
          LEFT JOIN users w ON m.winner_id = w.id
-         WHERE m.player1_id = $1 OR m.player2_id = $1
-         ORDER BY m.ended_at DESC NULLS LAST
-         LIMIT $2`,
-        [id, limit]
-      );
+         WHERE m.player1_id = ? OR m.player2_id = ?
+         ORDER BY m.ended_at DESC
+         LIMIT ?`
+      ).all(id, id, limit);
 
-      return result.rows;
+      return result;
     } catch (error) {
       fastify.log.error(error);
       return reply.status(500).send({
@@ -89,16 +87,13 @@ async function usersRoutes(fastify, options) {
     const { id } = request.params;
 
     try {
-      const statsResult = await fastify.pg.query(
-        'SELECT * FROM game_stats WHERE user_id = $1',
-        [id]
-      );
+      const stats = fastify.db.prepare(
+        'SELECT * FROM game_stats WHERE user_id = ?'
+      ).get(id);
 
-      if (statsResult.rows.length === 0) {
+      if (!stats) {
         return reply.status(404).send({ error: 'Statistiques non trouvées' });
       }
-
-      const stats = statsResult.rows[0];
 
       // Calculer le ratio victoires/défaites
       const winRate = stats.total_matches > 0

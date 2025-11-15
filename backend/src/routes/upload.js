@@ -63,20 +63,18 @@ async function uploadRoutes(fastify, options) {
       const avatarUrl = `http://localhost:3000/uploads/avatars/${filename}`;
 
       // Mettre à jour l'utilisateur dans la base de données
-      await fastify.pg.query(
-        'UPDATE users SET avatar_url = $1 WHERE id = $2',
-        [avatarUrl, userId]
-      );
+      fastify.db.prepare(
+        'UPDATE users SET avatar_url = ? WHERE id = ?'
+      ).run(avatarUrl, userId);
 
       // Récupérer l'utilisateur mis à jour
-      const result = await fastify.pg.query(
-        'SELECT id, username, email, display_name, avatar_url FROM users WHERE id = $1',
-        [userId]
-      );
+      const user = fastify.db.prepare(
+        'SELECT id, username, email, display_name, avatar_url FROM users WHERE id = ?'
+      ).get(userId);
 
       return {
         message: 'Avatar uploaded successfully',
-        user: result.rows[0],
+        user: user,
         avatar_url: avatarUrl,
       };
 
@@ -96,12 +94,11 @@ async function uploadRoutes(fastify, options) {
       const userId = request.user.id;
 
       // Récupérer l'ancien avatar
-      const userResult = await fastify.pg.query(
-        'SELECT avatar_url FROM users WHERE id = $1',
-        [userId]
-      );
+      const user = fastify.db.prepare(
+        'SELECT avatar_url FROM users WHERE id = ?'
+      ).get(userId);
 
-      const oldAvatarUrl = userResult.rows[0]?.avatar_url;
+      const oldAvatarUrl = user?.avatar_url;
 
       // Supprimer l'ancien fichier s'il existe
       if (oldAvatarUrl && oldAvatarUrl.includes('localhost:3000')) {
@@ -114,10 +111,9 @@ async function uploadRoutes(fastify, options) {
       }
 
       // Mettre à jour la base de données
-      await fastify.pg.query(
-        'UPDATE users SET avatar_url = NULL WHERE id = $1',
-        [userId]
-      );
+      fastify.db.prepare(
+        'UPDATE users SET avatar_url = NULL WHERE id = ?'
+      ).run(userId);
 
       return {
         message: 'Avatar deleted successfully',

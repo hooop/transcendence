@@ -11,28 +11,23 @@ async function chatRoutes(fastify, options) {
       const userId = request.user.id;
 
       // Récupérer les derniers messages de chaque conversation
-      const result = await fastify.pg.query(
+      const result = fastify.db.prepare(
         `WITH latest_messages AS (
-          SELECT DISTINCT ON (
+          SELECT m.*,
             CASE
-              WHEN sender_id = $1 THEN recipient_id
+              WHEN sender_id = ? THEN recipient_id
               ELSE sender_id
-            END
-          )
-          m.*,
-          CASE
-            WHEN sender_id = $1 THEN recipient_id
-            ELSE sender_id
-          END as other_user_id
+            END as other_user_id,
+            ROW_NUMBER() OVER (
+              PARTITION BY CASE
+                WHEN sender_id = ? THEN recipient_id
+                ELSE sender_id
+              END
+              ORDER BY created_at DESC
+            ) as rn
           FROM messages m
-          WHERE (sender_id = $1 OR recipient_id = $1)
+          WHERE (sender_id = ? OR recipient_id = ?)
           AND recipient_id IS NOT NULL
-          ORDER BY
-            CASE
-              WHEN sender_id = $1 THEN recipient_id
-              ELSE sender_id
-            END,
-            created_at DESC
         )
         SELECT
           lm.other_user_id as user_id,
@@ -46,17 +41,17 @@ async function chatRoutes(fastify, options) {
           (SELECT COUNT(*)
            FROM messages
            WHERE sender_id = lm.other_user_id
-           AND recipient_id = $1
-           AND is_read = false) as unread_count
+           AND recipient_id = ?
+           AND is_read = 0) as unread_count
         FROM latest_messages lm
         JOIN users u ON u.id = lm.other_user_id
-        ORDER BY lm.created_at DESC`,
-        [userId]
-      );
+        WHERE lm.rn = 1
+        ORDER BY lm.created_at DESC`
+      ).all(userId, userId, userId, userId, userId);
 
       return {
-        conversations: result.rows,
-        total: result.rows.length,
+        conversations: result,
+        total: result.length,
       };
     } catch (error) {
       fastify.log.error(error);
@@ -89,35 +84,34 @@ async function chatRoutes(fastify, options) {
           s.avatar_url as sender_avatar
         FROM messages m
         JOIN users s ON s.id = m.sender_id
-        WHERE ((m.sender_id = $1 AND m.recipient_id = $2)
-           OR (m.sender_id = $2 AND m.recipient_id = $1))
+        WHERE ((m.sender_id = ? AND m.recipient_id = ?)
+           OR (m.sender_id = ? AND m.recipient_id = ?))
       `;
 
-      const params = [currentUserId, userId];
+      const params = [currentUserId, userId, userId, currentUserId];
 
       if (before) {
-        query += ` AND m.created_at < $3`;
+        query += ` AND m.created_at < ?`;
         params.push(before);
       }
 
-      query += ` ORDER BY m.created_at DESC LIMIT $${params.length + 1}`;
+      query += ` ORDER BY m.created_at DESC LIMIT ?`;
       params.push(limit);
 
-      const result = await fastify.pg.query(query, params);
+      const result = fastify.db.prepare(query).all(...params);
 
       // Marquer les messages comme lus
-      await fastify.pg.query(
+      fastify.db.prepare(
         `UPDATE messages
-         SET is_read = true
-         WHERE sender_id = $1
-         AND recipient_id = $2
-         AND is_read = false`,
-        [userId, currentUserId]
-      );
+         SET is_read = 1
+         WHERE sender_id = ?
+         AND recipient_id = ?
+         AND is_read = 0`
+      ).run(userId, currentUserId);
 
       return {
-        messages: result.rows.reverse(), // Ordre chronologique
-        total: result.rows.length,
+        messages: result.reverse(), // Ordre chronologique
+        total: result.length,
       };
     } catch (error) {
       fastify.log.error(error);
@@ -142,26 +136,26 @@ async function chatRoutes(fastify, options) {
       }
 
       // Vérifier que le destinataire existe
-      const userCheck = await fastify.pg.query(
-        'SELECT id FROM users WHERE id = $1',
-        [recipient_id]
-      );
+      const userCheck = fastify.db.prepare(
+        'SELECT id FROM users WHERE id = ?'
+      ).get(recipient_id);
 
-      if (userCheck.rows.length === 0) {
+      if (!userCheck) {
         return reply.status(404).send({
           error: 'Destinataire non trouvé',
         });
       }
 
       // Insérer le message
-      const result = await fastify.pg.query(
+      const insertResult = fastify.db.prepare(
         `INSERT INTO messages (sender_id, recipient_id, content)
-         VALUES ($1, $2, $3)
-         RETURNING id, sender_id, recipient_id, content, message_type, is_read, created_at`,
-        [senderId, recipient_id, content.trim()]
-      );
+         VALUES (?, ?, ?)`
+      ).run(senderId, recipient_id, content.trim());
 
-      const message = result.rows[0];
+      // Récupérer le message créé
+      const message = fastify.db.prepare(
+        'SELECT id, sender_id, recipient_id, content, message_type, is_read, created_at FROM messages WHERE id = ?'
+      ).get(insertResult.lastInsertRowid);
 
       // Envoyer via WebSocket si le destinataire est connecté
       const recipientWs = clients.get(recipient_id);
@@ -212,10 +206,9 @@ async function chatRoutes(fastify, options) {
     fastify.log.info(`Client connecté au chat: ${userId}`);
 
     // Mettre à jour le statut en ligne
-    fastify.pg.query(
-      'UPDATE users SET is_online = true WHERE id = $1',
-      [userId]
-    ).catch(err => fastify.log.error(err));
+    fastify.db.prepare(
+      'UPDATE users SET is_online = 1 WHERE id = ?'
+    ).run(userId);
 
     // Notifier les amis de la connexion
     notifyFriendsOfStatus(fastify, userId, true);
@@ -259,10 +252,9 @@ async function chatRoutes(fastify, options) {
       fastify.log.info(`Client déconnecté du chat: ${userId}`);
 
       // Mettre à jour le statut hors ligne
-      await fastify.pg.query(
-        'UPDATE users SET is_online = false, last_seen = CURRENT_TIMESTAMP WHERE id = $1',
-        [userId]
-      ).catch(err => fastify.log.error(err));
+      fastify.db.prepare(
+        'UPDATE users SET is_online = 0, last_seen = CURRENT_TIMESTAMP WHERE id = ?'
+      ).run(userId);
 
       // Notifier les amis de la déconnexion
       notifyFriendsOfStatus(fastify, userId, false);
@@ -290,12 +282,11 @@ async function handleSendMessage(fastify, senderId, payload, senderSocket) {
 
   try {
     // Récupérer les infos de l'expéditeur
-    const senderResult = await fastify.pg.query(
-      'SELECT username, display_name, avatar_url FROM users WHERE id = $1',
-      [senderId]
-    );
+    const sender = fastify.db.prepare(
+      'SELECT username, display_name, avatar_url FROM users WHERE id = ?'
+    ).get(senderId);
 
-    if (senderResult.rows.length === 0) {
+    if (!sender) {
       senderSocket.send(JSON.stringify({
         type: 'error',
         message: 'Utilisateur non trouvé',
@@ -303,17 +294,16 @@ async function handleSendMessage(fastify, senderId, payload, senderSocket) {
       return;
     }
 
-    const sender = senderResult.rows[0];
-
     // Insérer le message dans la DB
-    const result = await fastify.pg.query(
+    const insertResult = fastify.db.prepare(
       `INSERT INTO messages (sender_id, recipient_id, content)
-       VALUES ($1, $2, $3)
-       RETURNING id, sender_id, recipient_id, content, message_type, is_read, created_at`,
-      [senderId, recipient_id, content.trim()]
-    );
+       VALUES (?, ?, ?)`
+    ).run(senderId, recipient_id, content.trim());
 
-    const message = result.rows[0];
+    // Récupérer le message créé
+    const message = fastify.db.prepare(
+      'SELECT id, sender_id, recipient_id, content, message_type, is_read, created_at FROM messages WHERE id = ?'
+    ).get(insertResult.lastInsertRowid);
 
     // Préparer le message complet
     const fullMessage = {
@@ -353,14 +343,13 @@ async function handleMarkAsRead(fastify, userId, payload) {
   if (!sender_id) return;
 
   try {
-    await fastify.pg.query(
+    fastify.db.prepare(
       `UPDATE messages
-       SET is_read = true
-       WHERE sender_id = $1
-       AND recipient_id = $2
-       AND is_read = false`,
-      [sender_id, userId]
-    );
+       SET is_read = 1
+       WHERE sender_id = ?
+       AND recipient_id = ?
+       AND is_read = 0`
+    ).run(sender_id, userId);
 
     // Notifier l'expéditeur que ses messages ont été lus
     const senderWs = clients.get(sender_id);
@@ -395,20 +384,19 @@ function handleTyping(senderId, payload) {
 async function notifyFriendsOfStatus(fastify, userId, isOnline) {
   try {
     // Récupérer la liste des amis
-    const friendsResult = await fastify.pg.query(
+    const friends = fastify.db.prepare(
       `SELECT
         CASE
-          WHEN user_id = $1 THEN friend_id
+          WHEN user_id = ? THEN friend_id
           ELSE user_id
         END as friend_id
        FROM friendships
-       WHERE (user_id = $1 OR friend_id = $1)
-       AND status = 'accepted'`,
-      [userId]
-    );
+       WHERE (user_id = ? OR friend_id = ?)
+       AND status = 'accepted'`
+    ).all(userId, userId, userId);
 
     // Notifier chaque ami connecté
-    for (const row of friendsResult.rows) {
+    for (const row of friends) {
       const friendWs = clients.get(row.friend_id);
       if (friendWs && friendWs.readyState === 1) {
         friendWs.send(JSON.stringify({

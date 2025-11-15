@@ -54,57 +54,51 @@ async function oauth42Routes(fastify, options) {
       const avatar_url = userData.image?.link || userData.image?.versions?.medium;
 
       // Vérifier si l'utilisateur existe déjà avec cet OAuth ID
-      let userResult = await fastify.pg.query(
-        'SELECT * FROM users WHERE oauth_provider = $1 AND oauth_id = $2',
-        ['42', oauth_id]
-      );
+      let user = fastify.db.prepare(
+        'SELECT * FROM users WHERE oauth_provider = ? AND oauth_id = ?'
+      ).get('42', oauth_id);
 
-      let user;
-
-      if (userResult.rows.length > 0) {
+      if (user) {
         // Utilisateur existant - mettre à jour les informations et marquer comme en ligne
-        user = userResult.rows[0];
-        await fastify.pg.query(
+        fastify.db.prepare(
           `UPDATE users
-           SET is_online = true,
+           SET is_online = 1,
                last_seen = CURRENT_TIMESTAMP,
-               avatar_url = COALESCE($1, avatar_url),
-               display_name = COALESCE($2, display_name)
-           WHERE id = $3`,
-          [avatar_url, display_name, user.id]
-        );
+               avatar_url = COALESCE(?, avatar_url),
+               display_name = COALESCE(?, display_name)
+           WHERE id = ?`
+        ).run(avatar_url, display_name, user.id);
       } else {
         // Nouvel utilisateur - créer le compte
 
         // Vérifier si username ou email existe déjà
-        const existingUser = await fastify.pg.query(
-          'SELECT id FROM users WHERE username = $1 OR email = $2',
-          [username, email]
-        );
+        const existingUser = fastify.db.prepare(
+          'SELECT id FROM users WHERE username = ? OR email = ?'
+        ).get(username, email);
 
         let finalUsername = username;
 
         // Si username existe, ajouter un suffixe aléatoire
-        if (existingUser.rows.length > 0) {
+        if (existingUser) {
           const randomSuffix = Math.floor(Math.random() * 10000);
           finalUsername = `${username}_${randomSuffix}`;
         }
 
         // Créer l'utilisateur
-        userResult = await fastify.pg.query(
+        fastify.db.prepare(
           `INSERT INTO users (username, email, display_name, avatar_url, oauth_provider, oauth_id, is_online)
-           VALUES ($1, $2, $3, $4, $5, $6, true)
-           RETURNING id, username, email, display_name, avatar_url, created_at`,
-          [finalUsername, email, display_name, avatar_url, '42', oauth_id]
-        );
+           VALUES (?, ?, ?, ?, ?, ?, 1)`
+        ).run(finalUsername, email, display_name, avatar_url, '42', oauth_id);
 
-        user = userResult.rows[0];
+        // Récupérer l'utilisateur créé par oauth_id
+        user = fastify.db.prepare(
+          'SELECT id, username, email, display_name, avatar_url, created_at FROM users WHERE oauth_provider = ? AND oauth_id = ?'
+        ).get('42', oauth_id);
 
         // Créer les statistiques de jeu pour le nouvel utilisateur
-        await fastify.pg.query(
-          'INSERT INTO game_stats (user_id) VALUES ($1)',
-          [user.id]
-        );
+        fastify.db.prepare(
+          'INSERT INTO game_stats (user_id) VALUES (?)'
+        ).run(user.id);
 
         fastify.log.info(`Nouvel utilisateur créé via OAuth42: ${user.username}`);
       }

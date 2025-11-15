@@ -1,4 +1,4 @@
-import { ApiService, User, Friend, FriendRequest } from '../services/api'
+import { ApiService, User, Friend, FriendRequest, Match } from '../services/api'
 
 export class DashboardPage {
 
@@ -69,17 +69,22 @@ export class DashboardPage {
                         <h3>Tournament</h3>
                         <p>Compete in a tournament</p>
                     </a>
-                    <div class="game-mode-card disabled">
+                    <a href="/online" data-route class="game-mode-card">
                         <div class="mode-icon">🌐</div>
                         <h3>Online Match</h3>
-                        <p>Coming soon!</p>
-                    </div>
+                        <p>Play against other players online</p>
+                    </a>
                 </div>
             </div>
         `;
     }
 
     private static renderProfileTab(user: User): string {
+        const totalMatches = (user as any).total_matches || 0;
+        const wins = (user as any).wins || 0;
+        const losses = (user as any).losses || 0;
+        const winRate = totalMatches > 0 ? ((wins / totalMatches) * 100).toFixed(1) : '0.0';
+
         return `
             <div class="profile-section">
                 <div class="profile-card">
@@ -108,16 +113,28 @@ export class DashboardPage {
 
                     <div class="profile-stats">
                         <div class="stat">
-                            <div class="stat-value">${(user as any).total_matches || 0}</div>
-                            <div class="stat-label">Matches</div>
+                            <div class="stat-value">${totalMatches}</div>
+                            <div class="stat-label">Total Matches</div>
                         </div>
-                        <div class="stat">
-                            <div class="stat-value">${(user as any).wins || 0}</div>
+                        <div class="stat stat-wins">
+                            <div class="stat-value">${wins}</div>
                             <div class="stat-label">Wins</div>
                         </div>
-                        <div class="stat">
-                            <div class="stat-value">${(user as any).ranking_points || 1000}</div>
-                            <div class="stat-label">Ranking</div>
+                        <div class="stat stat-losses">
+                            <div class="stat-value">${losses}</div>
+                            <div class="stat-label">Losses</div>
+                        </div>
+                        <div class="stat stat-winrate">
+                            <div class="stat-value">${winRate}%</div>
+                            <div class="stat-label">Win Rate</div>
+                        </div>
+                    </div>
+
+                    <!-- Match History -->
+                    <div class="match-history-section">
+                        <h3>📊 Match History</h3>
+                        <div id="match-history-container">
+                            <div class="loading">Loading match history...</div>
                         </div>
                     </div>
                 </div>
@@ -280,6 +297,11 @@ export class DashboardPage {
                         content.innerHTML = await this.renderFriendsTab();
                         this.setupFriendsListeners();
                     }
+
+                    // Load match history when profile tab is shown
+                    if (tabName === 'profile') {
+                        this.loadMatchHistory();
+                    }
                 }
             });
         });
@@ -295,6 +317,11 @@ export class DashboardPage {
 
         // Avatar upload
         this.setupAvatarUpload();
+
+        // Load match history if profile tab is active
+        if (document.getElementById('tab-profile')?.classList.contains('active')) {
+            this.loadMatchHistory();
+        }
     }
 
     private static setupAvatarUpload(): void {
@@ -510,5 +537,66 @@ export class DashboardPage {
                 });
             });
         };
+    }
+
+    // Load and display match history
+    private static async loadMatchHistory(): Promise<void> {
+        const container = document.getElementById('match-history-container');
+        if (!container) return;
+
+        try {
+            const user = await ApiService.getMe();
+            const matches = await ApiService.getUserMatches(user.id, 10);
+
+            if (matches.length === 0) {
+                container.innerHTML = '<p class="empty-state">No matches played yet. Start playing to build your history!</p>';
+                return;
+            }
+
+            container.innerHTML = matches.map(match => this.renderMatchItem(match, user.id)).join('');
+        } catch (error) {
+            container.innerHTML = '<p class="error-state">Failed to load match history</p>';
+            console.error('Failed to load match history:', error);
+        }
+    }
+
+    private static renderMatchItem(match: Match, currentUserId: string): string {
+        const isPlayer1 = match.player1_id === currentUserId;
+        const opponentName = isPlayer1 ? match.player2_display_name : match.player1_display_name;
+        const playerScore = isPlayer1 ? match.player1_score : match.player2_score;
+        const opponentScore = isPlayer1 ? match.player2_score : match.player1_score;
+
+        let resultClass = 'match-draw';
+        let resultText = 'Draw';
+
+        if (match.winner_username) {
+            const isWinner = (isPlayer1 && match.winner_username === match.player1_username) ||
+                           (!isPlayer1 && match.winner_username === match.player2_username);
+            resultClass = isWinner ? 'match-win' : 'match-loss';
+            resultText = isWinner ? 'Win' : 'Loss';
+        }
+
+        const date = new Date(match.ended_at);
+        const formattedDate = date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+
+        return `
+            <div class="match-item ${resultClass}">
+                <div class="match-result">
+                    <span class="result-badge">${resultText}</span>
+                </div>
+                <div class="match-info">
+                    <div class="match-opponent">vs ${opponentName}</div>
+                    <div class="match-score">${playerScore} - ${opponentScore}</div>
+                    <div class="match-meta">
+                        <span class="match-date">${formattedDate}</span>
+                        ${match.game_mode !== 'classic' ? `<span class="match-mode">${match.game_mode}</span>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
     }
 }

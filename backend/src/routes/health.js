@@ -3,7 +3,7 @@ async function healthRoutes(fastify, options) {
   fastify.get('/health', async (request, reply) => {
     try {
       // Tester la connexion à la base de données
-      await fastify.pg.query('SELECT 1');
+      fastify.db.prepare('SELECT 1').get();
 
       return {
         status: 'healthy',

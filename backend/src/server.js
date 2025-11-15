@@ -29,12 +29,8 @@ async function start() {
       secret: config.jwtSecret,
     });
 
-    await app.register(require('@fastify/postgres'), {
-      host: dbConfig.host,
-      port: dbConfig.port,
-      user: dbConfig.user,
-      password: dbConfig.password,
-      database: dbConfig.database,
+    await app.register(require('./plugins/sqlite'), {
+      path: dbConfig.path,
     });
 
     await app.register(require('@fastify/websocket'));
@@ -64,6 +60,7 @@ async function start() {
     await app.register(require('./routes/friendships'), { prefix: '/api/friendships' });
     await app.register(require('./routes/upload'), { prefix: '/api/upload' });
     await app.register(require('./routes/chat'), { prefix: '/api/chat' });
+    await app.register(require('./routes/game'), { prefix: '/api/game' });
 
     // Route racine
     app.get('/', async (request, reply) => {

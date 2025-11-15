@@ -8,7 +8,7 @@ async function friendshipsRoutes(fastify, options) {
       const userId = request.user.id;
 
       // Récupérer tous les amis acceptés (dans les deux sens)
-      const result = await fastify.pg.query(
+      const result = fastify.db.prepare(
         `SELECT
           f.id as friendship_id,
           f.created_at as friends_since,
@@ -21,19 +21,18 @@ async function friendshipsRoutes(fastify, options) {
          FROM friendships f
          JOIN users u ON (
            CASE
-             WHEN f.user_id = $1 THEN u.id = f.friend_id
-             WHEN f.friend_id = $1 THEN u.id = f.user_id
+             WHEN f.user_id = ? THEN u.id = f.friend_id
+             WHEN f.friend_id = ? THEN u.id = f.user_id
            END
          )
-         WHERE (f.user_id = $1 OR f.friend_id = $1)
+         WHERE (f.user_id = ? OR f.friend_id = ?)
          AND f.status = 'accepted'
-         ORDER BY u.is_online DESC, u.username ASC`,
-        [userId]
-      );
+         ORDER BY u.is_online DESC, u.username ASC`
+      ).all(userId, userId, userId, userId);
 
       return {
-        friends: result.rows,
-        total: result.rows.length,
+        friends: result,
+        total: result.length,
       };
     } catch (error) {
       fastify.log.error(error);
@@ -51,7 +50,7 @@ async function friendshipsRoutes(fastify, options) {
       const userId = request.user.id;
 
       // Récupérer les demandes reçues (en attente)
-      const received = await fastify.pg.query(
+      const received = fastify.db.prepare(
         `SELECT
           f.id as friendship_id,
           f.created_at,
@@ -61,14 +60,13 @@ async function friendshipsRoutes(fastify, options) {
           u.avatar_url
          FROM friendships f
          JOIN users u ON u.id = f.user_id
-         WHERE f.friend_id = $1
+         WHERE f.friend_id = ?
          AND f.status = 'pending'
-         ORDER BY f.created_at DESC`,
-        [userId]
-      );
+         ORDER BY f.created_at DESC`
+      ).all(userId);
 
       // Récupérer les demandes envoyées (en attente)
-      const sent = await fastify.pg.query(
+      const sent = fastify.db.prepare(
         `SELECT
           f.id as friendship_id,
           f.created_at,
@@ -78,15 +76,14 @@ async function friendshipsRoutes(fastify, options) {
           u.avatar_url
          FROM friendships f
          JOIN users u ON u.id = f.friend_id
-         WHERE f.user_id = $1
+         WHERE f.user_id = ?
          AND f.status = 'pending'
-         ORDER BY f.created_at DESC`,
-        [userId]
-      );
+         ORDER BY f.created_at DESC`
+      ).all(userId);
 
       return {
-        received: received.rows,
-        sent: sent.rows,
+        received: received,
+        sent: sent,
       };
     } catch (error) {
       fastify.log.error(error);
@@ -103,7 +100,7 @@ async function friendshipsRoutes(fastify, options) {
     try {
       const userId = request.user.id;
 
-      const result = await fastify.pg.query(
+      const result = fastify.db.prepare(
         `SELECT
           f.id as friendship_id,
           f.created_at as blocked_at,
@@ -113,15 +110,14 @@ async function friendshipsRoutes(fastify, options) {
           u.avatar_url
          FROM friendships f
          JOIN users u ON u.id = f.friend_id
-         WHERE f.user_id = $1
+         WHERE f.user_id = ?
          AND f.status = 'blocked'
-         ORDER BY f.created_at DESC`,
-        [userId]
-      );
+         ORDER BY f.created_at DESC`
+      ).all(userId);
 
       return {
-        blocked: result.rows,
-        total: result.rows.length,
+        blocked: result,
+        total: result.length,
       };
     } catch (error) {
       fastify.log.error(error);
@@ -154,27 +150,25 @@ async function friendshipsRoutes(fastify, options) {
 
     try {
       // Vérifier que l'utilisateur cible existe
-      const userCheck = await fastify.pg.query(
-        'SELECT id, username FROM users WHERE id = $1',
-        [friend_id]
-      );
+      const userCheck = fastify.db.prepare(
+        'SELECT id, username FROM users WHERE id = ?'
+      ).get(friend_id);
 
-      if (userCheck.rows.length === 0) {
+      if (!userCheck) {
         return reply.status(404).send({
           error: 'Utilisateur non trouvé',
         });
       }
 
       // Vérifier qu'une relation n'existe pas déjà (dans les deux sens)
-      const existingFriendship = await fastify.pg.query(
+      const existingFriendship = fastify.db.prepare(
         `SELECT id, status FROM friendships
-         WHERE (user_id = $1 AND friend_id = $2)
-         OR (user_id = $2 AND friend_id = $1)`,
-        [userId, friend_id]
-      );
+         WHERE (user_id = ? AND friend_id = ?)
+         OR (user_id = ? AND friend_id = ?)`
+      ).get(userId, friend_id, friend_id, userId);
 
-      if (existingFriendship.rows.length > 0) {
-        const status = existingFriendship.rows[0].status;
+      if (existingFriendship) {
+        const status = existingFriendship.status;
         if (status === 'accepted') {
           return reply.status(409).send({
             error: 'Vous êtes déjà amis',
@@ -191,20 +185,21 @@ async function friendshipsRoutes(fastify, options) {
       }
 
       // Créer la demande d'ami
-      const result = await fastify.pg.query(
+      const insertResult = fastify.db.prepare(
         `INSERT INTO friendships (user_id, friend_id, status)
-         VALUES ($1, $2, 'pending')
-         RETURNING id, user_id, friend_id, status, created_at`,
-        [userId, friend_id]
-      );
+         VALUES (?, ?, 'pending')`
+      ).run(userId, friend_id);
 
-      const friendship = result.rows[0];
+      // Récupérer la demande créée
+      const friendship = fastify.db.prepare(
+        'SELECT id, user_id, friend_id, status, created_at FROM friendships WHERE id = ?'
+      ).get(insertResult.lastInsertRowid);
 
       return reply.status(201).send({
         message: 'Demande d\'ami envoyée',
         friendship: {
           id: friendship.id,
-          friend: userCheck.rows[0],
+          friend: userCheck,
           status: friendship.status,
           created_at: friendship.created_at,
         },
@@ -235,18 +230,15 @@ async function friendshipsRoutes(fastify, options) {
 
     try {
       // Récupérer la demande d'ami
-      const friendshipResult = await fastify.pg.query(
-        'SELECT * FROM friendships WHERE id = $1',
-        [id]
-      );
+      const friendship = fastify.db.prepare(
+        'SELECT * FROM friendships WHERE id = ?'
+      ).get(id);
 
-      if (friendshipResult.rows.length === 0) {
+      if (!friendship) {
         return reply.status(404).send({
           error: 'Demande d\'ami non trouvée',
         });
       }
-
-      const friendship = friendshipResult.rows[0];
 
       // Vérifier les permissions selon l'action
       if (action === 'accept') {
@@ -264,10 +256,9 @@ async function friendshipsRoutes(fastify, options) {
         }
 
         // Accepter la demande
-        await fastify.pg.query(
-          'UPDATE friendships SET status = $1 WHERE id = $2',
-          ['accepted', id]
-        );
+        fastify.db.prepare(
+          'UPDATE friendships SET status = ? WHERE id = ?'
+        ).run('accepted', id);
 
         return {
           message: 'Demande d\'ami acceptée',
@@ -292,10 +283,9 @@ async function friendshipsRoutes(fastify, options) {
         }
 
         // Supprimer la demande (refus)
-        await fastify.pg.query(
-          'DELETE FROM friendships WHERE id = $1',
-          [id]
-        );
+        fastify.db.prepare(
+          'DELETE FROM friendships WHERE id = ?'
+        ).run(id);
 
         return {
           message: 'Demande d\'ami refusée',
@@ -311,21 +301,19 @@ async function friendshipsRoutes(fastify, options) {
 
         // Si la demande vient de l'autre personne, on la supprime et on crée un blocage
         if (friendship.user_id !== userId) {
-          await fastify.pg.query('DELETE FROM friendships WHERE id = $1', [id]);
+          fastify.db.prepare('DELETE FROM friendships WHERE id = ?').run(id);
 
           // Créer une nouvelle entrée de blocage
-          await fastify.pg.query(
+          fastify.db.prepare(
             `INSERT INTO friendships (user_id, friend_id, status)
-             VALUES ($1, $2, 'blocked')
-             ON CONFLICT (user_id, friend_id) DO UPDATE SET status = 'blocked'`,
-            [userId, friendship.user_id]
-          );
+             VALUES (?, ?, 'blocked')
+             ON CONFLICT (user_id, friend_id) DO UPDATE SET status = 'blocked'`
+          ).run(userId, friendship.user_id);
         } else {
           // Sinon, on change simplement le statut
-          await fastify.pg.query(
-            'UPDATE friendships SET status = $1 WHERE id = $2',
-            ['blocked', id]
-          );
+          fastify.db.prepare(
+            'UPDATE friendships SET status = ? WHERE id = ?'
+          ).run('blocked', id);
         }
 
         return {
@@ -350,24 +338,22 @@ async function friendshipsRoutes(fastify, options) {
 
     try {
       // Vérifier que la relation existe et que l'utilisateur en fait partie
-      const friendshipResult = await fastify.pg.query(
+      const friendship = fastify.db.prepare(
         `SELECT * FROM friendships
-         WHERE id = $1
-         AND (user_id = $2 OR friend_id = $2)`,
-        [id, userId]
-      );
+         WHERE id = ?
+         AND (user_id = ? OR friend_id = ?)`
+      ).get(id, userId, userId);
 
-      if (friendshipResult.rows.length === 0) {
+      if (!friendship) {
         return reply.status(404).send({
           error: 'Relation d\'amitié non trouvée',
         });
       }
 
       // Supprimer la relation
-      await fastify.pg.query(
-        'DELETE FROM friendships WHERE id = $1',
-        [id]
-      );
+      fastify.db.prepare(
+        'DELETE FROM friendships WHERE id = ?'
+      ).run(id);
 
       return {
         message: 'Ami retiré avec succès',
@@ -397,7 +383,7 @@ async function friendshipsRoutes(fastify, options) {
     try {
       // Rechercher des utilisateurs par username ou display_name
       // Exclure l'utilisateur connecté et les amis/demandes existantes
-      const result = await fastify.pg.query(
+      const result = fastify.db.prepare(
         `SELECT
           u.id,
           u.username,
@@ -405,20 +391,19 @@ async function friendshipsRoutes(fastify, options) {
           u.avatar_url,
           u.is_online
          FROM users u
-         WHERE (u.username ILIKE $1 OR u.display_name ILIKE $1)
-         AND u.id != $2
+         WHERE (u.username LIKE ? OR u.display_name LIKE ?)
+         AND u.id != ?
          AND u.id NOT IN (
-           SELECT friend_id FROM friendships WHERE user_id = $2
+           SELECT friend_id FROM friendships WHERE user_id = ?
            UNION
-           SELECT user_id FROM friendships WHERE friend_id = $2
+           SELECT user_id FROM friendships WHERE friend_id = ?
          )
-         LIMIT 20`,
-        [`%${query}%`, userId]
-      );
+         LIMIT 20`
+      ).all(`%${query}%`, `%${query}%`, userId, userId, userId);
 
       return {
-        users: result.rows,
-        total: result.rows.length,
+        users: result,
+        total: result.length,
       };
 
     } catch (error) {
