@@ -2880,3 +2880,76 @@ body.fullscreen-game .app-footer {
 	font-family: 'Inter', Helvetica, sans-serif;
 
 }
+
+
+
+
+/* ===== SIDEBAR ===== */
+
+/* Overlay (fond sombre) */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    top: 0;
+    right: -400px; /* Cachée à droite */
+    width: 400px;
+    height: 100vh;
+    background: var(--bg-form);
+    z-index: 1000;
+    transition: right 0.3s ease;
+    overflow-y: auto;
+}
+
+.sidebar.active {
+    right: 0; /* Slide vers la gauche */
+}
+
+/* Bouton fermeture */
+.sidebar-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 32px;
+    cursor: pointer;
+    line-height: 1;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sidebar-close:hover {
+    opacity: 0.7;
+}
+
+/* Contenu */
+.sidebar-content {
+    padding: 80px 30px 30px 30px;
+}
+
+.sidebar-content h2 {
+    color: var(--text-primary);
+    margin-bottom: 20px;
+}
