@@ -833,10 +833,11 @@
     object-fit: cover;
 }
 
-.user-name {
+/* .user-name {
     color: var(--text-primary);
     font-weight: 600;
-}
+
+} */
 
 /* ===== Tabs ===== */
 .dashboard-tabs {
@@ -2829,4 +2830,53 @@ body.fullscreen-game .app-footer {
         gap: 1rem;
         align-items: flex-start;
     }
+}
+
+
+
+// Avater user connecté control bar
+.user-header-info {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    justify-self: end;
+}
+
+.user-avatar-link {
+    text-decoration: none;
+}
+
+.user-header-info .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--text-primary);
+    color: var(--color-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+	font-family: 'Inter', Helvetica, sans-serif;
+    font-weight: 500;
+
+    cursor: pointer;
+    transition: opacity 0.3s;
+}
+
+.user-header-info .user-avatar:hover {
+    opacity: 0.8;
+}
+
+.user-header-info .user-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-header-info .user-name {
+    color: var(--text-primary);
+    font-weight: 500;
+	 font-size: 16px;
+	font-family: 'Inter', Helvetica, sans-serif;
+
 }
