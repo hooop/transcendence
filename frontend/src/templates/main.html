@@ -62,8 +62,21 @@
 <div class="sidebar-overlay" id="sidebar-overlay"></div>
 <div class="sidebar" id="user-sidebar">
     <button class="sidebar-close" id="sidebar-close">&times;</button>
+
     <div class="sidebar-content">
-        <h2>Sidebar</h2>
-        <p>Contenu temporaire</p>
+        <!-- Section Profil -->
+        <div class="sidebar-profile">
+            <div class="sidebar-avatar-wrapper">
+                <div class="sidebar-avatar" id="sidebar-avatar">
+                    <!-- Avatar sera injecté ici -->
+                </div>
+                <div class="sidebar-avatar-overlay">
+                    <span class="material-symbols-outlined icon-photo">photo_camera</span>
+                </div>
+                <input type="file" id="sidebar-avatar-input" accept="image/*" style="display: none;">
+            </div>
+            <h3 class="sidebar-username" id="sidebar-username">Username</h3>
+            <p class="sidebar-email" id="sidebar-email">email@example.com</p>
+        </div>
     </div>
 </div>

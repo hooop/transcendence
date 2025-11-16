@@ -2909,8 +2909,8 @@ body.fullscreen-game .app-footer {
 .sidebar {
     position: fixed;
     top: 0;
-    right: -400px; /* Cachée à droite */
-    width: 400px;
+    right: -300px; /* Cachée à droite */
+    width: 300px;
     height: 100vh;
     background: var(--bg-form);
     z-index: 1000;
@@ -2925,12 +2925,12 @@ body.fullscreen-game .app-footer {
 /* Bouton fermeture */
 .sidebar-close {
     position: absolute;
-    top: 20px;
+    top: 0px;
     right: 20px;
     background: transparent;
     border: none;
     color: var(--text-primary);
-    font-size: 32px;
+    font-size: 20px;
     cursor: pointer;
     line-height: 1;
     width: 40px;
@@ -2946,10 +2946,100 @@ body.fullscreen-game .app-footer {
 
 /* Contenu */
 .sidebar-content {
-    padding: 80px 30px 30px 30px;
+    padding: 50px 30px 30px 30px;
 }
 
 .sidebar-content h2 {
     color: var(--text-primary);
     margin-bottom: 20px;
+}
+
+
+/* Section Profil */
+.sidebar-profile {
+    text-align: center;
+    padding-bottom: 30px;
+    border-bottom: px solid var(--border-color);
+}
+
+.sidebar-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--text-primary);
+    color: var(--color-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    font-weight: bold;
+    margin: 0 auto 20px;
+    font-family: 'Inter', Helvetica, sans-serif;
+}
+
+.sidebar-avatar img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* Wrapper pour l'avatar avec overlay */
+.sidebar-avatar-wrapper {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 20px;
+    cursor: pointer;
+}
+
+.sidebar-avatar-wrapper .sidebar-avatar {
+    margin: 0;
+}
+
+/* Overlay qui apparaît au hover */
+.sidebar-avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-avatar-wrapper:hover .sidebar-avatar-overlay {
+    opacity: 1;
+}
+
+/* Icône photo */
+.sidebar-avatar-overlay .icon-photo {
+    color: white;
+    font-size: 35px;
+}
+
+.sidebar-username {
+    color: var(--text-primary);
+    font-size: 16px;
+    margin: 0 0 8px 0;
+    font-family: 'Inter', Helvetica, sans-serif;
+}
+
+.sidebar-email {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.icon-photo {
+  font-variation-settings:
+  'FILL' 1,
+  'wght' 300,
+  'GRAD' 0,
+  'opsz' 24
 }
