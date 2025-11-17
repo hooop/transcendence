@@ -787,6 +787,14 @@
 
 /* ===== Dashboard ===== */
 
+
+.dashboard {
+    min-height: 100vh;
+	width: 100%;
+	margin-top: 40px;
+  /*   background: yellow; */
+}
+
 .daily-stats {
   width: 100vw;
   position: relative;
@@ -817,18 +825,33 @@
 }
 
 .stat-item {
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	padding: 0 15px 0 15px;
-	/* background-color: #44A3F7; */
-	border-right: 1px dashed white;
-	gap: 1rem;
+  position: relative;       /* nécessaire pour le pseudo-élément */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0 20px;
+  gap: 1rem;
 }
+
+/* Bordure verticale mi-hauteur */
+.stat-item::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 25%;                /* centre verticalement (25% + 50% = 100%) */
+  height: 50%;             /* bordure sur la moitié de la hauteur */
+  border-right: 1px dashed white;
+}
+
+/* Ne pas mettre la bordure sur le dernier item */
+.stat-item:last-child::after {
+  border-right: none;
+}
+
 
 .stat-value {
   font-family: "Tiny5", sans-serif;
-  font-size: 3.5rem;
+  font-size: 50px;
   font-weight: 400;
   color: #ffffff;
 
@@ -837,20 +860,21 @@
 .stat-label {
 	color: var(--text-primary);
 	font-weight: normal;
-	font-size: 16px;
+	font-size: 14px;
 	font-family: 'Inter', Helvetica, sans-serif;
+}
 
+.top {
+	font-family: "Tiny5", sans-serif;
+	font-size: 50px;
+	font-weight: 400;
+	color: #ffffff;
 }
 
 
 
 
-.dashboard {
-    min-height: 100vh;
-	width: 100%;
-	margin-top: 40px;
-  /*   background: yellow; */
-}
+
 
 
 
@@ -3243,6 +3267,7 @@ body.fullscreen-game .app-footer {
     gap: 20px;
     max-width: 800px;
     margin: 0 auto;
+	align-items: stretch;
 }
 
 .podium-place {
@@ -3282,8 +3307,8 @@ body.fullscreen-game .app-footer {
 }
 
 .podium-avatar {
-    width: 80px;
-    height: 80px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     background: var(--text-primary);
     color: var(--color-black);
@@ -3308,9 +3333,16 @@ body.fullscreen-game .app-footer {
 
 .podium-name {
     color: var(--text-primary);
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 400;
     font-family: 'Inter', Helvetica, sans-serif;
+}
+
+.avatar_name {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;   /* optionnel : centre verticalement */
+  gap: 4px;                  /* optionnel : petit espace entre nom et points */
 }
 
 .podium-points {
