@@ -13,6 +13,7 @@ export class Sidebar {
 	private deleteAvatarBtn: HTMLElement | null = null
 	private displayNameInput: HTMLInputElement | null = null
 	private saveDisplayNameBtn: HTMLElement | null = null
+	private logoutLink: HTMLElement | null = null
 
     constructor() {
 		this.sidebar = document.getElementById('user-sidebar')
@@ -28,6 +29,7 @@ export class Sidebar {
 		this.deleteAvatarBtn = document.getElementById('sidebar-delete-avatar')
 		this.displayNameInput = document.getElementById('sidebar-display-name') as HTMLInputElement
 		this.saveDisplayNameBtn = document.getElementById('save-displayname-btn')
+		this.logoutLink = document.getElementById('sidebar-logout-link')
 
         this.setupEventListeners()
 		this.loadUserData()
@@ -66,10 +68,15 @@ export class Sidebar {
 		})
 
 		// Sauvegarder le pseudo
-		console.log('Save button:', this.saveDisplayNameBtn)
 		this.saveDisplayNameBtn?.addEventListener('click', async () => {
 			console.log('Click détecté!')
 			await this.handleSaveDisplayName()
+		})
+
+		// Logout
+		this.logoutLink?.addEventListener('click', async (e) => {
+			e.preventDefault()
+			await this.handleLogout()
 })
     }
 
@@ -196,6 +203,21 @@ export class Sidebar {
 
 		} catch (error: any) {
 			alert(error.message || 'Échec de la mise à jour')
+		}
+	}
+
+	private async handleLogout(): Promise<void>
+	{
+		if (!confirm('Voulez-vous vraiment vous déconnecter ?')) {
+			return
+		}
+
+		try {
+			await ApiService.logout()
+			window.location.href = '/'
+		} catch (error: any) {
+			console.error('Erreur logout:', error)
+			alert(error.message || 'Échec de la déconnexion')
 		}
 	}
 

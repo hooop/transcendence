@@ -2950,12 +2950,16 @@ body.fullscreen-game .app-footer {
 
 .sidebar-close:hover {
     opacity: 0.7;
+
 }
 
 
 /* Contenu */
 .sidebar-content {
     padding: 50px 30px 30px 30px;
+		display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .sidebar-content h2 {
@@ -3027,10 +3031,10 @@ body.fullscreen-game .app-footer {
 }
 
 /* Icône photo */
-.sidebar-avatar-overlay .icon-photo {
+/* .sidebar-avatar-overlay .icon-photo {
     color: white;
     font-size: 35px;
-}
+} */
 
 .sidebar-username {
     color: var(--text-primary);
@@ -3067,19 +3071,32 @@ body.fullscreen-game .app-footer {
 
 
 
-
-.icon-photo {
+.material-symbols-outlined {
   font-variation-settings:
-  'FILL' 1,
-  'wght' 300,
+    'FILL' 1,
+    'wght' 300,
   'GRAD' 0,
   'opsz' 24
 }
+
+.icon-camera {
+  font-size: 35px;
+}
+
+.icon-logout {
+  font-size: 20px;
+}
+
+
+
 
 
 /* Section Edition Profil */
 .sidebar-edit-section {
     padding-top: 30px;
+	display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 .sidebar-edit-section .form-group {
@@ -3130,4 +3147,23 @@ body.fullscreen-game .app-footer {
 
 .btn-save-displayname:hover {
     opacity: 0.8;
+}
+
+
+
+
+.logout-link {
+    display: flex;
+    align-items: center;
+    justify-content: left;
+    gap: 0.8rem; /* Espace entre l'icône et le texte */
+    margin-top: auto;
+    color: var(--text-secondary);
+    text-decoration: none;
+	font-size: 14px;
+    font-family: 'Inter', Helvetica, sans-serif;
+}
+
+.logout-link:hover {
+	color: var(--text-secondary);
 }
