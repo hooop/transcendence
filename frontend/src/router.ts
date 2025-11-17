@@ -597,16 +597,51 @@ private handleRoute(): void {
 		}
 	}
 
-	private initPongGame(isAI: boolean = false, difficulty: AIDifficulty = AIDifficulty.MEDIUM): void {
+	private async initPongGame(isAI: boolean = false, difficulty: AIDifficulty = AIDifficulty.MEDIUM): Promise<void>
+	{
 		const canvas = document.getElementById('pong-canvas') as HTMLCanvasElement
 		if (!canvas) {
 			console.error('Canvas not found!')
 			return
 		}
+
+		console.log('🔍 initPongGame called')
+		console.log('🔍 Token exists?', !!ApiService.getToken())
+		console.log('🔍 About to call getMe()...')
+
 		if (this.currentGame) {
 			this.currentGame.destroy()
 		}
-		this.currentGame = new PongGame(canvas, isAI, difficulty, false, true, true)
+
+		// Récupérer l'ID de l'utilisateur connecté
+		let player1Id: string | undefined = undefined
+		try {
+			const user = await ApiService.getMe()
+			player1Id = user.id
+		} catch (error) {
+			console.warn('User not authenticated, match will not be saved')
+		}
+
+		console.log('🔍 player1Id after getMe():', player1Id)
+
+		// Pour un match local, player2 n'a pas d'ID
+		const player2Id = undefined
+		const gameMode = isAI ? 'vs_ai' : 'local'
+
+		this.currentGame = new PongGame(
+			canvas,
+			isAI,
+			difficulty,
+			false,
+			true,
+			true,
+			'', // player1Name
+			'', // player2Name
+			player1Id,  // 👈 NOUVEAU
+			player2Id,  // 👈 NOUVEAU
+			gameMode    // 👈 NOUVEAU
+		)
+
 		setTimeout(() => {
 			canvas.focus()
 		}, 100)
@@ -857,7 +892,7 @@ private handleRoute(): void {
 
 
 
-private initTournamentGame(match: any): void
+private async initTournamentGame(match: any): Promise<void>
 {
     this.isTournamentGameActive = true
 
@@ -911,6 +946,27 @@ private initTournamentGame(match: any): void
     const showLeftControls = !player1IsAI
     const showRightControls = !player2IsAI
 
+    // Récupérer l'ID de l'utilisateur connecté
+    let player1Id: string | undefined = undefined
+    let player2Id: string | undefined = undefined
+
+    try {
+        const user = await ApiService.getMe()
+
+        // Si le joueur 1 n'est pas une IA, c'est l'utilisateur connecté
+        if (!player1IsAI) {
+            player1Id = user.id
+        }
+
+        // Si le joueur 2 n'est pas une IA, c'est aussi l'utilisateur (impossible en tournoi local)
+        // Pour l'instant on laisse undefined
+        if (!player2IsAI) {
+            player2Id = undefined // Joueur local non connecté
+        }
+    } catch (error) {
+        console.warn('User not authenticated, match will not be saved')
+    }
+
     this.currentGame = new PongGame(
         canvas,
         aiEnabled,
@@ -919,7 +975,10 @@ private initTournamentGame(match: any): void
         showLeftControls,
         showRightControls,
         match.player1.alias,
-        match.player2.alias
+        match.player2.alias,
+        player1Id,  // 👈 NOUVEAU
+        player2Id,  // 👈 NOUVEAU
+        'tournament' // 👈 NOUVEAU
     )
 
     const checkGameEnd = setInterval(() => {
@@ -938,7 +997,7 @@ private initTournamentGame(match: any): void
                 const backBtn = document.getElementById('backToTournament')
                 if (backBtn) {
                     backBtn.onclick = () => {
-                        this.isTournamentGameActive = false  // AJOUTER ICI
+                        this.isTournamentGameActive = false
 
                         if (this.currentGame) {
                             this.currentGame.destroy()

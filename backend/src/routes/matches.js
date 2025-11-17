@@ -47,17 +47,24 @@ async function matchesRoutes(fastify, options) {
     const { player2_id, game_mode = 'classic' } = request.body;
     const player1_id = request.user.id;
 
-    if (!player2_id) {
-      return reply.status(400).send({
-        error: 'player2_id est requis',
-      });
-    }
+   // Vérifier que player2 existe (seulement si fourni)
+	if (player2_id) {
+	if (player1_id === player2_id) {
+		return reply.status(400).send({
+		error: 'Vous ne pouvez pas jouer contre vous-même',
+		});
+	}
 
-    if (player1_id === player2_id) {
-      return reply.status(400).send({
-        error: 'Vous ne pouvez pas jouer contre vous-même',
-      });
-    }
+	const userCheck = fastify.db.prepare(
+		'SELECT id FROM users WHERE id = ?'
+	).get(player2_id);
+
+	if (!userCheck) {
+		return reply.status(404).send({
+		error: 'Joueur 2 non trouvé',
+		});
+	}
+	}
 
     try {
       // Vérifier que player2 existe
@@ -184,42 +191,58 @@ async function matchesRoutes(fastify, options) {
       ).get(id);
 
       // Si le match est terminé, mettre à jour les statistiques
-      if (status === 'completed' && winner_id) {
-        const loser_id = winner_id === match.player1_id ? match.player2_id : match.player1_id;
+	if (status === 'completed' && winner_id)
+	{
+        // Si le match est terminé, mettre à jour les statistiques
+if (status === 'completed' && winner_id) {
+  const loser_id = winner_id === match.player1_id ? match.player2_id : match.player1_id;
 
-        // Mettre à jour les stats du gagnant
-        fastify.db.prepare(
-          `UPDATE game_stats SET
-           total_matches = total_matches + 1,
-           wins = wins + 1,
-           total_points_scored = total_points_scored + ?,
-           total_points_conceded = total_points_conceded + ?,
-           win_streak = win_streak + 1,
-           best_win_streak = MAX(best_win_streak, win_streak + 1),
-           ranking_points = ranking_points + 25
-           WHERE user_id = ?`
-        ).run(
-          winner_id === match.player1_id ? match.player1_score : match.player2_score,
-          winner_id === match.player1_id ? match.player2_score : match.player1_score,
-          winner_id
-        );
+	// Mettre à jour les stats du gagnant
+	const winnerStats = fastify.db.prepare(
+	'SELECT id FROM game_stats WHERE user_id = ?'
+	).get(winner_id);
 
-        // Mettre à jour les stats du perdant
-        fastify.db.prepare(
-          `UPDATE game_stats SET
-           total_matches = total_matches + 1,
-           losses = losses + 1,
-           total_points_scored = total_points_scored + ?,
-           total_points_conceded = total_points_conceded + ?,
-           win_streak = 0,
-           ranking_points = MAX(ranking_points - 15, 0)
-           WHERE user_id = ?`
-        ).run(
-          loser_id === match.player1_id ? match.player1_score : match.player2_score,
-          loser_id === match.player1_id ? match.player2_score : match.player1_score,
-          loser_id
-        );
-      }
+	if (winnerStats) {
+	fastify.db.prepare(
+		`UPDATE game_stats SET
+		total_matches = total_matches + 1,
+		wins = wins + 1,
+		total_points_scored = total_points_scored + ?,
+		total_points_conceded = total_points_conceded + ?,
+		win_streak = win_streak + 1,
+		best_win_streak = MAX(best_win_streak, win_streak + 1),
+		ranking_points = ranking_points + 25
+		WHERE user_id = ?`
+	).run(
+		winner_id === match.player1_id ? match.player1_score : match.player2_score,
+		winner_id === match.player1_id ? match.player2_score : match.player1_score,
+		winner_id
+	);
+	}
+
+	// Mettre à jour les stats du perdant (seulement si c'est un vrai joueur)
+	const loserStats = fastify.db.prepare(
+	'SELECT id FROM game_stats WHERE user_id = ?'
+	).get(loser_id);
+
+	if (loserStats) {
+	fastify.db.prepare(
+		`UPDATE game_stats SET
+		total_matches = total_matches + 1,
+		losses = losses + 1,
+		total_points_scored = total_points_scored + ?,
+		total_points_conceded = total_points_conceded + ?,
+		win_streak = 0,
+		ranking_points = MAX(ranking_points - 15, 0)
+		WHERE user_id = ?`
+	).run(
+		loser_id === match.player1_id ? match.player1_score : match.player2_score,
+		loser_id === match.player1_id ? match.player2_score : match.player1_score,
+		loser_id
+	);
+	}
+	}
+	}
 
       return match;
 

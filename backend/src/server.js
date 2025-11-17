@@ -61,6 +61,7 @@ async function start() {
     await app.register(require('./routes/upload'), { prefix: '/api/upload' });
     await app.register(require('./routes/chat'), { prefix: '/api/chat' });
     await app.register(require('./routes/game'), { prefix: '/api/game' });
+	await app.register(require('./routes/stats'), { prefix: '/api/stats' });
 
     // Route racine
     app.get('/', async (request, reply) => {

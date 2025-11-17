@@ -805,20 +805,25 @@
   font-family: "Tiny5", sans-serif;
   font-weight: 400;
   font-style: normal;
+  padding: 0;
 }
 
 .stats-container {
   display: flex;
-  justify-content: center;
+  justify-content: left;
   align-items: center;
-  gap: 4rem; /* espacement entre les stats */
+  padding: 0;
+
 }
 
 .stat-item {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 1rem;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	padding: 0 15px 0 15px;
+	/* background-color: #44A3F7; */
+	border-right: 1px dashed white;
+	gap: 1rem;
 }
 
 .stat-value {
@@ -845,7 +850,9 @@
 
 .dashboard {
     min-height: 100vh;
-    background: var(--bg-dark);
+	width: 100%;
+	margin-top: 40px;
+  /*   background: yellow; */
 }
 
 
@@ -3126,6 +3133,7 @@ body.fullscreen-game .app-footer {
 
 .icon-camera {
   font-size: 35px;
+  opacity: 0.7;
 }
 
 .icon-logout {

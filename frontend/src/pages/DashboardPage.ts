@@ -9,10 +9,13 @@ export class DashboardPage
 		try {
 			const user = await ApiService.getMe();
 
+			// Récupérer les stats depuis la table game_stats
+			const stats = await ApiService.getUserStats(user.id);
+
 			// Extraire les stats
-			const totalMatches = (user as any).total_matches || 0;
-			const wins = (user as any).wins || 0;
-			const losses = (user as any).losses || 0;
+			const totalMatches = stats.total_matches || 0;
+			const wins = stats.wins || 0;
+			const losses = stats.losses || 0;
 
 			// Remplacer les placeholders
 			let html = dashboardTemplate;

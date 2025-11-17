@@ -2,6 +2,7 @@ import { GameConfig, GameState } from './types'
 import { Ball } from './Ball'
 import { Paddle } from './Paddle'
 import { AIPlayer, AIDifficulty } from './AIPlayer'
+import { ApiService } from '../services/api'
 
 export class PongGame
 {
@@ -38,6 +39,10 @@ export class PongGame
 	private player1Name: string = ''
 	private player2Name: string = ''
 
+	private player1Id?: string
+	private player2Id?: string
+	private gameMode: string = 'local'
+
 	/* private statusElement: HTMLElement | null = null */
 
 	public onStatusChange?: (message: string, isWinner: boolean) => void
@@ -50,7 +55,10 @@ export class PongGame
 				showLeftControls: boolean = true,
 				showRightControls: boolean = true,
 				player1Name: string = '',
-    			player2Name: string = ''
+    			player2Name: string = '',
+				player1Id?: string,
+				player2Id?: string,
+				gameMode: string = 'local'
 			)
 	{
 		this.canvas = canvas
@@ -65,6 +73,9 @@ export class PongGame
 		this.showRightControls = showRightControls
 		this.player1Name = player1Name
 		this.player2Name = player2Name
+		this.player1Id = player1Id
+		this.player2Id = player2Id
+		this.gameMode = gameMode
 
 		// MODIFIÉ : Calculer les dimensions avec fallback
 		const container = this.canvas.parentElement
@@ -83,7 +94,7 @@ export class PongGame
 			width: width,
 			height: height,
 			paddleSpeed: 300,
-			ballSpeed: 300,
+			ballSpeed: 400,
 			paddleHeight: 100,
 			paddleWidth: 10,
 			ballSize: 20
@@ -195,7 +206,6 @@ export class PongGame
 				y: this.config.height / 2
 			}
 		)
-
 
 		// Créer les raquettes
 		this.leftPaddle = new Paddle(
@@ -466,17 +476,17 @@ export class PongGame
 		this.ctx.fillStyle = '#000'
 		this.ctx.fillRect(0, 0, this.config.width, this.config.height)
 
-		// 🎯 LIGNE CENTRALE OPTIMISÉE
+		// LIGNE CENTRALE OPTIMISÉE
 		this.ctx.save() // Sauvegarder l'état du contexte
 
 		// Désactiver l'antialiasing pour les lignes
 		this.ctx.imageSmoothingEnabled = false
 
 		// Calculer la position exacte au pixel près
-		const centerX = Math.floor(this.config.width / 2) + 0.5 // Le +0.5 est crucial !
+		const centerX = Math.floor(this.config.width / 2) + 0.5
 
 		this.ctx.strokeStyle = '#fff'
-		this.ctx.lineWidth = 2 // Ligne de 2px pour être bien visible
+		this.ctx.lineWidth = 2
 	/*     this.ctx.setLineDash([5, 5]) // Pointillés proportionnels à la nouvelle taille */
 
 		this.ctx.beginPath()
@@ -793,70 +803,95 @@ private renderCountdown(): void
 		console.log('🔄 Game reset')
 	}
 
-	private showVictoryModal(): void
-{
-	// Mode tournoi : modale spéciale
-	if (this.isTournamentMode)
+	private async showVictoryModal(): Promise<void>
 	{
-		const modal = document.getElementById('tournamentVictoryModal')
-		const messageElement = document.getElementById('tournamentMessage')
+		console.log('🏆 showVictoryModal called');
+		console.log('player1Id:', this.player1Id);
 
-		if (!modal || !messageElement) return
-
-		// Déterminer qui a gagné
-		const humanWon = (this.state.winner === 'left' && !this.player1Name.includes('IA')) ||
-		                 (this.state.winner === 'right' && !this.player2Name.includes('IA'))
-
-		const winnerName = this.state.winner === 'left' ? this.player1Name : this.player2Name
-
-		if (humanWon)
+		// Sauvegarder les stats si le joueur est connecté
+		if (this.player1Id)
 		{
-			messageElement.textContent = `Bravo ${winnerName}, tu passes au tour suivant !`
+			console.log('✅ Player is authenticated, updating stats...');
+			try {
+				const won = this.state.winner === 'left';
+				const score = this.state.leftScore;
+				const opponentScore = this.state.rightScore;
+
+				await ApiService.updateUserStats(
+					this.player1Id,
+					won,
+					score,
+					opponentScore
+				);
+
+				console.log('✅ Stats updated successfully');
+			} catch (error) {
+				console.error('❌ Failed to update stats:', error);
+			}
+		} else {
+			console.log('ℹ️ Player not authenticated, stats not saved');
 		}
-		else
+
+		// Mode tournoi : modale spéciale
+		if (this.isTournamentMode)
 		{
-			// Trouver le nom du joueur humain perdant
-			const loserName = this.state.winner === 'left' ? this.player2Name : this.player1Name
-			messageElement.textContent = `Dommage ${loserName}, le tournoi s'arrête ici pour toi.`
+			const modal = document.getElementById('tournamentVictoryModal')
+			const messageElement = document.getElementById('tournamentMessage')
+
+			if (!modal || !messageElement) return
+
+			const humanWon = (this.state.winner === 'left' && !this.player1Name.includes('IA')) ||
+							(this.state.winner === 'right' && !this.player2Name.includes('IA'))
+
+			const winnerName = this.state.winner === 'left' ? this.player1Name : this.player2Name
+
+			if (humanWon)
+			{
+				messageElement.textContent = `Bravo ${winnerName}, tu passes au tour suivant !`
+			}
+			else
+			{
+				const loserName = this.state.winner === 'left' ? this.player2Name : this.player1Name
+				messageElement.textContent = `Dommage ${loserName}, le tournoi s'arrête ici pour toi.`
+			}
+
+			modal.style.display = 'flex'
+			return
 		}
+
+		// Mode entraînement : modale classique
+		let winnerName = this.state.winner === 'left' ? 'Joueur de gauche' : 'Joueur de droite'
+
+		if (this.isAIEnabled && this.state.winner === 'right')
+		{
+			winnerName = 'IA'
+		}
+
+		const modal = document.getElementById('victoryModal')
+		const winnerNameElement = document.getElementById('winnerName')
+		const modalScoreElement = document.getElementById('modalScore')
+		const closeButton = document.querySelector('.modal-close')
+		const overlay = document.querySelector('.modal-overlay')
+
+		if (!modal || !winnerNameElement || !modalScoreElement) return
+
+		winnerNameElement.textContent = winnerName
+		modalScoreElement.textContent = `Score final : ${this.state.leftScore} - ${this.state.rightScore}`
 
 		modal.style.display = 'flex'
-		return
-	}
 
-	// Mode entraînement : modale classique
-	let winnerName = this.state.winner === 'left' ? 'Joueur de gauche' : 'Joueur de droite'
-
-	if (this.isAIEnabled && this.state.winner === 'right')
-	{
-		winnerName = 'IA'
-	}
-
-	const modal = document.getElementById('victoryModal')
-	const winnerNameElement = document.getElementById('winnerName')
-	const modalScoreElement = document.getElementById('modalScore')
-	const closeButton = document.querySelector('.modal-close')
-	const overlay = document.querySelector('.modal-overlay')
-
-	if (!modal || !winnerNameElement || !modalScoreElement) return
-
-	winnerNameElement.textContent = winnerName
-	modalScoreElement.textContent = `Score final : ${this.state.leftScore} - ${this.state.rightScore}`
-
-	modal.style.display = 'flex'
-
-	closeButton?.addEventListener('click', () => {
-		modal.style.display = 'none'
-		this.restart()
-	})
-
-	overlay?.addEventListener('click', (e) => {
-		if (e.target === overlay) {
+		closeButton?.addEventListener('click', () => {
 			modal.style.display = 'none'
 			this.restart()
-		}
-	})
-}
+		})
+
+		overlay?.addEventListener('click', (e) => {
+			if (e.target === overlay) {
+				modal.style.display = 'none'
+				this.restart()
+			}
+		})
+	}
 
 
 

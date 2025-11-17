@@ -15,7 +15,8 @@ export class Sidebar {
 	private saveDisplayNameBtn: HTMLElement | null = null
 	private logoutLink: HTMLElement | null = null
 
-    constructor() {
+	constructor()
+	{
 		this.sidebar = document.getElementById('user-sidebar')
 		this.overlay = document.getElementById('sidebar-overlay')
 		this.closeBtn = document.getElementById('sidebar-close')
@@ -31,9 +32,9 @@ export class Sidebar {
 		this.saveDisplayNameBtn = document.getElementById('save-displayname-btn')
 		this.logoutLink = document.getElementById('sidebar-logout-link')
 
-        this.setupEventListeners()
+		this.setupEventListeners()
 		this.loadUserData()
-    }
+	}
 
     private setupEventListeners(): void {
         // Ouvrir au clic sur l'avatar
@@ -201,7 +202,9 @@ export class Sidebar {
 			// Fermer la sidebar
 			this.close()
 
-		} catch (error: any) {
+		}
+		catch (error: any)
+		{
 			alert(error.message || 'Échec de la mise à jour')
 		}
 	}

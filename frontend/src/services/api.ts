@@ -148,6 +148,19 @@ export class ApiService {
         return await response.json();
     }
 
+	static async getUserStats(userId: string): Promise<any>
+	{
+		const response = await fetch(`${API_URL}/api/users/${userId}/stats`, {
+			headers: this.getHeaders(),
+		});
+
+		if (!response.ok) {
+			throw new Error('Failed to fetch user stats');
+		}
+
+		return await response.json();
+	}
+
     // ===== Amis =====
 
     static async getFriends(): Promise<{ friends: Friend[]; total: number }> {
@@ -300,6 +313,29 @@ export class ApiService {
 
 		return response.json()
 	}
+
+	static async updateUserStats(userId: string, won: boolean, score: number, opponentScore: number): Promise<any>
+{
+    const response = await fetch(`${API_URL}/api/stats/${userId}`, {
+        method: 'POST',
+        headers: this.getHeaders(),
+        body: JSON.stringify({
+            won,
+            score,
+            opponentScore
+        }),
+    });
+
+    if (!response.ok)
+    {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to update stats');
+    }
+
+    return await response.json();
+}
+
+
 
     // ===== Match History =====
 
