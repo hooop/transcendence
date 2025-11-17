@@ -144,15 +144,19 @@ export class Sidebar {
 
 	private async handleDeleteAvatar(): Promise<void>
 	{
+		console.log('handleDeleteAvatar appelée')
+
 		if (!confirm('Voulez-vous vraiment supprimer votre photo de profil ?')) {
 			return
 		}
 
 		try {
+			console.log('Appel API deleteAvatar')
 			await ApiService.deleteAvatar()
+			console.log('Avatar supprimé avec succès')
 			await this.loadUserData()
-			console.log('Avatar deleted successfully')
 		} catch (error: any) {
+			console.error('Erreur delete:', error)
 			alert(error.message || 'Échec de la suppression')
 		}
 	}

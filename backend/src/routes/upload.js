@@ -91,6 +91,9 @@ async function uploadRoutes(fastify, options) {
     onRequest: [fastify.authenticate],
   }, async (request, reply) => {
     try {
+		console.log('DELETE /avatar appelé')
+        console.log('User ID:', request.user?.id)
+        console.log('Request headers:', request.headers)
       const userId = request.user.id;
 
       // Récupérer l'ancien avatar
@@ -119,13 +122,17 @@ async function uploadRoutes(fastify, options) {
         message: 'Avatar deleted successfully',
       };
 
-    } catch (error) {
+    }
+	catch (error)
+	{
       fastify.log.error(error);
       return reply.status(500).send({
         error: 'Failed to delete avatar',
       });
     }
   });
+
+
 }
 
 module.exports = uploadRoutes;
