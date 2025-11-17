@@ -49,30 +49,25 @@ export class DashboardPage {
         }
     }
 
-    private static renderPlayTab(): string {
-        return `
-            <div class="play-section">
-                <h2>Choose Your Game</h2>
-                <div class="game-modes">
-                    <a href="/game" data-route class="game-mode-card">
-                        <div class="mode-icon">🏓</div>
-                        <h3>Quick Match</h3>
-                        <p>Play against friend or AI</p>
-                    </a>
-                    <a href="/tournament" data-route class="game-mode-card">
-                        <div class="mode-icon">🏆</div>
-                        <h3>Tournament</h3>
-                        <p>Compete in a tournament</p>
-                    </a>
-                    <a href="/online" data-route class="game-mode-card">
-                        <div class="mode-icon">🌐</div>
-                        <h3>Online Match</h3>
-                        <p>Play against other players online</p>
-                    </a>
-                </div>
-            </div>
-        `;
-    }
+	private static renderPlayTab(): string {
+		return `
+			<div class="play-section">
+				<h2>Choose Your Game</h2>
+				<div class="game-modes">
+					<a href="/game" data-route class="game-mode-card">
+						<div class="mode-icon">🔥</div>
+						<h3>Quick Match</h3>
+						<p>Play against friend or AI</p>
+					</a>
+					<a href="/tournament" data-route class="game-mode-card">
+						<div class="mode-icon">🏆</div>
+						<h3>Tournament</h3>
+						<p>Compete in a tournament</p>
+					</a>
+				</div>
+			</div>
+		`;
+	}
 
     private static renderProfileTab(user: User): string {
         const totalMatches = (user as any).total_matches || 0;

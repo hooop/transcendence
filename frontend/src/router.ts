@@ -301,70 +301,75 @@ private handleRoute(): void {
 
 
 
-private updateHeaderAuth(): void {
-    const token = ApiService.getToken();
-    const authButtons = document.getElementById('auth-buttons');
-    const userHeaderInfo = document.getElementById('user-header-info');
+	private updateHeaderAuth(): void
+	{
+		const token = ApiService.getToken();
+		const authButtons = document.getElementById('auth-buttons');
+		const userHeaderInfo = document.getElementById('user-header-info');
+		const onlineLink = document.getElementById('online-link');
 
-    if (token) {
-        // Utilisateur connecté
-        if (authButtons) authButtons.style.display = 'none';
-        if (userHeaderInfo) userHeaderInfo.style.display = 'flex';
+		if (token) {
+			// Utilisateur connecté
+			if (authButtons) authButtons.style.display = 'none';
+			if (userHeaderInfo) userHeaderInfo.style.display = 'flex';
+			if (onlineLink) onlineLink.style.display = 'block';
 
-        // Charger les infos utilisateur
-        ApiService.getMe().then(user => {
-            const avatarEl = document.getElementById('header-user-avatar');
-            const nameEl = document.getElementById('header-user-name');
+			// Charger les infos utilisateur
+			ApiService.getMe().then(user => {
+				const avatarEl = document.getElementById('header-user-avatar');
+				const nameEl = document.getElementById('header-user-name');
 
-            if (avatarEl) {
-                if (user.avatar_url) {
-                    avatarEl.innerHTML = `<img src="${user.avatar_url}" alt="${user.username}">`;
-                } else {
-                    avatarEl.textContent = user.username.charAt(0).toUpperCase();
-                }
-            }
+				if (avatarEl) {
+					if (user.avatar_url) {
+						avatarEl.innerHTML = `<img src="${user.avatar_url}" alt="${user.username}">`;
+					} else {
+						avatarEl.textContent = user.username.charAt(0).toUpperCase();
+					}
+				}
 
-            if (nameEl) {
-                nameEl.textContent = user.display_name || user.username;
-            }
-        }).catch(() => {
-            // En cas d'erreur, afficher les boutons de connexion
-            if (authButtons) authButtons.style.display = 'flex';
-            if (userHeaderInfo) userHeaderInfo.style.display = 'none';
-        });
+				if (nameEl) {
+					nameEl.textContent = user.display_name || user.username;
+				}
+			}).catch(() => {
+				// En cas d'erreur, afficher les boutons de connexion
+				if (authButtons) authButtons.style.display = 'flex';
+				if (userHeaderInfo) userHeaderInfo.style.display = 'none';
+				if (onlineLink) onlineLink.style.display = 'none';
+			});
 
-		// Écouter les mises à jour du profil utilisateur
-		window.addEventListener('userProfileUpdated', (e: Event) => {
-			const customEvent = e as CustomEvent;
-			const updatedUser = customEvent.detail.user;
+			// Écouter les mises à jour du profil utilisateur
+			window.addEventListener('userProfileUpdated', (e: Event) => {
+				const customEvent = e as CustomEvent;
+				const updatedUser = customEvent.detail.user;
 
-			// Mettre à jour le nom dans le header
-			const nameEl = document.getElementById('header-user-name');
-			if (nameEl) {
-				nameEl.textContent = updatedUser.display_name || updatedUser.username;
+				// Mettre à jour le nom dans le header
+				const nameEl = document.getElementById('header-user-name');
+				if (nameEl) {
+					nameEl.textContent = updatedUser.display_name || updatedUser.username;
+				}
+
+				// Mettre à jour l'avatar si nécessaire
+				const avatarEl = document.getElementById('header-user-avatar');
+				if (avatarEl && updatedUser.avatar_url) {
+					avatarEl.innerHTML = `<img src="${updatedUser.avatar_url}" alt="${updatedUser.username}">`;
+				}
+			});
+
+			// Gérer le logout
+			const logoutBtn = document.getElementById('header-logout-btn');
+			if (logoutBtn) {
+				logoutBtn.addEventListener('click', async () => {
+					await ApiService.logout();
+					window.location.href = '/';
+				});
 			}
-
-			// Mettre à jour l'avatar si nécessaire
-			const avatarEl = document.getElementById('header-user-avatar');
-			if (avatarEl && updatedUser.avatar_url) {
-				avatarEl.innerHTML = `<img src="${updatedUser.avatar_url}" alt="${updatedUser.username}">`;
-			}
-		});
-
-        // Gérer le logout
-        const logoutBtn = document.getElementById('header-logout-btn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', async () => {
-                await ApiService.logout();
-                window.location.href = '/';
-            });
-        }
-    } else {
-        // Utilisateur non connecté
-        if (authButtons) authButtons.style.display = 'flex';
-        if (userHeaderInfo) userHeaderInfo.style.display = 'none';
-    }
-}
+		} else {
+			// Utilisateur non connecté
+			if (authButtons) authButtons.style.display = 'flex';
+			if (userHeaderInfo) userHeaderInfo.style.display = 'none';
+			if (onlineLink) onlineLink.style.display = 'none';
+		}
+	}
 
 
 
