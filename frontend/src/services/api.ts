@@ -161,6 +161,22 @@ export class ApiService {
 		return await response.json();
 	}
 
+	static async getTop3Ranking(): Promise<any[]> {
+	const response = await fetch(`${API_URL}/api/users/ranking/top3`, {
+		headers: {
+		'Authorization': `Bearer ${this.getToken()}`
+		}
+	});
+
+	if (!response.ok) {
+		throw new Error('Failed to fetch ranking');
+	}
+
+	return response.json();
+	}
+
+
+
     // ===== Amis =====
 
     static async getFriends(): Promise<{ friends: Friend[]; total: number }> {

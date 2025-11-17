@@ -845,9 +845,6 @@
 
 
 
-
-
-
 .dashboard {
     min-height: 100vh;
 	width: 100%;
@@ -3219,4 +3216,127 @@ body.fullscreen-game .app-footer {
 
 .logout-link:hover {
 	color: var(--text-secondary);
+}
+
+
+
+
+/* ===== Ranking Podium ===== */
+.ranking-podium {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.podium-title {
+    font-family: 'akira', 'Arial', monospace;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    margin-bottom: 40px;
+}
+
+.podium-container {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.podium-place {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 20px;
+    background: var(--color-dark-secondary);
+    border-radius: var(--radius-lg);
+    transition: transform 0.3s ease;
+}
+
+.podium-place:hover {
+    transform: translateY(-5px);
+}
+
+/* Première place - plus haute */
+.podium-place.first {
+    order: 2;
+    min-height: 280px;
+    border: 2px solid #FFD700;
+}
+
+/* Deuxième place - moyenne */
+.podium-place.second {
+    order: 1;
+    min-height: 240px;
+    border: 2px solid #C0C0C0;
+}
+
+/* Troisième place - plus basse */
+.podium-place.third {
+    order: 3;
+    min-height: 200px;
+    border: 2px solid #CD7F32;
+}
+
+.podium-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: var(--text-primary);
+    color: var(--color-black);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    font-weight: bold;
+    font-family: 'Inter', Helvetica, sans-serif;
+    overflow: hidden;
+}
+
+.podium-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.podium-avatar.avatar-initial {
+    background: linear-gradient(135deg, var(--text-primary), var(--color-gray-light));
+}
+
+.podium-name {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    font-weight: 600;
+    font-family: 'Inter', Helvetica, sans-serif;
+}
+
+.podium-points {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-family: 'Inter', Helvetica, sans-serif;
+}
+
+.podium-medal {
+    font-size: 2.5rem;
+    margin-top: auto;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .podium-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .podium-place.first,
+    .podium-place.second,
+    .podium-place.third {
+        order: 0;
+        min-height: auto;
+        width: 100%;
+        max-width: 300px;
+    }
 }

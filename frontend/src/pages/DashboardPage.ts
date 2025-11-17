@@ -5,115 +5,66 @@ export class DashboardPage
 {
 
 	static async render(): Promise<string>
-	{
-		try {
-			const user = await ApiService.getMe();
+{
+	try {
+		const user = await ApiService.getMe();
 
-			// Récupérer les stats depuis la table game_stats
-			const stats = await ApiService.getUserStats(user.id);
+		// Récupérer les stats depuis la table game_stats
+		const stats = await ApiService.getUserStats(user.id);
 
-			// Extraire les stats
-			const totalMatches = stats.total_matches || 0;
-			const wins = stats.wins || 0;
-			const losses = stats.losses || 0;
+		// Extraire les stats
+		const totalMatches = stats.total_matches || 0;
+		const wins = stats.wins || 0;
+		const losses = stats.losses || 0;
 
-			// Remplacer les placeholders
-			let html = dashboardTemplate;
-			html = html.replace('{{TOTAL_MATCHES}}', totalMatches.toString());
-			html = html.replace('{{WINS}}', wins.toString());
-			html = html.replace('{{LOSSES}}', losses.toString());
+		// Remplacer les placeholders
+		let html = dashboardTemplate;
+		html = html.replace('{{TOTAL_MATCHES}}', totalMatches.toString());
+		html = html.replace('{{WINS}}', wins.toString());
+		html = html.replace('{{LOSSES}}', losses.toString());
 
-			return html;
+		return html;
 
-		} catch (error) {
-			window.location.href = '/login';
-			return '<div>Redirecting...</div>';
-		}
+	} catch (error) {
+		window.location.href = '/login';
+		return '<div>Redirecting...</div>';
 	}
+}
 
-/* 	private static renderPlayTab(): string {
-		return `
-			<div class="play-section">
-				<h2>Choose Your Game</h2>
-				<div class="game-modes">
-					<a href="/game" data-route class="game-mode-card">
-						<div class="mode-icon">🔥</div>
-						<h3>Quick Match</h3>
-						<p>Play against friend or AI</p>
-					</a>
-					<a href="/tournament" data-route class="game-mode-card">
-						<div class="mode-icon">🏆</div>
-						<h3>Tournament</h3>
-						<p>Compete in a tournament</p>
-					</a>
-				</div>
-			</div>
-		`;
-	} */
 
-   /*  private static renderProfileTab(user: User): string {
-        const totalMatches = (user as any).total_matches || 0;
-        const wins = (user as any).wins || 0;
-        const losses = (user as any).losses || 0;
-        const winRate = totalMatches > 0 ? ((wins / totalMatches) * 100).toFixed(1) : '0.0';
+private static injectTop3Data(top3: any[]): void {
+	// Pour chaque position (1, 2, 3)
+	[1, 2, 3].forEach(rank => {
+		const player = top3[rank - 1]; // Index 0, 1, 2
 
-        return `
-            <div class="profile-section">
-                <div class="profile-card">
-                    <div class="profile-avatar-large">
-                        ${user.avatar_url ?
-                            `<img src="${user.avatar_url}" alt="${user.username}" id="current-avatar">` :
-                            `<div class="avatar-initial" id="current-avatar">${user.username.charAt(0).toUpperCase()}</div>`
-                        }
-                    </div>
+		const avatarEl = document.getElementById(`rank-${rank}-avatar`);
+		const nameEl = document.getElementById(`rank-${rank}-name`);
+		const pointsEl = document.getElementById(`rank-${rank}-points`);
 
-                    <div class="avatar-upload-section">
-                        <input type="file" id="avatar-input" accept="image/*" style="display: none;">
-                        <button class="btn btn-small btn-primary" onclick="document.getElementById('avatar-input').click()">
-                            📸 Change Avatar
-                        </button>
-                        ${user.avatar_url ? `
-                            <button class="btn btn-small btn-danger" id="delete-avatar-btn">
-                                🗑️ Remove
-                            </button>
-                        ` : ''}
-                    </div>
+		if (player && avatarEl && nameEl && pointsEl) {
+			// Avatar
+			if (player.avatar_url) {
+				avatarEl.innerHTML = `<img src="${player.avatar_url}" alt="${player.username}">`;
+			} else {
+				avatarEl.textContent = player.username.charAt(0).toUpperCase();
+				avatarEl.classList.add('avatar-initial');
+			}
 
-                    <h2>${user.display_name || user.username}</h2>
-                    <p class="profile-username">@${user.username}</p>
-                    <p class="profile-email">${user.email}</p>
+			// Nom
+			nameEl.textContent = player.display_name || player.username;
 
-                    <div class="profile-stats">
-                        <div class="stat">
-                            <div class="stat-value">${totalMatches}</div>
-                            <div class="stat-label">Total Matches</div>
-                        </div>
-                        <div class="stat stat-wins">
-                            <div class="stat-value">${wins}</div>
-                            <div class="stat-label">Wins</div>
-                        </div>
-                        <div class="stat stat-losses">
-                            <div class="stat-value">${losses}</div>
-                            <div class="stat-label">Losses</div>
-                        </div>
-                        <div class="stat stat-winrate">
-                            <div class="stat-value">${winRate}%</div>
-                            <div class="stat-label">Win Rate</div>
-                        </div>
-                    </div>
+			// Points
+			pointsEl.textContent = `${player.ranking_points || 0} pts`;
+		} else if (avatarEl && nameEl && pointsEl) {
+			// Pas de joueur à cette position
+			avatarEl.textContent = '?';
+			avatarEl.classList.add('avatar-initial');
+			nameEl.textContent = '-';
+			pointsEl.textContent = '0 pts';
+		}
+	});
+}
 
-                    <!-- Match History -->
-                    <div class="match-history-section">
-                        <h3>📊 Match History</h3>
-                        <div id="match-history-container">
-                            <div class="loading">Loading match history...</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
- */
     static async renderFriendsTab(): Promise<string> {
         try {
             const [friendsData, pendingData] = await Promise.all([
@@ -247,6 +198,7 @@ export class DashboardPage
 
     // Setup event listeners
     static setupEventListeners(): void {
+		this.loadTop3Ranking();
         // Tabs
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', async (e) => {
@@ -312,6 +264,15 @@ export class DashboardPage
 			} */
 		})
     }
+
+private static async loadTop3Ranking(): Promise<void> {
+	try {
+		const top3 = await ApiService.getTop3Ranking();
+		this.injectTop3Data(top3);
+	} catch (error) {
+		console.error('Failed to load top 3 ranking:', error);
+	}
+}
 
     private static setupAvatarUpload(): void {
         const avatarInput = document.getElementById('avatar-input') as HTMLInputElement;
