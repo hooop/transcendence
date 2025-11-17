@@ -333,6 +333,24 @@ private updateHeaderAuth(): void {
             if (userHeaderInfo) userHeaderInfo.style.display = 'none';
         });
 
+		// Écouter les mises à jour du profil utilisateur
+		window.addEventListener('userProfileUpdated', (e: Event) => {
+			const customEvent = e as CustomEvent;
+			const updatedUser = customEvent.detail.user;
+
+			// Mettre à jour le nom dans le header
+			const nameEl = document.getElementById('header-user-name');
+			if (nameEl) {
+				nameEl.textContent = updatedUser.display_name || updatedUser.username;
+			}
+
+			// Mettre à jour l'avatar si nécessaire
+			const avatarEl = document.getElementById('header-user-avatar');
+			if (avatarEl && updatedUser.avatar_url) {
+				avatarEl.innerHTML = `<img src="${updatedUser.avatar_url}" alt="${updatedUser.username}">`;
+			}
+		});
+
         // Gérer le logout
         const logoutBtn = document.getElementById('header-logout-btn');
         if (logoutBtn) {

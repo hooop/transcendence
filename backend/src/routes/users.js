@@ -111,6 +111,73 @@ async function usersRoutes(fastify, options) {
       });
     }
   });
+
+  // PATCH /api/users/:id - Mettre à jour le profil utilisateur
+fastify.patch('/:id', {
+  onRequest: [fastify.authenticate],
+}, async (request, reply) => {
+  const { id } = request.params;
+  const userId = request.user.id;
+  const { display_name, username, email } = request.body;
+
+  // Vérifier que l'utilisateur modifie son propre profil
+  if (id !== userId) {
+    return reply.status(403).send({
+      error: 'Non autorisé à modifier ce profil',
+    });
+  }
+
+  try {
+    // Construire la requête dynamiquement selon les champs fournis
+    const updates = [];
+    const values = [];
+
+    if (display_name !== undefined) {
+      updates.push('display_name = ?');
+      values.push(display_name);
+    }
+    if (username !== undefined) {
+      updates.push('username = ?');
+      values.push(username);
+    }
+    if (email !== undefined) {
+      updates.push('email = ?');
+      values.push(email);
+    }
+
+    if (updates.length === 0) {
+      return reply.status(400).send({
+        error: 'Aucun champ à mettre à jour',
+      });
+    }
+
+    // Ajouter l'ID en dernier paramètre
+    values.push(id);
+
+    // Exécuter la mise à jour
+    fastify.db.prepare(
+      `UPDATE users SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP
+       WHERE id = ?`
+    ).run(...values);
+
+    // Récupérer l'utilisateur mis à jour
+    const user = fastify.db.prepare(
+      'SELECT id, username, email, display_name, avatar_url FROM users WHERE id = ?'
+    ).get(id);
+
+    return {
+      message: 'Profil mis à jour avec succès',
+      user: user,
+    };
+
+  } catch (error) {
+    fastify.log.error(error);
+    return reply.status(500).send({
+      error: 'Erreur lors de la mise à jour du profil',
+    });
+  }
+});
+
 }
 
 module.exports = usersRoutes;

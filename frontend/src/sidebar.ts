@@ -10,6 +10,9 @@ export class Sidebar {
 	private emailElement: HTMLElement | null = null
 	private avatarWrapper: HTMLElement | null = null
 	private avatarInput: HTMLInputElement | null = null
+	private deleteAvatarBtn: HTMLElement | null = null
+	private displayNameInput: HTMLInputElement | null = null
+	private saveDisplayNameBtn: HTMLElement | null = null
 
     constructor() {
 		this.sidebar = document.getElementById('user-sidebar')
@@ -21,6 +24,10 @@ export class Sidebar {
 		this.emailElement = document.getElementById('sidebar-email')
 		this.avatarWrapper = document.querySelector('.sidebar-avatar-wrapper')
 		this.avatarInput = document.getElementById('sidebar-avatar-input') as HTMLInputElement
+		this.deleteAvatarBtn = document.getElementById('sidebar-delete-avatar')
+		this.deleteAvatarBtn = document.getElementById('sidebar-delete-avatar')
+		this.displayNameInput = document.getElementById('sidebar-display-name') as HTMLInputElement
+		this.saveDisplayNameBtn = document.getElementById('save-displayname-btn')
 
         this.setupEventListeners()
 		this.loadUserData()
@@ -52,6 +59,18 @@ export class Sidebar {
 		this.avatarInput?.addEventListener('change', async (e) => {
 			await this.handleAvatarUpload(e)
 		})
+
+		// Supprimer l'avatar
+		this.deleteAvatarBtn?.addEventListener('click', async () => {
+			await this.handleDeleteAvatar()
+		})
+
+		// Sauvegarder le pseudo
+		console.log('Save button:', this.saveDisplayNameBtn)
+		this.saveDisplayNameBtn?.addEventListener('click', async () => {
+			console.log('Click détecté!')
+			await this.handleSaveDisplayName()
+})
     }
 
 	private async loadUserData(): Promise<void>
@@ -60,22 +79,27 @@ export class Sidebar {
 			const user = await ApiService.getMe()
 
 			// Avatar
-			if (this.avatarElement) {
+			if (this.avatarElement)
+			{
 				if (user.avatar_url) {
 					this.avatarElement.innerHTML = `<img src="${user.avatar_url}" alt="${user.username}">`
+					// Afficher le bouton supprimer
+					if (this.deleteAvatarBtn) {
+						this.deleteAvatarBtn.style.display = 'block'
+					}
 				} else {
 					this.avatarElement.textContent = user.username.charAt(0).toUpperCase()
+					// Masquer le bouton supprimer
+					if (this.deleteAvatarBtn) {
+						this.deleteAvatarBtn.style.display = 'none'
+					}
 				}
 			}
 
-			// Username
-			if (this.usernameElement) {
-				this.usernameElement.textContent = user.display_name || user.username
-			}
-
-			// Email
-			if (this.emailElement) {
-				this.emailElement.textContent = user.email
+			// Remplir le champ pseudo
+			if (this.displayNameInput)
+			{
+				this.displayNameInput.value = user.display_name || user.username
 			}
 
 		} catch (error) {
@@ -116,6 +140,59 @@ export class Sidebar {
 
 		// Reset input
 		target.value = ''
+	}
+
+	private async handleDeleteAvatar(): Promise<void>
+	{
+		if (!confirm('Voulez-vous vraiment supprimer votre photo de profil ?')) {
+			return
+		}
+
+		try {
+			await ApiService.deleteAvatar()
+			await this.loadUserData()
+			console.log('Avatar deleted successfully')
+		} catch (error: any) {
+			alert(error.message || 'Échec de la suppression')
+		}
+	}
+
+	private async handleSaveDisplayName(): Promise<void>
+	{
+		const newDisplayName = this.displayNameInput?.value.trim()
+
+		if (!newDisplayName) {
+			alert('Le pseudo ne peut pas être vide')
+			return
+		}
+
+		try {
+			const user = JSON.parse(localStorage.getItem('user') || '{}')
+			console.log('User from localStorage:', user)
+
+			// Appel API pour mettre à jour le pseudo
+			const updatedUser = await ApiService.updateProfile(user.id, {
+				display_name: newDisplayName
+			})
+
+			// Mettre à jour le localStorage
+			localStorage.setItem('user', JSON.stringify(updatedUser.user))
+
+			alert('Pseudo mis à jour avec succès !')
+
+			// Recharger les données de la sidebar
+			await this.loadUserData()
+
+			window.dispatchEvent(new CustomEvent('userProfileUpdated', {
+				detail: { user: updatedUser.user }
+			}))
+
+			// Fermer la sidebar
+			this.close()
+
+		} catch (error: any) {
+			alert(error.message || 'Échec de la mise à jour')
+		}
 	}
 
 

@@ -10,7 +10,7 @@
 	--color-dark-secondary: #111111; /* bg connexion */
 	--color-white: #ffffff;
 	--color-gray-light: #888; /* texte gris clair module inscription */
-	--color-gray-dark: #1a1a1a; /* bg input */
+	--color-gray-dark: #1d1d1d; /* bg input */
 	--color-test: red;
 
 
@@ -2918,6 +2918,14 @@ body.fullscreen-game .app-footer {
     overflow-y: auto;
 }
 
+.header-sidebar {
+  display: flex;
+  align-items: center;       /* aligne verticalement au centre */
+  justify-content: space-between; /* espace entre le titre et le bouton */
+  gap: 10px;                 /* optionnel : espace entre les éléments */
+}
+
+
 .sidebar.active {
     right: 0; /* Slide vers la gauche */
 }
@@ -2943,6 +2951,7 @@ body.fullscreen-game .app-footer {
 .sidebar-close:hover {
     opacity: 0.7;
 }
+
 
 /* Contenu */
 .sidebar-content {
@@ -3036,10 +3045,89 @@ body.fullscreen-game .app-footer {
     margin: 0;
 }
 
+/* Bouton supprimer avatar */
+.btn-delete-avatar {
+	display: block;  /* Ajoute cette ligne */
+    margin: 15px auto 0 auto;  /* Modifie cette ligne : auto sur les côtés */
+    margin-top: 15px;
+    padding: 8px 16px;
+    background-color: var(--bg-input);
+    color: var(--text-secondary);
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-delete-avatar:hover {
+    background: #2b2b2b;
+    color: var(--text-secondary);
+}
+
+
+
+
 .icon-photo {
   font-variation-settings:
   'FILL' 1,
   'wght' 300,
   'GRAD' 0,
   'opsz' 24
+}
+
+
+/* Section Edition Profil */
+.sidebar-edit-section {
+    padding-top: 30px;
+}
+
+.sidebar-edit-section .form-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.sidebar-edit-section .form-group label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 8px;
+    font-weight: normal;
+}
+
+.sidebar-edit-section .form-control {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-input);
+    border: none;
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: 'Inter', Helvetica, sans-serif;
+}
+
+.sidebar-edit-section .form-control:focus {
+    outline: none;
+}
+
+.sidebar-edit-section .form-control::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.5;
+}
+
+.btn-save-displayname {
+    width: 100%;
+    padding: 12px 16px;
+    background: var(--bg-input);
+    color: var(--text-primary);
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.btn-save-displayname:hover {
+    opacity: 0.8;
 }

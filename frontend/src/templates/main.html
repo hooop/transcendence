@@ -59,6 +59,7 @@
 </footer>
 
 <!-- Sidebar -->
+<!-- Sidebar -->
 <div class="sidebar-overlay" id="sidebar-overlay"></div>
 <div class="sidebar" id="user-sidebar">
     <button class="sidebar-close" id="sidebar-close">&times;</button>
@@ -75,8 +76,31 @@
                 </div>
                 <input type="file" id="sidebar-avatar-input" accept="image/*" style="display: none;">
             </div>
-            <h3 class="sidebar-username" id="sidebar-username">Username</h3>
-            <p class="sidebar-email" id="sidebar-email">email@example.com</p>
+
+            <!-- Bouton supprimer avatar -->
+            <button class="btn-delete-avatar" id="sidebar-delete-avatar" style="display: none;">
+                Supprimer la photo
+            </button>
         </div>
+
+		<!-- Section Modifier -->
+		<div class="sidebar-edit-section">
+			<div class="form-group">
+				<label for="sidebar-display-name">Modifier votre pseudo</label>
+				<input
+					type="text"
+					id="sidebar-display-name"
+					name="display_name"
+					placeholder="Votre pseudo"
+					class="form-control"
+				/>
+			</div>
+
+
+			<button class="btn-save-displayname" id="save-displayname-btn">
+				Enregistrer
+			</button>
+		</div>
+
     </div>
 </div>

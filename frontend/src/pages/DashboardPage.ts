@@ -317,6 +317,23 @@ export class DashboardPage {
         if (document.getElementById('tab-profile')?.classList.contains('active')) {
             this.loadMatchHistory();
         }
+
+		// Écouter les mises à jour du profil
+		window.addEventListener('userProfileUpdated', async (e: Event) => {
+			const customEvent = e as CustomEvent
+			const updatedUser = customEvent.detail.user
+
+			// Mettre à jour le localStorage
+			localStorage.setItem('user', JSON.stringify(updatedUser))
+
+			// Rafraîchir l'onglet profile s'il est actif
+			const profileTab = document.getElementById('tab-profile')
+			if (profileTab && profileTab.classList.contains('active')) {
+				const user = await ApiService.getMe()
+				profileTab.innerHTML = this.renderProfileTab(user)
+				this.setupAvatarUpload()
+			}
+		})
     }
 
     private static setupAvatarUpload(): void {

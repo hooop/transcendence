@@ -278,6 +278,27 @@ export class ApiService {
         }
     }
 
+	static async updateProfile(userId: number, data: { display_name?: string; username?: string; email?: string }): Promise<any>
+	{
+		const token = localStorage.getItem('token')
+
+		const response = await fetch(`${API_URL}/api/users/${userId}`, {
+			method: 'PATCH',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${token}`
+			},
+			body: JSON.stringify(data)
+		})
+
+		if (!response.ok) {
+			const error = await response.json()
+			throw new Error(error.error || 'Échec de la mise à jour du profil')
+		}
+
+		return response.json()
+	}
+
     // ===== Match History =====
 
     static async getUserMatches(userId: string, limit: number = 10): Promise<Match[]> {
