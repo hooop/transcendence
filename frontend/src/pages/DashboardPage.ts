@@ -1,55 +1,34 @@
 import { ApiService, User, Friend, FriendRequest, Match } from '../services/api'
+import dashboardTemplate from '../templates/dashboard.html?raw'
 
-export class DashboardPage {
+export class DashboardPage
+{
 
-    static async render(): Promise<string> {
-        try {
-            const user = await ApiService.getMe();
-            const storedUser = JSON.parse(localStorage.getItem('user') || '{}');
+	static async render(): Promise<string>
+	{
+		try {
+			const user = await ApiService.getMe();
 
-            return `
-                <div class="dashboard">
-                    <!-- Header -->
-                    <header class="dashboard-header">
-                        <div class="header-content">
+			// Extraire les stats
+			const totalMatches = (user as any).total_matches || 0;
+			const wins = (user as any).wins || 0;
+			const losses = (user as any).losses || 0;
 
-                        </div>
-                    </header>
+			// Remplacer les placeholders
+			let html = dashboardTemplate;
+			html = html.replace('{{TOTAL_MATCHES}}', totalMatches.toString());
+			html = html.replace('{{WINS}}', wins.toString());
+			html = html.replace('{{LOSSES}}', losses.toString());
 
-                    <!-- Navigation Tabs -->
-                    <div class="dashboard-tabs">
-                        <button class="tab-btn active" data-tab="play">🎮 Play</button>
-                        <button class="tab-btn" data-tab="friends">👥 Friends</button>
-                        <button class="tab-btn" data-tab="profile">👤 Profile</button>
-                    </div>
+			return html;
 
-                    <!-- Tab Contents -->
-                    <div class="dashboard-content">
-                        <!-- Play Tab -->
-                        <div id="tab-play" class="tab-content active">
-                            ${this.renderPlayTab()}
-                        </div>
+		} catch (error) {
+			window.location.href = '/login';
+			return '<div>Redirecting...</div>';
+		}
+	}
 
-                        <!-- Friends Tab -->
-                        <div id="tab-friends" class="tab-content">
-                            <div class="loading">Loading friends...</div>
-                        </div>
-
-                        <!-- Profile Tab -->
-                        <div id="tab-profile" class="tab-content">
-                            ${this.renderProfileTab(user)}
-                        </div>
-                    </div>
-                </div>
-            `;
-        } catch (error) {
-            // Non authentifié, rediriger vers login
-            window.location.href = '/login';
-            return '<div>Redirecting...</div>';
-        }
-    }
-
-	private static renderPlayTab(): string {
+/* 	private static renderPlayTab(): string {
 		return `
 			<div class="play-section">
 				<h2>Choose Your Game</h2>
@@ -67,9 +46,9 @@ export class DashboardPage {
 				</div>
 			</div>
 		`;
-	}
+	} */
 
-    private static renderProfileTab(user: User): string {
+   /*  private static renderProfileTab(user: User): string {
         const totalMatches = (user as any).total_matches || 0;
         const wins = (user as any).wins || 0;
         const losses = (user as any).losses || 0;
@@ -131,7 +110,7 @@ export class DashboardPage {
             </div>
         `;
     }
-
+ */
     static async renderFriendsTab(): Promise<string> {
         try {
             const [friendsData, pendingData] = await Promise.all([
@@ -322,12 +301,12 @@ export class DashboardPage {
 			localStorage.setItem('user', JSON.stringify(updatedUser))
 
 			// Rafraîchir l'onglet profile s'il est actif
-			const profileTab = document.getElementById('tab-profile')
+			/* const profileTab = document.getElementById('tab-profile')
 			if (profileTab && profileTab.classList.contains('active')) {
 				const user = await ApiService.getMe()
 				profileTab.innerHTML = this.renderProfileTab(user)
 				this.setupAvatarUpload()
-			}
+			} */
 		})
     }
 
@@ -365,12 +344,12 @@ export class DashboardPage {
                     const result = await ApiService.uploadAvatar(file);
 
                     // Rafraîchir la page profile
-                    const profileTab = document.getElementById('tab-profile');
+                   /*  const profileTab = document.getElementById('tab-profile');
                     if (profileTab) {
                         const user = await ApiService.getMe();
                         profileTab.innerHTML = this.renderProfileTab(user);
                         this.setupAvatarUpload();
-                    }
+                    } */
 
                     // Mettre à jour l'avatar dans le header
                     const userAvatar = document.querySelector('.user-avatar');
@@ -399,12 +378,12 @@ export class DashboardPage {
                     await ApiService.deleteAvatar();
 
                     // Rafraîchir la page profile
-                    const profileTab = document.getElementById('tab-profile');
+                   /*  const profileTab = document.getElementById('tab-profile');
                     if (profileTab) {
                         const user = await ApiService.getMe();
                         profileTab.innerHTML = this.renderProfileTab(user);
                         this.setupAvatarUpload();
-                    }
+                    } */
 
                     // Mettre à jour l'avatar dans le header
                     const user = await ApiService.getMe();
