@@ -50,12 +50,20 @@
 			</div>
 		</div>
 	</div>
-	<div class="card">Classement</div>
 	<div class="card tall wide">
-    <div class="card-header">
-        <span>Amis</span>
-        <span class="friends-count">{{FRIENDS_COUNT}}</span>
-    </div>
+		<div class="card">
+			<div class="card-header">
+				<span>Demandes en attente</span>
+				<span class="pending-count">{{PENDING_COUNT}}</span>
+			</div>
+			<div id="pending-requests-container"><!-- Rempli par JS --></div>
+		</div>
+	</div>
+	<div class="card tall wide">
+		<div class="card-header">
+			<span>Amis</span>
+			<span class="friends-count">{{FRIENDS_COUNT}}</span>
+		</div>
     <div class="friends-search-wrapper">
         <input
             type="text"

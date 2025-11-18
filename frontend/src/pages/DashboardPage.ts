@@ -10,9 +10,10 @@ export class DashboardPage
 			const user = await ApiService.getMe();
 
 			// Récupérer stats et amis en parallèle
-			const [stats, friendsData] = await Promise.all([
+			const [stats, friendsData, pendingData] = await Promise.all([
 				ApiService.getUserStats(user.id),
-				ApiService.getFriends()
+				ApiService.getFriends(),
+				ApiService.getPendingRequests()
 			]);
 
 			// Extraire les stats
@@ -26,6 +27,7 @@ export class DashboardPage
 			html = html.replace('{{WINS}}', wins.toString());
 			html = html.replace('{{LOSSES}}', losses.toString());
 			html = html.replace('{{FRIENDS_COUNT}}', friendsData.total.toString());
+			html = html.replace('{{PENDING_COUNT}}', pendingData.received.length.toString());
 
 			return html;
 
@@ -287,10 +289,13 @@ export class DashboardPage
 		return user.username.charAt(0).toUpperCase();
 	}
 
+
+
 	// Setup event listeners
 	static setupEventListeners(): void {
 		this.loadTop3Ranking();
 		this.loadFriendsList();
+		this.loadPendingRequests()
 
 		// Tabs
 		document.querySelectorAll('.tab-btn').forEach(btn => {
@@ -349,6 +354,23 @@ export class DashboardPage
 		// Recherche d'utilisateurs dans le dashboard
 		this.setupDashboardSearch();
 
+		// Fonction globale pour ajouter un ami
+		(window as any).sendFriendRequest = async (userId: string) => {
+			try {
+				await ApiService.sendFriendRequest(userId);
+				alert('Demande d\'ami envoyée !');
+				// Rafraîchir la liste d'amis
+				await this.loadFriendsList();
+				// Fermer les résultats de recherche
+				const searchResults = document.getElementById('dashboard-search-results');
+				if (searchResults) {
+					searchResults.style.display = 'none';
+				}
+			} catch (error: any) {
+				alert(error.message || 'Échec de l\'envoi de la demande');
+			}
+		};
+
 		// Fonction globale pour supprimer un ami
 		(window as any).removeFriend = async (friendshipId: string) => {
 			if (confirm('Supprimer cet ami ?')) {
@@ -360,7 +382,66 @@ export class DashboardPage
 				}
 			}
 		};
+
+		// Fonction globale pour accepter une demande d'ami
+		(window as any).acceptFriendRequest = async (friendshipId: string) => {
+			try {
+				await ApiService.acceptFriendRequest(friendshipId);
+				await this.loadPendingRequests();
+				await this.loadFriendsList();
+			} catch (error: any) {
+				alert(error.message || 'Erreur');
+			}
+		};
+
+		// Fonction globale pour refuser une demande d'ami
+		(window as any).rejectFriendRequest = async (friendshipId: string) => {
+			try {
+				await ApiService.rejectFriendRequest(friendshipId);
+				await this.loadPendingRequests();
+			} catch (error: any) {
+				alert(error.message || 'Erreur');
+			}
+		};
+
 	}
+
+
+
+	private static async loadPendingRequests(): Promise<void> {
+    const container = document.getElementById('pending-requests-container');
+    if (!container) return;
+
+    try {
+        const pendingData = await ApiService.getPendingRequests();
+
+		 // Mettre à jour le badge du compte
+        const countBadge = document.querySelector('.pending-count');
+        if (countBadge) {
+            countBadge.textContent = pendingData.received.length.toString();
+        }
+
+        if (pendingData.received.length === 0) {
+            container.innerHTML = '<p class="empty-state">Aucune demande en attente</p>';
+            return;
+        }
+
+        container.innerHTML = pendingData.received.map(request => `
+            <div class="friend-item">
+                <div class="friend-info">
+                    <span class="friend-name">${request.display_name || request.username}</span>
+                </div>
+                <div class="friend-actions">
+                    <button class="btn-accept" onclick="window.acceptFriendRequest('${request.friendship_id}')">✓</button>
+                    <button class="btn-reject" onclick="window.rejectFriendRequest('${request.friendship_id}')">✕</button>
+                </div>
+            </div>
+        `).join('');
+
+    } catch (error) {
+        container.innerHTML = '<p class="error-state">Erreur de chargement</p>';
+    }
+}
 
 	private static async loadTop3Ranking(): Promise<void> {
 		try {
@@ -512,33 +593,6 @@ export class DashboardPage
 			}
 		};
 
-		(window as any).acceptFriendRequest = async (friendshipId: string) => {
-			try {
-				await ApiService.acceptFriendRequest(friendshipId);
-				// Refresh friends tab
-				const friendsTab = document.getElementById('tab-friends');
-				if (friendsTab) {
-					friendsTab.innerHTML = await this.renderFriendsTab();
-					this.setupFriendsListeners();
-				}
-			} catch (error: any) {
-				alert(error.message || 'Failed to accept friend request');
-			}
-		};
-
-		(window as any).rejectFriendRequest = async (friendshipId: string) => {
-			try {
-				await ApiService.rejectFriendRequest(friendshipId);
-				// Refresh friends tab
-				const friendsTab = document.getElementById('tab-friends');
-				if (friendsTab) {
-					friendsTab.innerHTML = await this.renderFriendsTab();
-					this.setupFriendsListeners();
-				}
-			} catch (error: any) {
-				alert(error.message || 'Failed to reject friend request');
-			}
-		};
 
 		(window as any).openChatWithFriend = (userId: string, username: string, displayName: string, avatarUrl: string, isOnline: boolean) => {
 			import('../components/ChatManager').then(({ ChatManager }) => {
