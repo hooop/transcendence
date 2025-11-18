@@ -3541,3 +3541,26 @@ body.fullscreen-game .app-footer {
 
 
 }
+
+
+/* Nouveau wrapper pour le scroll interne */
+.friends-pending-scroll {
+    max-height: 100%;           /* sécurité */
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-right: 5px;         /* éviter scroll qui cache le contenu */
+}
+
+/* Section pending */
+.pending-title {
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.pending-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}

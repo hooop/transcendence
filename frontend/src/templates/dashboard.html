@@ -59,17 +59,15 @@
 			</div>
 		</div>
 
-
-
-
-
-	<!-- AMIS -->
+		<!-- AMIS + PENDING FUSIONNÉS -->
 		<div class="card tall wide">
+
 			<div class="card-header">
 				<span>Amis (</span>
 				<span class="friends-count">{{FRIENDS_COUNT}}</span>
 				<span>)</span>
 			</div>
+
 			<div class="friends-search-wrapper">
 				<input
 					type="text"
@@ -79,18 +77,28 @@
 				/>
 				<div id="dashboard-search-results" class="dashboard-search-results"></div>
 			</div>
-			<div id="friends-list-container"><!-- Rempli par JS --></div>
-		</div>
 
-		<!-- PENDING -->
-		<div class="card tall wide">
-			<div class="card">
-				<div class="card-header">
-					<span>Demandes en attente</span>
-					<span class="pending-count">{{PENDING_COUNT}}</span>
+			<!-- Nouveau conteneur scrollable -->
+			<div class="friends-pending-scroll">
+
+				<!-- Liste d'amis -->
+				<div id="friends-list-container">
+					<!-- Rempli par JS -->
 				</div>
-				<div id="pending-requests-container"><!-- Rempli par JS --></div>
+
+				<!-- Section demandes en attente -->
+				<div class="pending-section">
+					<div class="pending-title">
+						Demandes en attente (<span class="pending-count">{{PENDING_COUNT}}</span>)
+					</div>
+
+					<div id="pending-requests-container">
+						<!-- Rempli par JS -->
+					</div>
+				</div>
+
 			</div>
+
 		</div>
 
 
