@@ -1,6 +1,60 @@
 <div class="dashboard">
 	<!-- Stats du jour -->
-	<div class="daily-stats">
+
+<div class="bento-grid">
+	<div class="card">
+		<div class="stat-item">
+			<div class="stat-label">Matches joués</div>
+			<div class="stat-value">{{TOTAL_MATCHES}}</div>
+		</div>
+	</div>
+	<div class="card">
+		<div class="stat-item">
+			<div class="stat-label">Victoire</div>
+			<div class="stat-value">{{WINS}}</div>
+		</div>
+	 </div>
+	<div class="card">
+		<div class="stat-item">
+			<div class="stat-label">Défaites</div>
+			<div class="stat-value">{{LOSSES}}</div>
+		</div>
+	</div>
+	<div class="card tall">
+		<div class="stat-item">
+			<div class="top3">
+				<div class="podium-container">
+					<div class="podium-avatar" id="rank-1-avatar"></div>
+					<div class="avatar_name">
+						<div class="podium-name" id="rank-1-name">-</div>
+						<div class="podium-points" id="rank-1-points">0 pts</div>
+					</div>
+				</div>
+				<div class="podium-container">
+					<div class="podium-avatar" id="rank-2-avatar"></div>
+					<div class="avatar_name">
+						<div class="podium-name" id="rank-2-name">-</div>
+						<div class="podium-points" id="rank-2-points">0 pts</div>
+					</div>
+				</div>
+				<div class="stat-item">
+					<div class="podium-container">
+						<div class="podium-avatar" id="rank-3-avatar"></div>
+						<div class="avatar_name">
+							<div class="podium-name" id="rank-3-name">-</div>
+							<div class="podium-points" id="rank-3-points">0 pts</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="card">Classement</div>
+</div>
+
+
+
+	<!-- <div class="daily-stats">
 		<div class="stats-container">
 			<div class="stat-item">
 				<div class="stat-label">Matches joués</div>
@@ -46,7 +100,7 @@
 				</div>
 			</div>
 		</div>
-	</div>
+	</div> -->
 
 
 
