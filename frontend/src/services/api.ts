@@ -257,10 +257,12 @@ export class ApiService {
     }
 
     static async removeFriend(friendshipId: string): Promise<void> {
-        const response = await fetch(`${API_URL}/api/friendships/${friendshipId}`, {
-            method: 'DELETE',
-            headers: this.getHeaders(),
-        });
+    const response = await fetch(`${API_URL}/api/friendships/${friendshipId}`, {
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${this.token}`,
+        },
+    });
 
         if (!response.ok) {
             const error = await response.json();

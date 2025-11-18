@@ -1292,15 +1292,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px;
-    background: var(--bg-dark);
-    border-radius: 8px;
-    transition: all 0.3s;
+	padding-bottom: 20px;
+
 }
 
 .friend-item:hover,
 .friend-request-item:hover {
-    background: #222;
+    background: transparent;
 }
 
 .friend-info {
@@ -1320,13 +1318,13 @@
     justify-content: center;
     font-weight: bold;
     font-size: 20px;
+	object-fit: cover;
 }
 
 .friend-avatar img {
     width: 100%;
     height: 100%;
     border-radius: 50%;
-    object-fit: cover;
 }
 
 .avatar-initial {
@@ -1340,7 +1338,9 @@
 }
 
 .friend-name {
-    font-weight: 600;
+	font-family: 'Inter', Arial, Helvetica, sans-serif;
+    font-weight: 400;
+	font-size: 14px;
     color: var(--text-primary);
 }
 
@@ -3489,10 +3489,48 @@ body.fullscreen-game .app-footer {
 .online-indicator {
     position: absolute;
     top: -2px;
-    right: -2px;
+    right: 0;
     width: 18px;
     height: 18px;
     background-color: #4caf50;
     border-radius: 50%;
     border: 2px solid var(--bg-input);
+}
+
+.btn-remove-friend {
+	background-color: var(--bg-input);
+	border: 0;
+	padding: 10px;
+	border-radius: 8px;
+	color: var(--text-secondary);
+	font-family: 'Inter', Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-weight: 400;
+	cursor: pointer;
+
+}
+
+.btn-remove-friend:hover{
+	background-color: #2a2a2a;
+
+
+}
+
+.btn-chat {
+	background-color: var(--bg-input);
+	border: 0;
+	padding: 10px;
+	border-radius: 8px;
+	color: var(--text-secondary);
+	font-family: 'Inter', Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-weight: 400;
+	cursor: pointer;
+
+}
+
+.btn-chat:hover{
+	background-color: #2a2a2a;
+
+
 }

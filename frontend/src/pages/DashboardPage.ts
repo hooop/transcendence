@@ -60,7 +60,8 @@ export class DashboardPage
 						<span class="friend-name">${friend.display_name || friend.username}</span>
 					</div>
 					<div class="friend-actions">
-						<button class="btn-remove-friend" onclick="window.removeFriend('${friend.friendship_id}')">✕</button>
+						<button class="btn-chat">Chat</button>
+						<button class="btn-remove-friend" onclick="window.removeFriend('${friend.friendship_id}')">Supprimer</button>
 					</div>
 				</div>
 			`).join('');
