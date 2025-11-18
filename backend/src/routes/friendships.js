@@ -4,31 +4,30 @@ async function friendshipsRoutes(fastify, options) {
   fastify.get('/', {
     onRequest: [fastify.authenticate],
   }, async (request, reply) => {
+	console.log('GET friendships - user:', request.user);
     try {
       const userId = request.user.id;
 
       // Récupérer tous les amis acceptés (dans les deux sens)
-      const result = fastify.db.prepare(
-        `SELECT
-          f.id as friendship_id,
-          f.created_at as friends_since,
-          u.id,
-          u.username,
-          u.display_name,
-          u.avatar_url,
-          u.is_online,
-          u.last_seen
-         FROM friendships f
-         JOIN users u ON (
-           CASE
-             WHEN f.user_id = ? THEN u.id = f.friend_id
-             WHEN f.friend_id = ? THEN u.id = f.user_id
-           END
-         )
-         WHERE (f.user_id = ? OR f.friend_id = ?)
-         AND f.status = 'accepted'
-         ORDER BY u.is_online DESC, u.username ASC`
-      ).all(userId, userId, userId, userId);
+	const result = fastify.db.prepare(
+	`SELECT
+		f.id as friendship_id,
+		f.created_at as friends_since,
+		u.id,
+		u.username,
+		u.display_name,
+		u.avatar_url,
+		u.is_online,
+		u.last_seen
+	FROM friendships f
+	JOIN users u ON (
+		(f.user_id = ? AND u.id = f.friend_id)
+		OR (f.friend_id = ? AND u.id = f.user_id)
+	)
+	WHERE (f.user_id = ? OR f.friend_id = ?)
+	AND f.status = 'accepted'
+	ORDER BY u.is_online DESC, u.username ASC`
+	).all(userId, userId, userId, userId);
 
       return {
         friends: result,
@@ -148,7 +147,8 @@ async function friendshipsRoutes(fastify, options) {
       });
     }
 
-    try {
+    try
+	{
       // Vérifier que l'utilisateur cible existe
       const userCheck = fastify.db.prepare(
         'SELECT id, username FROM users WHERE id = ?'
@@ -190,25 +190,26 @@ async function friendshipsRoutes(fastify, options) {
          VALUES (?, ?, 'pending')`
       ).run(userId, friend_id);
 
-      // Récupérer la demande créée
-      const friendship = fastify.db.prepare(
-        'SELECT id, user_id, friend_id, status, created_at FROM friendships WHERE id = ?'
-      ).get(insertResult.lastInsertRowid);
+		console.log('insertResult:', insertResult);
+		console.log('lastInsertRowid:', insertResult.lastInsertRowid);
 
-      return reply.status(201).send({
-        message: 'Demande d\'ami envoyée',
-        friendship: {
-          id: friendship.id,
-          friend: userCheck,
-          status: friendship.status,
-          created_at: friendship.created_at,
-        },
-      });
+// Retourner la demande créée
+return reply.status(201).send({
+  message: 'Demande d\'ami envoyée',
+  friendship: {
+    id: Number(insertResult.lastInsertRowid),
+    friend: userCheck,
+    status: 'pending',
+    created_at: new Date().toISOString(),
+  },
+});
 
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.status(500).send({
-        error: 'Erreur lors de l\'envoi de la demande d\'ami',
+    }
+	catch (error)
+	{
+		fastify.log.error(error);
+		return reply.status(500).send({
+		error: 'Erreur lors de l\'envoi de la demande d\'ami',
       });
     }
   });

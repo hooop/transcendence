@@ -3411,6 +3411,13 @@ body.fullscreen-game .app-footer {
 	font-family: 'Inter', Helvetica, sans-serif;
 }
 
+.cta-bg
+{
+	padding: 0;
+	background-image: url(../img/tournoi.png);
+	background-color: #44A3F7;
+	object-fit: cover;
+}
 /* Exemple de tailles personnalisées */
 .wide {
   grid-column: span 2; /* prend 2 colonnes */

@@ -581,21 +581,7 @@ export class DashboardPage
 			});
 		}
 
-		// Global functions for friend actions
-		(window as any).sendFriendRequest = async (userId: string) => {
-			try {
-				await ApiService.sendFriendRequest(userId);
-				alert('Friend request sent!');
-				// Refresh friends tab
-				const friendsTab = document.getElementById('tab-friends');
-				if (friendsTab) {
-					friendsTab.innerHTML = await this.renderFriendsTab();
-					this.setupFriendsListeners();
-				}
-			} catch (error: any) {
-				alert(error.message || 'Failed to send friend request');
-			}
-		};
+
 
 
 		(window as any).openChatWithFriend = (userId: string, username: string, displayName: string, avatarUrl: string, isOnline: boolean) => {
