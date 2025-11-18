@@ -53,10 +53,13 @@ export class DashboardPage
 			container.innerHTML = friendsData.friends.map(friend => `
 				<div class="friend-item">
 					<div class="friend-info">
+						<div class="avatar-wrapper">
+							${this.getAvatarHTML(friend)}
+							${friend.is_online ? '<span class="online-indicator"></span>' : ''}
+						</div>
 						<span class="friend-name">${friend.display_name || friend.username}</span>
 					</div>
 					<div class="friend-actions">
-						<span class="friend-status">${friend.is_online ? '🟢' : '🔴'}</span>
 						<button class="btn-remove-friend" onclick="window.removeFriend('${friend.friendship_id}')">✕</button>
 					</div>
 				</div>
