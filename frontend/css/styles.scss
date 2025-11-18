@@ -828,11 +828,11 @@
 .stat-item {
 	flex: 1;
 	display: flex;
-	flex-direction: row;
+	flex-direction: column;
 	align-items: center;
 /* 	background-color: #CF52EB; */
 	padding: 0;
-	gap: 3rem;
+	gap: 1rem;
 }
 
 /* Bordure verticale mi-hauteur */
@@ -856,13 +856,12 @@
   font-size: 50px;
   font-weight: 400;
   color: #ffffff;
-
 }
 
 .stat-label {
 	color: var(--text-primary);
-	font-weight: normal;
-	font-size: 14px;
+	font-weight: 500;
+	font-size: 16px;
 	font-family: 'Inter', Helvetica, sans-serif;
 }
 
@@ -871,6 +870,7 @@
 	font-size: 50px;
 	font-weight: 400;
 	color: #ffffff;
+	margin-bottom: 30px;
 }
 
 
@@ -3267,9 +3267,10 @@ body.fullscreen-game .app-footer {
 	flex-direction: column;
     justify-content: center;
     align-items: flex-end;
-    gap: 20px;
+    gap: 10px;
     margin: 0 auto;
 	align-items: center;
+	padding-bottom: 20px;
 /* 	background-color: #44A3F7; */
 }
 
@@ -3401,9 +3402,13 @@ body.fullscreen-game .app-footer {
 
 
 .card {
-  background: var(--bg-form);
-  padding: 20px;
-  border-radius: 8px;
+	background: var(--bg-form);
+	padding: 20px;
+	border-radius: 8px;
+	color: var(--text-primary);
+	font-weight: 500;
+	font-size: 16px;
+	font-family: 'Inter', Helvetica, sans-serif;
 }
 
 /* Exemple de tailles personnalisées */
@@ -3414,4 +3419,61 @@ body.fullscreen-game .app-footer {
 
 .tall {
   grid-row: span 5; /* prend 2 lignes */
+}
+
+
+/* Recherche amis dans dashboard */
+.friends-search-wrapper {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.friends-search-wrapper input {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--bg-input);
+    border: none;
+    border-radius: 6px;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: 'Inter', sans-serif;
+}
+
+.friends-search-wrapper input::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.5;
+}
+
+.friends-search-wrapper input:focus {
+    outline: none;
+}
+
+.dashboard-search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--bg-form);
+    border-radius: 6px;
+    margin-top: 5px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10;
+    display: none;
+}
+
+.dashboard-search-results .search-result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--bg-input);
+}
+
+.dashboard-search-results .search-result-item:last-child {
+    border-bottom: none;
+}
+
+.dashboard-search-results .search-result-item:hover {
+    background: var(--bg-input);
 }

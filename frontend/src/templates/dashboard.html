@@ -23,6 +23,7 @@
 	<div class="card tall">
 		<div class="stat-item">
 			<div class="top3">
+				<div class="top">TOP 3</div>
 				<div class="podium-container">
 					<div class="podium-avatar" id="rank-1-avatar"></div>
 					<div class="avatar_name">
@@ -50,6 +51,25 @@
 		</div>
 	</div>
 	<div class="card">Classement</div>
+	<div class="card tall wide">
+    <div class="card-header">
+        <span>Amis</span>
+        <span class="friends-count">{{FRIENDS_COUNT}}</span>
+    </div>
+    <div class="friends-search-wrapper">
+        <input
+            type="text"
+            id="dashboard-search-users"
+            placeholder="Rechercher un utilisateur..."
+            autocomplete="off"
+        />
+        <div id="dashboard-search-results" class="dashboard-search-results"></div>
+    </div>
+    <div id="friends-list-container">
+        <!-- Rempli par JS -->
+    </div>
+</div>
+
 </div>
 
 
