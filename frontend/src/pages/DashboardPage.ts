@@ -433,11 +433,17 @@ export class DashboardPage
         container.innerHTML = pendingData.received.map(request => `
             <div class="friend-item">
                 <div class="friend-info">
-                    <span class="friend-name">${request.display_name || request.username}</span>
-                </div>
+					${this.getAvatarHTML(request)}
+					<div class="friend-details">
+						<div class="friend-name">${request.display_name}</div>
+					</div>
+				</div>
+
+
+
                 <div class="friend-actions">
-                    <button class="btn-accept" onclick="window.acceptFriendRequest('${request.friendship_id}')">✓</button>
-                    <button class="btn-reject" onclick="window.rejectFriendRequest('${request.friendship_id}')">✕</button>
+                    <button class="btn-accept" onclick="window.acceptFriendRequest('${request.friendship_id}')">Accepter</button>
+                    <button class="btn-reject" onclick="window.rejectFriendRequest('${request.friendship_id}')">Refuser</button>
                 </div>
             </div>
         `).join('');
