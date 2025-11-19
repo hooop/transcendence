@@ -3419,20 +3419,39 @@ body.fullscreen-game .app-footer {
 	object-fit: cover;
 }
 /* Exemple de tailles personnalisées */
-.wide {
+.wide
+{
   grid-column: span 2; /* prend 2 colonnes */
-
 }
 
-.tall {
+.big-wide
+{
+  grid-column: span 3; /* prend 2 colonnes */
+    background-image: url(../img/tournoi.png);
+background-size: cover;          /* équivalent à object-fit: cover */
+  background-position: center;     /* centrer l’image */
+  background-repeat: no-repeat;    /* éviter les répétitions */
+}
+
+.tall
+{
   grid-row: span 5; /* prend 2 lignes */
 }
 
 
+.cta-dash
+{
+	font-family: "akira", Arial, Helvetica, sans-serif;
+	font-size: 2rem;
+	line-height: 2.5rem;
+}
+
+
 /* Recherche amis dans dashboard */
-.friends-search-wrapper {
-    position: relative;
-    margin-bottom: 0;
+.friends-search-wrapper
+{
+	position: relative;
+	margin-bottom: 0;
 }
 
 .friends-search-wrapper input {
@@ -3599,6 +3618,12 @@ body.fullscreen-game .app-footer {
 
 .btn-reject:hover{
 	background-color: #2a2a2a;
+}
 
-
+.play-button-dash
+{
+	margin-top: var(--spacing-lg);
+	display: flex;
+	gap: var(--spacing-md);
+	justify-content: left;
 }
