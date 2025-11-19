@@ -3627,3 +3627,20 @@ background-size: cover;          /* équivalent à object-fit: cover */
 	gap: var(--spacing-md);
 	justify-content: left;
 }
+
+.btn-add {
+	background-color: var(--bg-input);
+	border: 0;
+	padding: 10px;
+	border-radius: 8px;
+	color: var(--text-secondary);
+	font-family: 'Inter', Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	font-weight: 400;
+	cursor: pointer;
+
+}
+
+.btn-add:hover{
+	background-color: #2a2a2a;
+}
