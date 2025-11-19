@@ -1360,7 +1360,7 @@
 }
 
 .empty-state {
-    text-align: center;
+    text-align: left;
     color: var(--text-secondary);
     padding: 40px;
     font-style: italic;
@@ -1949,8 +1949,8 @@ body.fullscreen-game .app-footer {
 .empty-state {
     color: var(--text-secondary);
     font-size: 14px;
-    text-align: center;
-    padding: 40px 20px;
+    text-align: left;
+    padding: 40px 0 40px 0;
     opacity: 0.5;
 }
 
@@ -3432,7 +3432,7 @@ body.fullscreen-game .app-footer {
 /* Recherche amis dans dashboard */
 .friends-search-wrapper {
     position: relative;
-    margin-bottom: 15px;
+    margin-bottom: 0;
 }
 
 .friends-search-wrapper input {
