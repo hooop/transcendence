@@ -2,18 +2,37 @@ const fastify = require('fastify');
 const config = require('./config');
 const dbConfig = require('./config/database');
 
+// Configuration du logger avec support Logstash
+const loggerConfig = {
+  level: config.nodeEnv === 'development' ? 'info' : 'error',
+};
+
+// En développement: affichage joli uniquement (sans Logstash pour éviter le blocage)
+if (config.nodeEnv === 'development') {
+  loggerConfig.transport = {
+    target: 'pino-pretty',
+    options: {
+      translateTime: 'HH:MM:ss Z',
+      ignore: 'pid,hostname',
+    },
+  };
+} else {
+  // En production: envoi uniquement vers Logstash
+  loggerConfig.transport = {
+    target: 'pino-socket',
+    options: {
+      address: 'logstash',
+      port: 5000,
+      mode: 'tcp',
+      reconnect: true,
+      reconnectTries: 10,
+    },
+  };
+}
+
 // Créer l'instance Fastify
 const app = fastify({
-  logger: {
-    level: config.nodeEnv === 'development' ? 'info' : 'error',
-    transport: config.nodeEnv === 'development' ? {
-      target: 'pino-pretty',
-      options: {
-        translateTime: 'HH:MM:ss Z',
-        ignore: 'pid,hostname',
-      },
-    } : undefined,
-  },
+  logger: loggerConfig,
 });
 
 // Fonction pour démarrer le serveur
@@ -34,6 +53,9 @@ async function start() {
     });
 
     await app.register(require('@fastify/websocket'));
+
+    // Enregistrer le plugin metrics pour Prometheus
+    await app.register(require('./plugins/metrics'));
 
     // Enregistrer le plugin multipart pour l'upload de fichiers
     await app.register(require('@fastify/multipart'), {

@@ -1,0 +1,23 @@
+groups:
+  - name: transcendence_alerts
+    rules:
+      # Règle 1 : Instance Down
+      # Se déclenche si une cible (backend, db, exporter) ne répond plus
+      - alert: InstanceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "L'instance {{ $labels.instance }} est hors ligne"
+          description: "Le job {{ $labels.job }} ne répond plus depuis 1 minute."
+
+      # Règle 2 : Host High CPU
+      # Se déclenche si le CPU dépasse 80% pendant 2 min
+      - alert: HostHighCpuLoad
+        expr: 100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[2m])) * 100) > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "CPU élevé sur {{ $labels.instance }}"
