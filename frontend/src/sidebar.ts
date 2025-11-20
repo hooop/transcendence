@@ -135,13 +135,18 @@ export class Sidebar {
 		}
 
 		try {
-			// Upload
-			await ApiService.uploadAvatar(file)
+			// Upload avatar et récupère l'utilisateur mis à jour
+			const updatedUser = await ApiService.uploadAvatar(file);
 
-			// Recharger les données
+			// Recharger les données dans ka sidebar
 			await this.loadUserData()
 
-			console.log('Avatar updated successfully')
+			window.dispatchEvent(new CustomEvent('userProfileUpdated', {
+				detail: { user: updatedUser.user}
+			}));
+
+			console.log('Avatar updated successfully');
+
 		} catch (error: any) {
 			alert(error.message || 'Échec de l\'upload')
 		}

@@ -209,9 +209,13 @@ export class DashboardPage
 
 
 		// Écouter les mises à jour du profil
-		window.addEventListener('userProfileUpdated', (e: Event) => {
+		window.addEventListener('userProfileUpdated', async (e: Event) => {
 			const customEvent = e as CustomEvent
 			localStorage.setItem('user', JSON.stringify(customEvent.detail.user))
+
+			// Recharger le top 3 depuis l'API
+			const topUsers = await ApiService.getTop3Ranking();
+			DashboardPage.injectTop3Data(topUsers);
 		});
 
 		// Recherche d'utilisateurs dans le dashboard
