@@ -383,11 +383,15 @@ export class ApiService {
         return await response.json();
     }
 
-    static async createRoom(roomName: string, password?: string, maxScore: number = 5): Promise<any> {
+    static async createRoom(params: { name: string; password?: string; maxScore: number }): Promise<any> {
         const response = await fetch(`${API_URL}/api/game/rooms`, {
             method: 'POST',
             headers: this.getHeaders(),
-            body: JSON.stringify({ roomName, password, maxScore }),
+            body: JSON.stringify({
+                roomName: params.name,
+                password: params.password,
+                maxScore: params.maxScore
+            }),
         });
 
         if (!response.ok) {

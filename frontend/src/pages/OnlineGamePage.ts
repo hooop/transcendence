@@ -3,14 +3,14 @@ import { GameSocketService } from '../services/gameSocket';
 import { OnlinePongGame } from '../game/OnlinePongGame';
 
 interface Room {
-    id: number;
-    name: string;
-    host: {
-        id: number;
+    roomId: string;
+    roomName: string;
+    creator: {
+        id: string;
         username: string;
     };
-    guest: {
-        id: number;
+    opponent: {
+        id: string;
         username: string;
     } | null;
     hasPassword: boolean;
@@ -18,35 +18,19 @@ interface Room {
     status: 'waiting' | 'playing' | 'finished';
 }
 
-interface GameState {
-    player1: {
-        y: number;
-        score: number;
-    };
-    player2: {
-        y: number;
-        score: number;
-    };
-    ball: {
-        x: number;
-        y: number;
-    };
-}
-
 export class OnlineGamePage {
     private container: HTMLElement;
-    private apiService: ApiService;
     private gameSocketService: GameSocketService;
     private onlinePongGame: OnlinePongGame | null = null;
-    private currentRoomId: number | null = null;
+    private currentRoomId: string | null = null;
+    private currentRoom: Room | null = null;
     private refreshInterval: number | null = null;
     private isHost: boolean = false;
     private isReady: boolean = false;
     private opponentReady: boolean = false;
 
-    constructor(container: HTMLElement, apiService: ApiService) {
+    constructor(container: HTMLElement) {
         this.container = container;
-        this.apiService = apiService;
         this.gameSocketService = new GameSocketService();
     }
 
@@ -188,8 +172,8 @@ export class OnlineGamePage {
     }
 
     private renderRoomCard(room: Room): string {
-        const playerCount = room.guest ? '2/2' : '1/2';
-        const isFull = room.guest !== null;
+        const playerCount = room.opponent ? '2/2' : '1/2';
+        const isFull = room.opponent !== null;
         const isPlaying = room.status === 'playing';
         const canJoin = !isFull && !isPlaying;
 
@@ -197,7 +181,7 @@ export class OnlineGamePage {
             <div class="room-card ${isPlaying ? 'playing' : ''} ${isFull ? 'full' : ''}">
                 <div class="room-header">
                     <h3 class="room-name">
-                        ${room.name}
+                        ${room.roomName}
                         ${room.hasPassword ? '<i class="fas fa-lock" title="Password protected"></i>' : ''}
                     </h3>
                     <span class="room-status ${room.status}">${room.status}</span>
@@ -205,7 +189,7 @@ export class OnlineGamePage {
                 <div class="room-info">
                     <div class="info-item">
                         <i class="fas fa-user"></i>
-                        <span>Host: ${room.host.username}</span>
+                        <span>Host: ${room.creator.username}</span>
                     </div>
                     <div class="info-item">
                         <i class="fas fa-users"></i>
@@ -218,7 +202,7 @@ export class OnlineGamePage {
                 </div>
                 <div class="room-actions">
                     ${canJoin ? `
-                        <button class="btn btn-primary join-room-btn" data-room-id="${room.id}" data-has-password="${room.hasPassword}">
+                        <button class="btn btn-primary join-room-btn" data-room-id="${room.roomId}" data-has-password="${room.hasPassword}">
                             <i class="fas fa-sign-in-alt"></i> Join
                         </button>
                     ` : `
@@ -232,14 +216,17 @@ export class OnlineGamePage {
     }
 
     private renderWaitingRoom(room: Room): string {
-        const currentUser = this.apiService.getCurrentUser();
-        this.isHost = room.host.id === currentUser.id;
-        const opponent = this.isHost ? room.guest : room.host;
+        const userStr = localStorage.getItem('user');
+        if (!userStr) return '';
+        const currentUser = JSON.parse(userStr);
+
+        this.isHost = room.creator.id === currentUser.id;
+        const opponent = this.isHost ? room.opponent : room.creator;
 
         return `
             <div class="waiting-room">
                 <div class="waiting-room-header">
-                    <h2>${room.name}</h2>
+                    <h2>${room.roomName}</h2>
                     <button id="leave-room-btn" class="btn btn-danger">
                         <i class="fas fa-sign-out-alt"></i> Leave Room
                     </button>
@@ -259,7 +246,7 @@ export class OnlineGamePage {
                 <div class="players-status">
                     <div class="player-card ${this.isHost ? 'current-user' : ''}">
                         <i class="fas fa-user"></i>
-                        <h3>${room.host.username}</h3>
+                        <h3>${room.creator.username}</h3>
                         <span class="player-role">Host</span>
                         <div class="ready-indicator ${this.isHost && this.isReady ? 'ready' : ''}">
                             ${this.isHost && this.isReady ? '<i class="fas fa-check"></i> Ready' : '<i class="fas fa-clock"></i> Not Ready'}
@@ -322,7 +309,7 @@ export class OnlineGamePage {
                     </div>
                 </div>
                 <div class="canvas-wrapper">
-                    <canvas id="game-canvas" width="800" height="600"></canvas>
+                    <canvas id="game-canvas" width="800" height="450"></canvas>
                 </div>
                 <div class="game-controls-info">
                     <div class="control-item">
@@ -338,8 +325,10 @@ export class OnlineGamePage {
         `;
     }
 
-    private renderGameEndScreen(winner: string, finalScore: { player1: number; player2: number }): string {
-        const currentUser = this.apiService.getCurrentUser();
+    private renderGameEndScreen(winner: string, finalScore: { left: number; right: number }): string {
+        const userStr = localStorage.getItem('user');
+        if (!userStr) return '';
+        const currentUser = JSON.parse(userStr);
         const isWinner = winner === currentUser.username;
 
         return `
@@ -359,12 +348,12 @@ export class OnlineGamePage {
                         <div class="score-display">
                             <div class="score-item">
                                 <span class="score-label" id="end-player1-name">Player 1</span>
-                                <span class="score-value">${finalScore.player1}</span>
+                                <span class="score-value">${finalScore.left}</span>
                             </div>
                             <span class="score-separator">-</span>
                             <div class="score-item">
                                 <span class="score-label" id="end-player2-name">Player 2</span>
-                                <span class="score-value">${finalScore.player2}</span>
+                                <span class="score-value">${finalScore.right}</span>
                             </div>
                         </div>
                     </div>
@@ -462,55 +451,52 @@ export class OnlineGamePage {
     }
 
     private setupWebSocketHandlers(): void {
-        // Player joined room
-        this.gameSocketService.on('playerJoined', (data: { room: Room }) => {
-            if (this.currentRoomId === data.room.id) {
-                this.updateWaitingRoom(data.room);
+        // Room updated (player joined/left)
+        this.gameSocketService.onRoomUpdate = (room: Room) => {
+            if (this.currentRoomId === room.roomId) {
+                this.currentRoom = room;
+                this.updateWaitingRoom(room);
             }
-        });
-
-        // Player left room
-        this.gameSocketService.on('playerLeft', (data: { room: Room }) => {
-            if (this.currentRoomId === data.room.id) {
-                this.updateWaitingRoom(data.room);
-                this.isReady = false;
-                this.opponentReady = false;
-            }
-        });
+        };
 
         // Player ready status changed
-        this.gameSocketService.on('playerReady', (data: { userId: number; ready: boolean }) => {
-            const currentUser = this.apiService.getCurrentUser();
-            if (data.userId !== currentUser.id) {
-                this.opponentReady = data.ready;
+        this.gameSocketService.onPlayerReady = (playerId: string, ready: boolean) => {
+            const userStr = localStorage.getItem('user');
+            if (!userStr) return;
+            const currentUser = JSON.parse(userStr);
+
+            if (playerId !== currentUser.id) {
+                this.opponentReady = ready;
                 this.updateReadyStatus();
             }
-        });
+        };
 
         // Game starting
-        this.gameSocketService.on('gameStarting', (data: { room: Room }) => {
-            this.startGame(data.room);
-        });
+        this.gameSocketService.onGameStart = () => {
+            if (this.currentRoom) {
+                this.startGame(this.currentRoom);
+            }
+        };
 
-        // Game state update
-        this.gameSocketService.on('gameState', (data: GameState) => {
-            this.updateGameState(data);
-        });
+        // Game state update (scores)
+        this.gameSocketService.onGameState = (state) => {
+            // Update score display
+            const leftScore = document.getElementById('player1-score');
+            const rightScore = document.getElementById('player2-score');
+
+            if (leftScore) leftScore.textContent = state.leftScore.toString();
+            if (rightScore) rightScore.textContent = state.rightScore.toString();
+        };
 
         // Game ended
-        this.gameSocketService.on('gameEnded', (data: { winner: string; finalScore: { player1: number; player2: number } }) => {
-            this.endGame(data.winner, data.finalScore);
-        });
+        this.gameSocketService.onGameEnd = (_winner, _winnerId, winnerUsername, finalScore) => {
+            this.endGame(winnerUsername, finalScore);
+        };
 
         // Opponent disconnected
-        this.gameSocketService.on('opponentDisconnected', () => {
+        this.gameSocketService.onOpponentLeft = () => {
             this.handleOpponentDisconnected();
-        });
-
-        // Room closed
-        this.gameSocketService.on('roomClosed', () => {
-            this.handleRoomClosed();
-        });
+        };
     }
 
     private async loadRooms(): Promise<void> {
@@ -518,7 +504,8 @@ export class OnlineGamePage {
             const roomsList = document.getElementById('rooms-list');
             if (!roomsList) return;
 
-            const rooms = await this.apiService.getRooms();
+            const response = await ApiService.getRooms();
+            const rooms: Room[] = response.rooms || [];
             roomsList.innerHTML = this.renderRoomsList(rooms);
 
             // Add event listeners to join buttons
@@ -526,7 +513,7 @@ export class OnlineGamePage {
             joinButtons.forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const target = e.currentTarget as HTMLElement;
-                    const roomId = parseInt(target.getAttribute('data-room-id') || '0');
+                    const roomId = target.getAttribute('data-room-id') || '';
                     const hasPassword = target.getAttribute('data-has-password') === 'true';
                     this.handleJoinRoom(roomId, hasPassword);
                 });
@@ -567,11 +554,11 @@ export class OnlineGamePage {
         }
     }
 
-    private showJoinRoomModal(roomId: number): void {
+    private showJoinRoomModal(roomId: string): void {
         const modal = document.getElementById('join-room-modal') as HTMLElement;
         if (modal) {
             modal.style.display = 'flex';
-            modal.setAttribute('data-room-id', roomId.toString());
+            modal.setAttribute('data-room-id', roomId);
             const passwordInput = document.getElementById('join-password') as HTMLInputElement;
             if (passwordInput) {
                 passwordInput.focus();
@@ -605,31 +592,32 @@ export class OnlineGamePage {
         }
 
         try {
-            const room = await this.apiService.createRoom({
+            const response = await ApiService.createRoom({
                 name: roomName,
                 password: password || undefined,
                 maxScore
             });
 
             this.hideCreateRoomModal();
-            this.currentRoomId = room.id;
+            this.currentRoomId = response.roomId;
+            this.currentRoom = response.room;
 
             // Connect to WebSocket and join room
             await this.gameSocketService.connect();
-            this.gameSocketService.joinRoom(room.id);
+            this.gameSocketService.joinRoom(response.roomId);
 
             // Stop refreshing rooms list
             this.stopRoomRefresh();
 
             // Show waiting room
-            this.showWaitingRoom(room);
+            this.showWaitingRoom(response.room);
         } catch (error) {
             console.error('Failed to create room:', error);
             alert('Failed to create room. Please try again.');
         }
     }
 
-    private async handleJoinRoom(roomId: number, hasPassword: boolean): Promise<void> {
+    private async handleJoinRoom(roomId: string, hasPassword: boolean): Promise<void> {
         if (hasPassword) {
             this.showJoinRoomModal(roomId);
         } else {
@@ -639,7 +627,7 @@ export class OnlineGamePage {
 
     private async handleJoinRoomWithPassword(): Promise<void> {
         const modal = document.getElementById('join-room-modal') as HTMLElement;
-        const roomId = parseInt(modal.getAttribute('data-room-id') || '0');
+        const roomId = modal.getAttribute('data-room-id') || '';
         const passwordInput = document.getElementById('join-password') as HTMLInputElement;
         const password = passwordInput.value.trim();
 
@@ -651,22 +639,23 @@ export class OnlineGamePage {
         await this.joinRoom(roomId, password);
     }
 
-    private async joinRoom(roomId: number, password?: string): Promise<void> {
+    private async joinRoom(roomId: string, password?: string): Promise<void> {
         try {
-            const room = await this.apiService.joinRoom(roomId, password);
+            const response = await ApiService.joinRoom(roomId, password);
 
             this.hideJoinRoomModal();
-            this.currentRoomId = room.id;
+            this.currentRoomId = response.roomId;
+            this.currentRoom = response.room;
 
             // Connect to WebSocket and join room
             await this.gameSocketService.connect();
-            this.gameSocketService.joinRoom(room.id);
+            this.gameSocketService.joinRoom(response.roomId);
 
             // Stop refreshing rooms list
             this.stopRoomRefresh();
 
             // Show waiting room
-            this.showWaitingRoom(room);
+            this.showWaitingRoom(response.room);
         } catch (error) {
             console.error('Failed to join room:', error);
             alert('Failed to join room. The password may be incorrect or the room may be full.');
@@ -705,11 +694,12 @@ export class OnlineGamePage {
         if (!this.currentRoomId) return;
 
         try {
-            await this.apiService.leaveRoom(this.currentRoomId);
-            this.gameSocketService.leaveRoom(this.currentRoomId);
+            await ApiService.leaveRoom(this.currentRoomId);
+            this.gameSocketService.leaveRoom();
             this.gameSocketService.disconnect();
 
             this.currentRoomId = null;
+            this.currentRoom = null;
             this.isReady = false;
             this.opponentReady = false;
 
@@ -731,7 +721,7 @@ export class OnlineGamePage {
         if (!this.currentRoomId) return;
 
         this.isReady = !this.isReady;
-        this.gameSocketService.setReady(this.currentRoomId, this.isReady);
+        this.gameSocketService.setReady(this.isReady);
 
         const readyBtn = document.getElementById('ready-btn');
         if (readyBtn) {
@@ -748,7 +738,6 @@ export class OnlineGamePage {
     }
 
     private updateReadyStatus(): void {
-        const currentUser = this.apiService.getCurrentUser();
         const hostReadyIndicator = document.querySelector('.player-card:first-child .ready-indicator');
         const guestReadyIndicator = document.querySelector('.player-card:last-child .ready-indicator');
 
@@ -799,15 +788,18 @@ export class OnlineGamePage {
             content.innerHTML = this.renderGameCanvas();
 
             // Set player names
-            const currentUser = this.apiService.getCurrentUser();
+            const userStr = localStorage.getItem('user');
+            if (!userStr) return;
+            const currentUser = JSON.parse(userStr);
+
             const player1Name = document.getElementById('player1-name');
             const player2Name = document.getElementById('player2-name');
 
             if (this.isHost) {
                 if (player1Name) player1Name.textContent = currentUser.username;
-                if (player2Name && room.guest) player2Name.textContent = room.guest.username;
+                if (player2Name && room.opponent) player2Name.textContent = room.opponent.username;
             } else {
-                if (player1Name) player1Name.textContent = room.host.username;
+                if (player1Name) player1Name.textContent = room.creator.username;
                 if (player2Name) player2Name.textContent = currentUser.username;
             }
 
@@ -820,64 +812,31 @@ export class OnlineGamePage {
             // Initialize game
             const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
             if (canvas) {
-                this.onlinePongGame = new OnlinePongGame(
-                    canvas,
-                    this.gameSocketService,
-                    this.currentRoomId!,
-                    this.isHost
-                );
-                this.onlinePongGame.start();
+                this.onlinePongGame = new OnlinePongGame(canvas, this.gameSocketService);
+
+                // Setup game end handler
+                this.onlinePongGame.onGameEnd = (_winner, _winnerId, winnerUsername, finalScore) => {
+                    this.endGame(winnerUsername, finalScore);
+                };
+
+                this.onlinePongGame.onOpponentLeft = () => {
+                    this.handleOpponentDisconnected();
+                };
             }
         }
     }
 
-    private updateGameState(state: GameState): void {
-        // Update score display
-        const player1Score = document.getElementById('player1-score');
-        const player2Score = document.getElementById('player2-score');
-
-        if (player1Score) player1Score.textContent = state.player1.score.toString();
-        if (player2Score) player2Score.textContent = state.player2.score.toString();
-
-        // Update game if it exists
-        if (this.onlinePongGame) {
-            this.onlinePongGame.updateState(state);
-        }
-    }
-
-    private async endGame(winner: string, finalScore: { player1: number; player2: number }): Promise<void> {
+    private async endGame(winner: string, finalScore: { left: number; right: number }): Promise<void> {
         // Stop the game
         if (this.onlinePongGame) {
-            this.onlinePongGame.stop();
+            this.onlinePongGame.cleanup();
             this.onlinePongGame = null;
-        }
-
-        // Save match to database
-        if (this.currentRoomId) {
-            try {
-                const currentUser = this.apiService.getCurrentUser();
-                await this.apiService.saveMatch({
-                    roomId: this.currentRoomId,
-                    winner: winner,
-                    player1Score: finalScore.player1,
-                    player2Score: finalScore.player2
-                });
-            } catch (error) {
-                console.error('Failed to save match:', error);
-            }
         }
 
         // Show end screen
         const content = document.getElementById('online-game-content');
         if (content) {
             content.innerHTML = this.renderGameEndScreen(winner, finalScore);
-
-            // Set player names on end screen
-            if (this.currentRoomId) {
-                const player1NameElem = document.getElementById('end-player1-name');
-                const player2NameElem = document.getElementById('end-player2-name');
-                // These would be set based on the room data
-            }
 
             const backBtn = document.getElementById('back-to-rooms-btn');
             if (backBtn) {
@@ -890,8 +849,8 @@ export class OnlineGamePage {
         // Leave room and disconnect
         if (this.currentRoomId) {
             try {
-                await this.apiService.leaveRoom(this.currentRoomId);
-                this.gameSocketService.leaveRoom(this.currentRoomId);
+                await ApiService.leaveRoom(this.currentRoomId);
+                this.gameSocketService.leaveRoom();
             } catch (error) {
                 console.error('Failed to leave room:', error);
             }
@@ -899,6 +858,7 @@ export class OnlineGamePage {
 
         this.gameSocketService.disconnect();
         this.currentRoomId = null;
+        this.currentRoom = null;
         this.isReady = false;
         this.opponentReady = false;
 
@@ -914,21 +874,11 @@ export class OnlineGamePage {
 
     private handleOpponentDisconnected(): void {
         if (this.onlinePongGame) {
-            this.onlinePongGame.stop();
+            this.onlinePongGame.cleanup();
             this.onlinePongGame = null;
         }
 
         alert('Your opponent has disconnected. Returning to room browser.');
-        this.handleBackToRooms();
-    }
-
-    private handleRoomClosed(): void {
-        if (this.onlinePongGame) {
-            this.onlinePongGame.stop();
-            this.onlinePongGame = null;
-        }
-
-        alert('The room has been closed. Returning to room browser.');
         this.handleBackToRooms();
     }
 
@@ -951,12 +901,12 @@ export class OnlineGamePage {
         this.stopRoomRefresh();
 
         if (this.onlinePongGame) {
-            this.onlinePongGame.stop();
+            this.onlinePongGame.cleanup();
             this.onlinePongGame = null;
         }
 
         if (this.currentRoomId) {
-            this.gameSocketService.leaveRoom(this.currentRoomId);
+            this.gameSocketService.leaveRoom();
         }
 
         this.gameSocketService.disconnect();
@@ -986,7 +936,7 @@ export class OnlineGamePage {
         }
 
         // Create new instance
-        this.instance = new OnlineGamePage(container as HTMLElement, ApiService);
+        this.instance = new OnlineGamePage(container as HTMLElement);
         this.instance.render();
     }
 }
