@@ -99,6 +99,48 @@ async function matchesRoutes(fastify, options) {
     }
   });
 
+
+  // POST /api/matches/complete - Enregistrer un match déjà terminé
+  fastify.post('/complete', {
+    onRequest: [fastify.authenticate],
+  }, async (request, reply) => {
+    const { player2_id, opponent_name, winner_id, player1_score, player2_score, game_mode = 'local' } = request.body;
+    const player1_id = request.user.id;
+
+    // Validation des données obligatoires
+    if (player1_score === undefined || player2_score === undefined) {
+	return reply.status(400).send({
+		error: 'Données manquantes : player1_score et player2_score sont obligatoires',
+	});
+	}
+
+    try {
+      // Créer le match directement en statut completed
+      const insertResult = fastify.db.prepare(
+        `INSERT INTO matches (player1_id, player2_id, opponent_name, winner_id, player1_score, player2_score, game_mode, status, started_at, ended_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, 'completed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
+      ).run(player1_id, player2_id || null, opponent_name || null, winner_id, player1_score, player2_score, game_mode);
+
+      const match_id = insertResult.lastInsertRowid;
+
+
+      // Récupérer le match créé
+      const match = fastify.db.prepare(
+        'SELECT * FROM matches WHERE id = ?'
+      ).get(match_id);
+
+      return reply.status(201).send(match);
+
+    } catch (error) {
+      fastify.log.error(error);
+      return reply.status(500).send({
+        error: 'Erreur lors de l\'enregistrement du match',
+      });
+    }
+  });
+
+
+
   // GET /api/matches/:id - Détails d'un match
   fastify.get('/:id', async (request, reply) => {
     const { id } = request.params;

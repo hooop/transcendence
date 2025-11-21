@@ -1124,9 +1124,6 @@
     transition: transform 0.2s;
 }
 
-.match-item:hover {
-    transform: translateX(5px);
-}
 
 .match-win {
     border-left-color: #4CAF50;
@@ -3438,6 +3435,10 @@ background-size: cover;          /* équivalent à object-fit: cover */
   grid-row: span 5; /* prend 2 lignes */
 }
 
+.long {
+	grid-column: span 1;
+	grid-row: span 5;
+}
 
 .cta-dash
 {
@@ -3643,4 +3644,58 @@ background-size: cover;          /* équivalent à object-fit: cover */
 
 .btn-add:hover{
 	background-color: #2a2a2a;
+}
+
+
+.card-header {
+	text-align: center;
+	margin-bottom: 20px;
+}
+
+.result-history {
+	font-size: 14px;
+	 color: var(--text-primary);
+	font-weight: normal;
+	font-family: 'Inter', Arial, Helvetica, sans-serif;
+
+}
+
+.match-history-container .match-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+
+
+.match-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.match-opponent-line {
+    display: flex;
+  /*   gap: 1rem; */
+
+}
+
+.match-opponent {
+    color: var(--text-primary);
+	font-size: 14px;
+	font-weight: normal;
+	font-family: 'Inter', Arial, Helvetica, sans-serif;
+
+}
+
+.match-score {
+    font-weight: bold;
+    color: var(--text-primary);
+}
+
+.match-date {
+    color: var(--text-secondary);
+    font-size: 14px;
 }

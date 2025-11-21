@@ -197,6 +197,7 @@ export class DashboardPage
 		this.loadTop3Ranking();
 		this.loadFriendsList();
 		this.loadPendingRequests()
+		this.loadMatchHistory();
 
 		// Logout
 		const logoutBtn = document.getElementById('logout-btn');
@@ -341,5 +342,45 @@ export class DashboardPage
 			console.error('Failed to load top 3 ranking:', error);
 		}
 	}
+
+
+	// Récupère les 5 derniers matchs de l'utilisateur et génère le HTML
+private static async loadMatchHistory(): Promise<void>
+{
+	const container = document.getElementById('match-history-container');
+	if (!container) return;
+
+	try {
+		const user = await ApiService.getMe();
+		const matches = await ApiService.getUserMatches(user.id, 5);
+
+		if (matches.length === 0) {
+			container.innerHTML = '<p class="empty-state">Aucun match joué</p>';
+			return;
+		}
+
+		container.innerHTML = matches.map(match => {
+			const isWinner = match.winner_id === user.id;
+			const opponentName = match.opponent_name || match.opponent_username || 'Adversaire';
+
+			return `
+				<div class="match-item">
+					<div class="match-details">
+						<div class="match-date">${new Date(match.ended_at).toLocaleDateString('fr-FR')}</div>
+						<div class="match-opponent-line">
+    						<span class="result-history ${isWinner ? 'victory' : 'defeat'}">${isWinner ? 'Victoire' : 'Défaite'}</span>
+							<span class="match-opponent">&nbsp;contre ${opponentName}</span>
+						</div>
+						<div class="match-score">${match.player1_score} - ${match.player2_score}</div>
+					</div>
+				</div>
+			`;
+		}).join('');
+
+	} catch (error) {
+		console.error('Failed to load match history:', error);
+		container.innerHTML = '<p class="error-state">Erreur de chargement</p>';
+	}
+}
 
 }

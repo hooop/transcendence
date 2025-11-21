@@ -51,6 +51,9 @@ export interface Match {
     game_mode: string;
     duration_seconds?: number;
     ended_at: string;
+	winner_id: string;
+	opponent_name: string | null;
+	opponent_username: string | null;
 }
 
 export class ApiService {
@@ -353,6 +356,29 @@ export class ApiService {
     return await response.json();
 }
 
+
+// Enregistrer un match terminé (local/IA/tournoi)
+  static async saveLocalMatch(data: {
+    player2_id?: string;
+    opponent_name?: string;
+    winner_id: string | null;
+    player1_score: number;
+    player2_score: number;
+    game_mode?: string;
+  }): Promise<any> {
+    const response = await fetch(`${API_URL}/api/matches/complete`, {
+      method: 'POST',
+      headers: this.getHeaders(),
+      body: JSON.stringify(data),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || 'Erreur lors de l\'enregistrement du match');
+    }
+
+    return response.json();
+  }
 
 
     // ===== Match History =====

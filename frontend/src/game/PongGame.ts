@@ -808,7 +808,7 @@ private renderCountdown(): void
 		console.log('🏆 showVictoryModal called');
 		console.log('player1Id:', this.player1Id);
 
-		// Sauvegarder les stats si le joueur est connecté
+// Sauvegarder les stats si le joueur est connecté
 		if (this.player1Id)
 		{
 			console.log('✅ Player is authenticated, updating stats...');
@@ -817,6 +817,7 @@ private renderCountdown(): void
 				const score = this.state.leftScore;
 				const opponentScore = this.state.rightScore;
 
+				// Mettre à jour les stats globales
 				await ApiService.updateUserStats(
 					this.player1Id,
 					won,
@@ -824,9 +825,30 @@ private renderCountdown(): void
 					opponentScore
 				);
 
-				console.log('✅ Stats updated successfully');
+				// Déterminer l'opponent_name selon le contexte
+				let opponentName: string | undefined;
+				if (this.isAIEnabled) {
+					opponentName = 'IA';
+				} else if (this.isTournamentMode) {
+					opponentName = this.state.winner === 'left' ? this.player2Name : this.player1Name;
+				} else {
+					opponentName = 'Joueur local';
+				}
+
+			// Enregistrer le match complet dans l'historique
+			const winnerId = won ? this.player1Id : null;
+			await ApiService.saveLocalMatch({
+				player2_id: this.player2Id,
+				opponent_name: opponentName,
+				winner_id: winnerId,
+				player1_score: score,
+				player2_score: opponentScore,
+				game_mode: this.gameMode
+			});
+
+				console.log('✅ Stats and match history updated successfully');
 			} catch (error) {
-				console.error('❌ Failed to update stats:', error);
+				console.error('❌ Failed to update stats/match:', error);
 			}
 		} else {
 			console.log('ℹ️ Player not authenticated, stats not saved');

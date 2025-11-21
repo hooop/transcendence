@@ -79,8 +79,8 @@ async function usersRoutes(fastify, options)
 
 	try {
 		const result = fastify.db.prepare(
-		`SELECT m.id, m.player1_score, m.player2_score, m.status,
-				m.game_mode, m.duration_seconds, m.ended_at,
+		`SELECT m.id, m.player1_score, m.player2_score, m.status, m.winner_id,
+				m.game_mode, m.duration_seconds, m.ended_at, m.opponent_name,
 				p1.id as player1_id, p1.username as player1_username,
 				p1.display_name as player1_display_name,
 				p2.id as player2_id, p2.username as player2_username,
@@ -88,9 +88,10 @@ async function usersRoutes(fastify, options)
 				w.username as winner_username
 			FROM matches m
 			JOIN users p1 ON m.player1_id = p1.id
-			JOIN users p2 ON m.player2_id = p2.id
+			LEFT JOIN users p2 ON m.player2_id = p2.id
 			LEFT JOIN users w ON m.winner_id = w.id
-			WHERE m.player1_id = ? OR m.player2_id = ?
+			WHERE (m.player1_id = ? OR m.player2_id = ?)
+			  AND m.status = 'completed'
 			ORDER BY m.ended_at DESC
 			LIMIT ?`
 		).all(id, id, limit);
