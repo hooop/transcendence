@@ -101,7 +101,7 @@ services:
       - xpack.security.enabled=false
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ports:
-      - "9200:9200"
+      - "127.0.0.1:9200:9200"  # Accessible uniquement en local
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
     networks:
@@ -127,7 +127,7 @@ services:
     container_name: ft_transcendence_kibana
     restart: unless-stopped
     ports:
-      - "5601:5601"
+      - "127.0.0.1:5601:5601"  # Accessible uniquement en local
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
     depends_on:
@@ -145,6 +145,8 @@ services:
       - ./logging/index-template.json:/setup/index-template.json:ro
     environment:
       - ELASTICSEARCH_HOST=http://elasticsearch:9200
+      - ELASTIC_USER=elastic
+      - ELASTIC_PASSWORD=transcendence_elk_2024
     command: sh -c "apk add --no-cache curl bash && /setup/setup-ilm.sh"
     depends_on:
       - elasticsearch

@@ -6,6 +6,8 @@
 set -e
 
 ELASTICSEARCH_HOST="${ELASTICSEARCH_HOST:-http://elasticsearch:9200}"
+ELASTIC_USER="${ELASTIC_USER:-elastic}"
+ELASTIC_PASSWORD="${ELASTIC_PASSWORD:-transcendence_elk_2024}"
 MAX_RETRIES=30
 RETRY_INTERVAL=2
 
@@ -13,7 +15,7 @@ echo "🔍 Attente de la disponibilité d'Elasticsearch sur $ELASTICSEARCH_HOST.
 
 # Attendre qu'Elasticsearch soit prêt
 for i in $(seq 1 $MAX_RETRIES); do
-  if curl -s "$ELASTICSEARCH_HOST" > /dev/null 2>&1; then
+  if curl -s -u "$ELASTIC_USER:$ELASTIC_PASSWORD" "$ELASTICSEARCH_HOST" > /dev/null 2>&1; then
     echo "✅ Elasticsearch est disponible!"
     break
   fi
@@ -31,7 +33,7 @@ echo ""
 echo "📋 Configuration de la politique ILM 'transcendence-logs-policy'..."
 
 # Créer la politique ILM
-RESPONSE=$(curl -s -w "\n%{http_code}" -X PUT "$ELASTICSEARCH_HOST/_ilm/policy/transcendence-logs-policy" \
+RESPONSE=$(curl -s -w "\n%{http_code}" -u "$ELASTIC_USER:$ELASTIC_PASSWORD" -X PUT "$ELASTICSEARCH_HOST/_ilm/policy/transcendence-logs-policy" \
   -H 'Content-Type: application/json' \
   -d @/setup/ilm-policy.json)
 
@@ -49,7 +51,7 @@ echo ""
 echo "📝 Configuration du template d'index 'transcendence-logs-template'..."
 
 # Créer le template d'index
-RESPONSE=$(curl -s -w "\n%{http_code}" -X PUT "$ELASTICSEARCH_HOST/_index_template/transcendence-logs-template" \
+RESPONSE=$(curl -s -w "\n%{http_code}" -u "$ELASTIC_USER:$ELASTIC_PASSWORD" -X PUT "$ELASTICSEARCH_HOST/_index_template/transcendence-logs-template" \
   -H 'Content-Type: application/json' \
   -d @/setup/index-template.json)
 
@@ -67,7 +69,7 @@ echo ""
 echo "🔄 Vérification de la configuration ILM..."
 
 # Vérifier que la politique existe
-curl -s "$ELASTICSEARCH_HOST/_ilm/policy/transcendence-logs-policy" | grep -q "transcendence-logs-policy"
+curl -s -u "$ELASTIC_USER:$ELASTIC_PASSWORD" "$ELASTICSEARCH_HOST/_ilm/policy/transcendence-logs-policy" | grep -q "transcendence-logs-policy"
 if [ $? -eq 0 ]; then
   echo "✅ Politique ILM vérifiée"
 else
@@ -76,7 +78,7 @@ else
 fi
 
 # Vérifier que le template existe
-curl -s "$ELASTICSEARCH_HOST/_index_template/transcendence-logs-template" | grep -q "transcendence-logs-template"
+curl -s -u "$ELASTIC_USER:$ELASTIC_PASSWORD" "$ELASTICSEARCH_HOST/_index_template/transcendence-logs-template" | grep -q "transcendence-logs-template"
 if [ $? -eq 0 ]; then
   echo "✅ Template d'index vérifié"
 else

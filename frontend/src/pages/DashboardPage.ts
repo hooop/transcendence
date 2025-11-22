@@ -354,6 +354,9 @@ private static async loadMatchHistory(): Promise<void>
 		const user = await ApiService.getMe();
 		const matches = await ApiService.getUserMatches(user.id, 5);
 
+		console.log('[DashboardPage] User:', user);
+		console.log('[DashboardPage] Matches received:', matches);
+
 		if (matches.length === 0) {
 			container.innerHTML = '<p class="empty-state">Aucun match joué</p>';
 			return;
@@ -361,7 +364,19 @@ private static async loadMatchHistory(): Promise<void>
 
 		container.innerHTML = matches.map(match => {
 			const isWinner = match.winner_id === user.id;
-			const opponentName = match.opponent_name || match.opponent_username || 'Adversaire';
+
+			// Déterminer qui est l'adversaire en fonction de qui est l'utilisateur courant
+			let opponentName: string;
+			if (match.opponent_name) {
+				// Match local/IA avec un nom personnalisé
+				opponentName = match.opponent_name;
+			} else if (match.player1_id === user.id) {
+				// L'utilisateur est player1, donc l'adversaire est player2
+				opponentName = match.player2_display_name || match.player2_username || 'Adversaire';
+			} else {
+				// L'utilisateur est player2, donc l'adversaire est player1
+				opponentName = match.player1_display_name || match.player1_username || 'Adversaire';
+			}
 
 			return `
 				<div class="match-item">
@@ -378,7 +393,8 @@ private static async loadMatchHistory(): Promise<void>
 		}).join('');
 
 	} catch (error) {
-		console.error('Failed to load match history:', error);
+		console.error('[DashboardPage] Failed to load match history:', error);
+		console.error('[DashboardPage] Error details:', error instanceof Error ? error.message : error);
 		container.innerHTML = '<p class="error-state">Erreur de chargement</p>';
 	}
 }

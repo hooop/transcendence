@@ -41,9 +41,9 @@ export interface Match {
     player1_id: string;
     player1_username: string;
     player1_display_name: string;
-    player2_id: string;
-    player2_username: string;
-    player2_display_name: string;
+    player2_id: string | null;
+    player2_username: string | null;
+    player2_display_name: string | null;
     player1_score: number;
     player2_score: number;
     winner_username?: string;
@@ -53,7 +53,6 @@ export interface Match {
     ended_at: string;
 	winner_id: string;
 	opponent_name: string | null;
-	opponent_username: string | null;
 }
 
 export class ApiService {

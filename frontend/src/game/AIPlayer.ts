@@ -55,26 +55,26 @@ export class AIPlayer {
         switch (difficulty) {
             case AIDifficulty.EASY:
                 return {
-                    reactionDelay: 300,          // Réaction lente
-                    accuracy: 0.6,               // 60% de précision
-                    maxSpeed: 0.7,               // 70% de la vitesse max
-                    predictionError: 80,         // Grande marge d'erreur
+                    reactionDelay: 600,          // Réaction très très lente
+                    accuracy: 0.25,              // 25% de précision (rate 75% du temps)
+                    maxSpeed: 0.5,               // 50% de la vitesse max
+                    predictionError: 200,        // Énorme marge d'erreur
                     speedIncreaseInterval: 30000 // Accélération toutes les 30s
                 }
             case AIDifficulty.MEDIUM:
                 return {
-                    reactionDelay: 150,          // Réaction moyenne
-                    accuracy: 0.8,               // 80% de précision
-                    maxSpeed: 0.85,              // 85% de la vitesse max
-                    predictionError: 40,         // Marge d'erreur moyenne
+                    reactionDelay: 250,          // Réaction lente
+                    accuracy: 0.6,               // 60% de précision (rate 40% du temps)
+                    maxSpeed: 0.7,               // 70% de la vitesse max
+                    predictionError: 80,         // Grande marge d'erreur
                     speedIncreaseInterval: 15000 // Accélération toutes les 15s
                 }
             case AIDifficulty.HARD:
                 return {
-                    reactionDelay: 50,           // Réaction rapide
-                    accuracy: 0.95,              // 95% de précision
-                    maxSpeed: 1.0,               // 100% de la vitesse max
-                    predictionError: 15,         // Petite marge d'erreur
+                    reactionDelay: 100,          // Réaction rapide
+                    accuracy: 0.90,              // 90% de précision
+                    maxSpeed: 0.95,              // 95% de la vitesse max
+                    predictionError: 25,         // Petite marge d'erreur
                     speedIncreaseInterval: 10000 // Accélération toutes les 10s
                 }
         }
@@ -145,7 +145,16 @@ export class AIPlayer {
 
             // Appliquer la précision (parfois l'IA "rate" intentionnellement)
             if (Math.random() > this.aiConfig.accuracy) {
-                this.targetY += (Math.random() - 0.5) * 100
+                // En mode facile, l'IA va parfois complètement dans la mauvaise direction
+                if (this.difficulty === AIDifficulty.EASY && Math.random() > 0.5) {
+                    // Aller à l'opposé de la balle
+                    this.targetY = prediction.y > this.config.height / 2
+                        ? paddle.height
+                        : this.config.height - paddle.height
+                } else {
+                    // Erreur aléatoire normale
+                    this.targetY += (Math.random() - 0.5) * 150
+                }
             }
         }
 
