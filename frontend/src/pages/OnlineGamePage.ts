@@ -294,33 +294,7 @@ export class OnlineGamePage {
     private renderGameCanvas(): string {
         return `
             <div class="game-canvas-container">
-                <div class="game-header">
-                    <div class="player-info">
-                        <h3 id="player1-name">Player 1</h3>
-                        <div class="score" id="player1-score">0</div>
-                    </div>
-                    <div class="game-timer">
-                        <i class="fas fa-gamepad"></i>
-                        <span>LIVE</span>
-                    </div>
-                    <div class="player-info">
-                        <h3 id="player2-name">Player 2</h3>
-                        <div class="score" id="player2-score">0</div>
-                    </div>
-                </div>
-                <div class="canvas-wrapper">
-                    <canvas id="game-canvas" width="800" height="450"></canvas>
-                </div>
-                <div class="game-controls-info">
-                    <div class="control-item">
-                        <i class="fas fa-keyboard"></i>
-                        <span>W/S - Move Paddle Up/Down</span>
-                    </div>
-                    <div class="control-item">
-                        <i class="fas fa-trophy"></i>
-                        <span id="max-score-display">First to 10 wins</span>
-                    </div>
-                </div>
+                <canvas id="game-canvas" width="800" height="450"></canvas>
             </div>
         `;
     }
@@ -476,26 +450,32 @@ export class OnlineGamePage {
             if (this.currentRoom) {
                 this.startGame(this.currentRoom);
             }
+            if (this.onlinePongGame) {
+                this.onlinePongGame.handleGameStart();
+            }
         };
 
-        // Game state update (scores)
+        // Game state update
         this.gameSocketService.onGameState = (state) => {
-            // Update score display
-            const leftScore = document.getElementById('player1-score');
-            const rightScore = document.getElementById('player2-score');
-
-            if (leftScore) leftScore.textContent = state.leftScore.toString();
-            if (rightScore) rightScore.textContent = state.rightScore.toString();
+            if (this.onlinePongGame) {
+                this.onlinePongGame.updateGameState(state);
+            }
         };
 
         // Game ended
         this.gameSocketService.onGameEnd = (_winner, _winnerId, winnerUsername, finalScore) => {
-            this.endGame(winnerUsername, finalScore);
+            if (this.onlinePongGame) {
+                this.onlinePongGame.handleGameEnd(_winner, _winnerId, winnerUsername, finalScore);
+            }
         };
 
         // Opponent disconnected
         this.gameSocketService.onOpponentLeft = () => {
-            this.handleOpponentDisconnected();
+            if (this.onlinePongGame) {
+                this.onlinePongGame.handleOpponentDisconnection();
+            } else {
+                this.handleOpponentDisconnected();
+            }
         };
     }
 
@@ -783,31 +763,12 @@ export class OnlineGamePage {
     }
 
     private startGame(room: Room): void {
+        // Enable fullscreen game mode
+        document.body.classList.add('fullscreen-game');
+
         const content = document.getElementById('online-game-content');
         if (content) {
             content.innerHTML = this.renderGameCanvas();
-
-            // Set player names
-            const userStr = localStorage.getItem('user');
-            if (!userStr) return;
-            const currentUser = JSON.parse(userStr);
-
-            const player1Name = document.getElementById('player1-name');
-            const player2Name = document.getElementById('player2-name');
-
-            if (this.isHost) {
-                if (player1Name) player1Name.textContent = currentUser.username;
-                if (player2Name && room.opponent) player2Name.textContent = room.opponent.username;
-            } else {
-                if (player1Name) player1Name.textContent = room.creator.username;
-                if (player2Name) player2Name.textContent = currentUser.username;
-            }
-
-            // Update max score display
-            const maxScoreDisplay = document.getElementById('max-score-display');
-            if (maxScoreDisplay) {
-                maxScoreDisplay.textContent = `First to ${room.maxScore} wins`;
-            }
 
             // Initialize game
             const canvas = document.getElementById('game-canvas') as HTMLCanvasElement;
@@ -827,6 +788,9 @@ export class OnlineGamePage {
     }
 
     private async endGame(winner: string, finalScore: { left: number; right: number }): Promise<void> {
+        // Disable fullscreen game mode
+        document.body.classList.remove('fullscreen-game');
+
         // Stop the game
         if (this.onlinePongGame) {
             this.onlinePongGame.cleanup();
@@ -873,6 +837,9 @@ export class OnlineGamePage {
     }
 
     private handleOpponentDisconnected(): void {
+        // Disable fullscreen game mode
+        document.body.classList.remove('fullscreen-game');
+
         if (this.onlinePongGame) {
             this.onlinePongGame.cleanup();
             this.onlinePongGame = null;
@@ -897,6 +864,9 @@ export class OnlineGamePage {
     }
 
     public destroy(): void {
+        // Disable fullscreen game mode
+        document.body.classList.remove('fullscreen-game');
+
         // Clean up
         this.stopRoomRefresh();
 

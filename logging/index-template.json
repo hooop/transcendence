@@ -1,0 +1,45 @@
+{
+  "index_patterns": ["transcendence-logs-*"],
+  "template": {
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0,
+      "index.lifecycle.name": "transcendence-logs-policy",
+      "index.lifecycle.rollover_alias": "transcendence-logs"
+    },
+    "mappings": {
+      "properties": {
+        "@timestamp": {
+          "type": "date"
+        },
+        "level": {
+          "type": "keyword"
+        },
+        "msg": {
+          "type": "text"
+        },
+        "http_method": {
+          "type": "keyword"
+        },
+        "http_url": {
+          "type": "text"
+        },
+        "http_status": {
+          "type": "integer"
+        },
+        "hostname": {
+          "type": "keyword"
+        },
+        "pid": {
+          "type": "integer"
+        }
+      }
+    }
+  },
+  "priority": 200,
+  "composed_of": [],
+  "version": 1,
+  "_meta": {
+    "description": "Template pour les logs transcendence avec politique ILM"
+  }
+}

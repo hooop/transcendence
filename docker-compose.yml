@@ -135,6 +135,23 @@ services:
     networks:
       - transcendence_network
 
+  # Setup ILM - Initialisation de la politique de rétention des logs
+  elasticsearch-setup:
+    image: alpine:latest
+    container_name: ft_transcendence_elasticsearch_setup
+    volumes:
+      - ./logging/setup-ilm.sh:/setup/setup-ilm.sh:ro
+      - ./logging/ilm-policy.json:/setup/ilm-policy.json:ro
+      - ./logging/index-template.json:/setup/index-template.json:ro
+    environment:
+      - ELASTICSEARCH_HOST=http://elasticsearch:9200
+    command: sh -c "apk add --no-cache curl bash && /setup/setup-ilm.sh"
+    depends_on:
+      - elasticsearch
+    networks:
+      - transcendence_network
+    restart: "no"
+
 networks:
   transcendence_network:
     driver: bridge

@@ -23,6 +23,7 @@ export class GameSocketService {
     private ws: WebSocket | null = null;
     private roomId: string | null = null;
     private playerSide: 'left' | 'right' | null = null;
+    private config: GameConfig | null = null;
 
     // Event handlers
     public onGameStart?: () => void;
@@ -79,6 +80,7 @@ export class GameSocketService {
             case 'JOINED_ROOM':
                 this.roomId = message.roomId;
                 this.playerSide = message.playerSide;
+                this.config = message.gameConfig;
                 if (this.onConnected) {
                     this.onConnected(message.playerSide, message.gameConfig);
                 }
@@ -164,5 +166,9 @@ export class GameSocketService {
 
     getRoomId(): string | null {
         return this.roomId;
+    }
+
+    getConfig(): GameConfig | null {
+        return this.config;
     }
 }

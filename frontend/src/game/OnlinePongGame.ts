@@ -30,41 +30,45 @@ export class OnlinePongGame {
         this.ctx = ctx;
         this.gameSocket = gameSocket;
 
-        // Event handlers du socket
-        this.gameSocket.onConnected = (playerSide, config) => {
-            this.playerSide = playerSide;
-            this.config = config;
-            this.canvas.width = config.width;
-            this.canvas.height = config.height;
+        // Get config from gameSocket if already connected
+        const existingConfig = this.gameSocket.getConfig();
+        const existingPlayerSide = this.gameSocket.getPlayerSide();
+
+        if (existingConfig && existingPlayerSide) {
+            this.playerSide = existingPlayerSide;
+            this.config = existingConfig;
+            this.canvas.width = existingConfig.width;
+            this.canvas.height = existingConfig.height;
             this.render();
-        };
-
-        this.gameSocket.onGameStart = () => {
-            this.isGameStarted = true;
-            this.startGameLoop();
-        };
-
-        this.gameSocket.onGameState = (state) => {
-            this.gameState = state;
-        };
-
-        this.gameSocket.onGameEnd = (winner, winnerId, winnerUsername, finalScore) => {
-            this.isGameStarted = false;
-            this.stopGameLoop();
-            if (this.onGameEnd) {
-                this.onGameEnd(winner, winnerId, winnerUsername, finalScore);
-            }
-        };
-
-        this.gameSocket.onOpponentLeft = () => {
-            this.isGameStarted = false;
-            this.stopGameLoop();
-            if (this.onOpponentLeft) {
-                this.onOpponentLeft();
-            }
-        };
+        }
 
         this.setupControls();
+    }
+
+    // Public methods to be called by OnlineGamePage when socket events occur
+    public handleGameStart(): void {
+        this.isGameStarted = true;
+        this.startGameLoop();
+    }
+
+    public updateGameState(state: NetworkGameState): void {
+        this.gameState = state;
+    }
+
+    public handleGameEnd(winner: 'left' | 'right', winnerId: string, winnerUsername: string, finalScore: { left: number; right: number }): void {
+        this.isGameStarted = false;
+        this.stopGameLoop();
+        if (this.onGameEnd) {
+            this.onGameEnd(winner, winnerId, winnerUsername, finalScore);
+        }
+    }
+
+    public handleOpponentDisconnection(): void {
+        this.isGameStarted = false;
+        this.stopGameLoop();
+        if (this.onOpponentLeft) {
+            this.onOpponentLeft();
+        }
     }
 
     private setupControls() {
@@ -130,26 +134,25 @@ export class OnlinePongGame {
     private render() {
         if (!this.config) return;
 
-        // Clear
-        this.ctx.fillStyle = '#1a1a2e';
+        // Clear - fond noir pur comme le mode entraînement
+        this.ctx.fillStyle = '#000';
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
-        // Ligne centrale
-        this.ctx.strokeStyle = '#16213e';
+        // Ligne centrale - blanche comme le mode entraînement
+        this.ctx.save();
+        this.ctx.imageSmoothingEnabled = false;
+        const centerX = Math.floor(this.canvas.width / 2) + 0.5;
+        this.ctx.strokeStyle = '#fff';
         this.ctx.lineWidth = 2;
-        this.ctx.setLineDash([10, 10]);
         this.ctx.beginPath();
-        this.ctx.moveTo(this.canvas.width / 2, 0);
-        this.ctx.lineTo(this.canvas.width / 2, this.canvas.height);
+        this.ctx.moveTo(centerX, 0);
+        this.ctx.lineTo(centerX, this.canvas.height);
         this.ctx.stroke();
-        this.ctx.setLineDash([]);
+        this.ctx.restore();
 
-        // Paddle gauche
-        this.ctx.fillStyle = this.playerSide === 'left' ? '#00d4ff' : '#ff006e';
+        // Paddles - blancs comme le mode entraînement
+        this.ctx.fillStyle = '#fff';
         this.ctx.fillRect(0, this.gameState.leftPaddle.y, this.config.paddleWidth, this.config.paddleHeight);
-
-        // Paddle droit
-        this.ctx.fillStyle = this.playerSide === 'right' ? '#00d4ff' : '#ff006e';
         this.ctx.fillRect(
             this.canvas.width - this.config.paddleWidth,
             this.gameState.rightPaddle.y,
@@ -157,14 +160,14 @@ export class OnlinePongGame {
             this.config.paddleHeight
         );
 
-        // Balle
-        this.ctx.fillStyle = '#ffffff';
+        // Balle - blanche
+        this.ctx.fillStyle = '#fff';
         this.ctx.beginPath();
         this.ctx.arc(this.gameState.ball.x, this.gameState.ball.y, this.config.ballSize / 2, 0, Math.PI * 2);
         this.ctx.fill();
 
         // Scores
-        this.ctx.fillStyle = '#ffffff';
+        this.ctx.fillStyle = '#fff';
         this.ctx.font = 'bold 48px Arial';
         this.ctx.textAlign = 'center';
         this.ctx.fillText(String(this.gameState.leftScore), this.canvas.width / 4, 60);
