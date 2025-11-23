@@ -16,5 +16,9 @@ else
     fi
 fi
 
+# Exécuter les migrations
+echo "🗄️  Exécution des migrations..."
+npm run migrate
+
 # Exécuter la commande passée en argument
 exec "$@"
