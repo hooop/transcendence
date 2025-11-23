@@ -42,7 +42,7 @@ export class Router
 		this.routes.set('/game/vs-ai/easy', () => this.renderGame(true, AIDifficulty.EASY))
 		this.routes.set('/game/vs-ai/medium', () => this.renderGame(true, AIDifficulty.MEDIUM))
 		this.routes.set('/game/vs-ai/hard', () => this.renderGame(true, AIDifficulty.HARD)) */
-		this.routes.set('/tournament', () => this.renderTournament())
+		this.routes.set('/tournament', async () => await this.renderTournament())
 	}
 
 	start(): void {
@@ -374,28 +374,38 @@ private handleRoute(): void {
 
 
 
-	private renderTournament(): void
-	{
-		if (!this.tournamentManager)
-		{
-			this.tournamentManager = new TournamentManager({
-				name: 'Tournoi des champions',
-				maxPlayers: 8,
-				minPlayers: 2
-			})
-		}
+private async renderTournament(): Promise<void>
+{
+    if (!this.tournamentManager)
+    {
+        this.tournamentManager = new TournamentManager({
+            name: 'Tournoi des champions',
+            maxPlayers: 8,
+            minPlayers: 2
+        })
 
-		const state = this.tournamentManager.getState()
+        // Ajouter automatiquement l'utilisateur connecté au tournoi
+        try {
+            const user = await ApiService.getMe()
+            if (user && user.username) {
+                this.tournamentManager.addPlayer(user.username)
+            }
+        } catch (error) {
+            console.log('No user connected, tournament created without auto-join')
+        }
+    }
 
-		// Charger le template HTML principal
-		this.updatePageContent(tournamentTemplate)
+    const state = this.tournamentManager.getState()
 
-		// Injecter le contenu selon l'état
-		this.renderTournamentContent(state)
+    // Charger le template HTML principal
+    this.updatePageContent(tournamentTemplate)
 
-		// Attacher les événements
-		setTimeout(() => this.setupTournamentEvents(), 0)
-	}
+    // Injecter le contenu selon l'état
+    this.renderTournamentContent(state)
+
+    // Attacher les événements
+    setTimeout(() => this.setupTournamentEvents(), 0)
+}
 
 
 	private renderTournamentContent(state: any): void
@@ -841,54 +851,54 @@ private handleRoute(): void {
 		document.head.appendChild(style)
 	}
 
-	private setupTournamentEvents(): void
-	{
-		const state = this.tournamentManager?.getState()
+private setupTournamentEvents(): void
+{
+    const state = this.tournamentManager?.getState()
 
-		// Si on est en registration, utiliser la nouvelle page
-		if (state?.status === 'registration') {
-			TournamentConfigPage.update(this.tournamentManager!)
-			TournamentConfigPage.setupEventListeners(
-				this.tournamentManager!,
-				() => this.renderTournament()
-			)
-			return
-		}
+    // Si on est en registration, utiliser la nouvelle page
+    if (state?.status === 'registration') {
+        TournamentConfigPage.update(this.tournamentManager!)
+        TournamentConfigPage.setupEventListeners(
+            this.tournamentManager!,
+            async () => await this.renderTournament()
+        )
+        return
+    }
 
-		// Pour les autres états (ready, ongoing, completed), garder le code existant
+    // Pour les autres états (ready, ongoing, completed), garder le code existant
 
-		// Bouton pour démarrer un match
-		const startMatchBtn = document.getElementById('start-match')
-		if (startMatchBtn) {
-			startMatchBtn.addEventListener('click', (e) => {
-				const matchId = (e.target as HTMLElement).getAttribute('data-match-id')
-				if (matchId)
-				{
-					const match = this.tournamentManager?.startMatch(matchId)
-					if (match) {
-						// Vérifier si c'est IA vs IA
-						if (match.player1.isAI && match.player2.isAI) {
-							// Pas de renderTournament qui affiche le fullscreen
-							this.simulateAIMatch(match)
-						} else {
-							// Match avec au moins un humain
-							this.renderTournament()
-							setTimeout(() => this.initTournamentGame(match), 0)
-						}
-					}
-				}
-			})
-		}
+    // Bouton pour démarrer un match
+    const startMatchBtn = document.getElementById('start-match')
+    if (startMatchBtn) {
+        startMatchBtn.addEventListener('click', async (e) => {  // ← Ajouter async ici
+            const matchId = (e.target as HTMLElement).getAttribute('data-match-id')
+            if (matchId)
+            {
+                const match = this.tournamentManager?.startMatch(matchId)
+                if (match) {
+                    // Vérifier si c'est IA vs IA
+                    if (match.player1.isAI && match.player2.isAI) {
+                        // Pas de renderTournament qui affiche le fullscreen
+                        this.simulateAIMatch(match)
+                    } else {
+                        // Match avec au moins un humain
+                        await this.renderTournament()  // ← Ajouter await ici
+                        setTimeout(() => this.initTournamentGame(match), 0)
+                    }
+                }
+            }
+        })
+    }
 
-		// Bouton pour nouveau tournoi
-		const newTournamentBtn = document.getElementById('new-tournament')
-		if (newTournamentBtn) {
-			newTournamentBtn.addEventListener('click', () => {
-				this.tournamentManager?.reset()
-				this.renderTournament()
-			})
-		}
-	}
+    // Bouton pour nouveau tournoi
+    const newTournamentBtn = document.getElementById('new-tournament')
+    if (newTournamentBtn) {
+        newTournamentBtn.addEventListener('click', async () => {  // ← Ajouter async ici
+            this.tournamentManager?.reset()
+            await this.renderTournament()  // ← Ajouter await ici
+        })
+    }
+}
 
 
 
@@ -996,17 +1006,17 @@ private async initTournamentGame(match: any): Promise<void>
 
                 const backBtn = document.getElementById('backToTournament')
                 if (backBtn) {
-                    backBtn.onclick = () => {
-                        this.isTournamentGameActive = false
-
-                        if (this.currentGame) {
-                            this.currentGame.destroy()
-                            this.currentGame = null
-                        }
-                        document.body.classList.remove('fullscreen-game')
-                        this.showGameControlsAfterTournament()
-                        this.renderTournament()
-                    }
+                    backBtn.onclick = async () => {  // ← Ajouter async
+						this.isTournamentGameActive = false
+						
+						if (this.currentGame) {
+							this.currentGame.destroy()
+							this.currentGame = null
+						}
+						document.body.classList.remove('fullscreen-game')
+						this.showGameControlsAfterTournament()
+						await this.renderTournament()  // ← Ajouter await
+					}
                 }
             }
         } else {
@@ -1058,9 +1068,10 @@ private async initTournamentGame(match: any): Promise<void>
 		console.log(`🏆 ${winner.alias} wins ${score.player1}-${score.player2} against ${loser.alias}`)
 
 		// Enregistrer le résultat après un court délai
-		setTimeout(() => {
+		// Enregistrer le résultat après un court délai
+		setTimeout(async () => {  // ← Ajouter async
 			this.tournamentManager?.endMatch(match.id, winner.id, score)
-			this.renderTournament()
+			await this.renderTournament()  // ← Ajouter await
 		}, 1500)
-	}
+			}
 }
