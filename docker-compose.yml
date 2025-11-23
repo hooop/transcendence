@@ -61,7 +61,7 @@ services:
     networks:
       - transcendence_network
 
-  # Grafana pour visualisation
+  # # Grafana pour visualisation
   grafana:
     image: grafana/grafana:latest
     container_name: ft_transcendence_grafana
@@ -81,7 +81,7 @@ services:
     depends_on:
       - prometheus
 
-  # Node Exporter pour métriques système
+  # # Node Exporter pour métriques système
   node-exporter:
     image: prom/node-exporter:latest
     container_name: ft_transcendence_node_exporter
@@ -91,7 +91,7 @@ services:
     networks:
       - transcendence_network
 
-  # Elasticsearch pour stockage des logs
+  # # Elasticsearch pour stockage des logs
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
     container_name: ft_transcendence_elasticsearch
@@ -107,7 +107,7 @@ services:
     networks:
       - transcendence_network
 
-  # Logstash pour traitement des logs
+  # # Logstash pour traitement des logs
   logstash:
     image: docker.elastic.co/logstash/logstash:8.11.0
     container_name: ft_transcendence_logstash
@@ -121,7 +121,7 @@ services:
     networks:
       - transcendence_network
 
-  # Kibana pour visualisation des logs
+  # # Kibana pour visualisation des logs
   kibana:
     image: docker.elastic.co/kibana/kibana:8.11.0
     container_name: ft_transcendence_kibana
@@ -135,7 +135,7 @@ services:
     networks:
       - transcendence_network
 
-  # Setup ILM - Initialisation de la politique de rétention des logs
+  # # Setup ILM - Initialisation de la politique de rétention des logs
   elasticsearch-setup:
     image: alpine:latest
     container_name: ft_transcendence_elasticsearch_setup

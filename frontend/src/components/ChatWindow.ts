@@ -106,6 +106,8 @@ export class ChatWindow {
     private setupRealtimeListeners(): void {
         // Écouter les nouveaux messages
         const unsubMessage = this.chatService.onMessage((message) => {
+            console.log('Listener onMessage - message reçu:', JSON.stringify(message, null, 2));
+    console.log('Options userId:', this.options.userId);
             if (message.sender_id === this.options.userId || message.recipient_id === this.options.userId) {
                 this.messages.push(message);
                 this.renderMessages();

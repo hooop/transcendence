@@ -154,6 +154,7 @@ export class ChatService {
 
     // Gestion des messages reçus
     private handleMessage(data: any): void {
+       console.log('WebSocket message reçu:', JSON.stringify(data, null, 2));
         switch (data.type) {
             case 'connected':
                 this.connectedHandlers.forEach(handler => handler());

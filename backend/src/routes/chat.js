@@ -294,24 +294,22 @@ async function handleSendMessage(fastify, senderId, payload, senderSocket) {
       return;
     }
 
-    // Insérer le message dans la DB
-    const insertResult = fastify.db.prepare(
-      `INSERT INTO messages (sender_id, recipient_id, content)
-       VALUES (?, ?, ?)`
-    ).run(senderId, recipient_id, content.trim());
+// Insérer ET récupérer le message en une seule requête
+const message = fastify.db.prepare(
+  `INSERT INTO messages (sender_id, recipient_id, content)
+   VALUES (?, ?, ?)
+   RETURNING *`
+).get(senderId, recipient_id, content.trim());
 
-    // Récupérer le message créé
-    const message = fastify.db.prepare(
-      'SELECT id, sender_id, recipient_id, content, message_type, is_read, created_at FROM messages WHERE id = ?'
-    ).get(insertResult.lastInsertRowid);
+// Préparer le message complet
+const fullMessage = {
+  ...message,
+  sender_username: sender.username,
+  sender_display_name: sender.display_name,
+  sender_avatar: sender.avatar_url,
+};
 
-    // Préparer le message complet
-    const fullMessage = {
-      ...message,
-      sender_username: sender.username,
-      sender_display_name: sender.display_name,
-      sender_avatar: sender.avatar_url,
-    };
+console.log('=== FULL MESSAGE A ENVOYER ===', JSON.stringify(fullMessage, null, 2));
 
     // Confirmer à l'expéditeur
     senderSocket.send(JSON.stringify({
