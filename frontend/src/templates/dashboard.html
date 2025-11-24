@@ -38,24 +38,28 @@
 		<!-- TOTAL MATCH -->
 		<div class="card">
 			<div class="stat-item">
-				<div class="stat-label">Matches joués</div>
+				<div class="stat-label-match">MATCHS JOUES</div>
 				<div class="stat-value">{{TOTAL_MATCHES}}</div>
 			</div>
 		</div>
 
-		<!-- VICTOIRES -->
+		<!-- PERFORMANCE -->
 		<div class="card">
 			<div class="stat-item">
-				<div class="stat-label">Victoire</div>
-				<div class="stat-value">{{WINS}}</div>
-			</div>
-		</div>
-
-		<!-- DEFAITES -->
-		<div class="card">
-			<div class="stat-item">
-				<div class="stat-label">Défaites</div>
-				<div class="stat-value">{{LOSSES}}</div>
+				<div class="stat-label-perf">VICTOIRES</div>
+				<div class="donut-chart-container">
+					<svg width="120" height="120" viewBox="0 0 120 120">
+						<defs>
+							<linearGradient id="winGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+								<stop offset="0%" />
+								<stop offset="100%" />
+							</linearGradient>
+						</defs>
+						<circle cx="60" cy="60" r="50" />
+						<circle id="win-circle" cx="60" cy="60" r="50" />
+						<text id="win-text" x="60" y="60">{{WIN_PERCENT}}%</text>
+					</svg>
+				</div>
 			</div>
 		</div>
 

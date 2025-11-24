@@ -826,11 +826,10 @@
 }
 
 .stat-item {
-	flex: 1;
+
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-/* 	background-color: #CF52EB; */
+	align-items: left;
 	padding: 0;
 	gap: 1rem;
 }
@@ -863,6 +862,28 @@
 	font-weight: 500;
 	font-size: 16px;
 	font-family: 'Inter', Helvetica, sans-serif;
+}
+
+.stat-label-match {
+     width: fit-content;
+	font-weight: 400;
+	font-size: 10px;
+	font-family: 'Inter', Helvetica, sans-serif;
+    background-color: #132728;
+    color: #09d4c6;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.stat-label-perf {
+    width: fit-content;
+	font-weight: 400;
+	font-size: 10px;
+	font-family: 'Inter', Helvetica, sans-serif;
+    background-color: #16162a;
+    color: #1d64ec;
+    border-radius: 8px;
+    padding: 10px;
 }
 
 .top {
@@ -3406,6 +3427,7 @@ body.fullscreen-game .app-footer {
 	font-weight: 500;
 	font-size: 16px;
 	font-family: 'Inter', Helvetica, sans-serif;
+    
 }
 
 .cta-bg
@@ -3698,4 +3720,99 @@ background-size: cover;          /* équivalent à object-fit: cover */
 .match-date {
     color: var(--text-secondary);
     font-size: 14px;
+}
+
+
+.performance-bars-container {
+	display: flex;
+	justify-content: center;
+	align-items: flex-end;
+	gap: 1rem;
+	height: 100px;
+	margin-top: 1rem;
+}
+
+.bar-wrapper {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	height: 100%;
+}
+
+.vertical-bar {
+	width: 30px;
+	height: 100%;
+	background-color: rgb(31, 31, 31);
+	border-radius: 10px;
+	overflow: hidden;
+	display: flex;
+	align-items: flex-end;
+	position: relative;
+}
+
+.bar-fill {
+	width: 100%;
+	border-radius: 10px;
+	transition: height 0.3s ease;
+}
+
+.win-bar {
+	background: linear-gradient(180deg, #1d64ec, #16162a);
+}
+
+.loss-bar {
+	background: linear-gradient(180deg, #1d64ec, #16162a);
+}
+
+// Donut Chart SVG
+.donut-chart-container {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	margin-top: 1rem;
+
+	svg {
+		overflow: visible;
+	}
+
+	circle {
+		&:first-of-type {
+			// Cercle de fond
+			fill: none;
+			stroke: #282828;
+			stroke-width: 20;
+			stroke-linecap: round;
+		}
+
+		&#win-circle {
+			// Cercle de victoires
+			fill: none;
+			stroke: url(#winGradient);
+			stroke-width: 20;
+			stroke-linecap: round;
+			transform: rotate(-90deg);
+			transform-origin: center;
+		}
+	}
+
+	text {
+		text-anchor: middle;
+		fill: white;
+        font-size: 14px;
+        font-weight: normal;
+        font-family: 'Inter', Arial, Helvetica, sans-serif;
+        dominant-baseline: middle;
+        }
+
+	// Dégradé
+	#winGradient {
+		stop:first-child {
+			stop-color: #16162a;
+			stop-opacity: 1;
+		}
+		stop:last-child {
+			stop-color: #1d64ec;
+			stop-opacity: 1;
+		}
+	}
 }

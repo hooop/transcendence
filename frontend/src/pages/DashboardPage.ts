@@ -22,14 +22,20 @@ export class DashboardPage
 			const totalMatches = stats.total_matches || 0;
 			const wins = stats.wins || 0;
 			const losses = stats.losses || 0;
+			const winPercent = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+			const lossPercent = totalMatches > 0 ? Math.round((losses / totalMatches) * 100) : 0;
+			
 
 			// Remplacer les placeholders
 			let html = dashboardTemplate;
 			html = html.replace('{{TOTAL_MATCHES}}', totalMatches.toString());
 			html = html.replace('{{WINS}}', wins.toString());
 			html = html.replace('{{LOSSES}}', losses.toString());
+			html = html.replace('{{WIN_PERCENT}}', winPercent.toString());
+			html = html.replace('{{LOSS_PERCENT}}', lossPercent.toString());
 			html = html.replace('{{FRIENDS_COUNT}}', friendsData.total.toString());
 			html = html.replace('{{PENDING_COUNT}}', pendingData.received.length.toString());
+		
 
 			return html;
 
@@ -199,6 +205,15 @@ export class DashboardPage
 		this.loadPendingRequests()
 		this.loadMatchHistory();
 
+		ApiService.getMe().then(async user => {
+			const stats = await ApiService.getUserStats(user.id);
+			const totalMatches = stats.total_matches || 0;
+			const wins = stats.wins || 0;
+			const winPercent = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
+			
+			DashboardPage.updateDonutChart(winPercent);
+		});
+
 		// Logout
 		const logoutBtn = document.getElementById('logout-btn');
 		if (logoutBtn) {
@@ -287,7 +302,6 @@ export class DashboardPage
 
 	}
 
-
 	// Récupère les demandes d'ami en attente et génère le HTML avec boutons accepter / refuser
 	private static async loadPendingRequests(): Promise<void>
 	{
@@ -345,58 +359,71 @@ export class DashboardPage
 
 
 	// Récupère les 5 derniers matchs de l'utilisateur et génère le HTML
-private static async loadMatchHistory(): Promise<void>
-{
-	const container = document.getElementById('match-history-container');
-	if (!container) return;
+	private static async loadMatchHistory(): Promise<void>
+	{
+		const container = document.getElementById('match-history-container');
+		if (!container) return;
 
-	try {
-		const user = await ApiService.getMe();
-		const matches = await ApiService.getUserMatches(user.id, 5);
+		try {
+			const user = await ApiService.getMe();
+			const matches = await ApiService.getUserMatches(user.id, 5);
 
-		console.log('[DashboardPage] User:', user);
-		console.log('[DashboardPage] Matches received:', matches);
+			console.log('[DashboardPage] User:', user);
+			console.log('[DashboardPage] Matches received:', matches);
 
-		if (matches.length === 0) {
-			container.innerHTML = '<p class="empty-state">Aucun match joué</p>';
-			return;
-		}
-
-		container.innerHTML = matches.map(match => {
-			const isWinner = match.winner_id === user.id;
-
-			// Déterminer qui est l'adversaire en fonction de qui est l'utilisateur courant
-			let opponentName: string;
-			if (match.opponent_name) {
-				// Match local/IA avec un nom personnalisé
-				opponentName = match.opponent_name;
-			} else if (match.player1_id === user.id) {
-				// L'utilisateur est player1, donc l'adversaire est player2
-				opponentName = match.player2_display_name || match.player2_username || 'Adversaire';
-			} else {
-				// L'utilisateur est player2, donc l'adversaire est player1
-				opponentName = match.player1_display_name || match.player1_username || 'Adversaire';
+			if (matches.length === 0) {
+				container.innerHTML = '<p class="empty-state">Aucun match joué</p>';
+				return;
 			}
 
-			return `
-				<div class="match-item">
-					<div class="match-details">
-						<div class="match-date">${new Date(match.ended_at).toLocaleDateString('fr-FR')}</div>
-						<div class="match-opponent-line">
-    						<span class="result-history ${isWinner ? 'victory' : 'defeat'}">${isWinner ? 'Victoire' : 'Défaite'}</span>
-							<span class="match-opponent">&nbsp;contre ${opponentName}</span>
-						</div>
-						<div class="match-score">${match.player1_score} - ${match.player2_score}</div>
-					</div>
-				</div>
-			`;
-		}).join('');
+			container.innerHTML = matches.map(match => {
+				const isWinner = match.winner_id === user.id;
 
-	} catch (error) {
-		console.error('[DashboardPage] Failed to load match history:', error);
-		console.error('[DashboardPage] Error details:', error instanceof Error ? error.message : error);
-		container.innerHTML = '<p class="error-state">Erreur de chargement</p>';
+				// Déterminer qui est l'adversaire en fonction de qui est l'utilisateur courant
+				let opponentName: string;
+				if (match.opponent_name) {
+					// Match local/IA avec un nom personnalisé
+					opponentName = match.opponent_name;
+				} else if (match.player1_id === user.id) {
+					// L'utilisateur est player1, donc l'adversaire est player2
+					opponentName = match.player2_display_name || match.player2_username || 'Adversaire';
+				} else {
+					// L'utilisateur est player2, donc l'adversaire est player1
+					opponentName = match.player1_display_name || match.player1_username || 'Adversaire';
+				}
+
+				return `
+					<div class="match-item">
+						<div class="match-details">
+							<div class="match-date">${new Date(match.ended_at).toLocaleDateString('fr-FR')}</div>
+							<div class="match-opponent-line">
+								<span class="result-history ${isWinner ? 'victory' : 'defeat'}">${isWinner ? 'Victoire' : 'Défaite'}</span>
+								<span class="match-opponent">&nbsp;contre ${opponentName}</span>
+							</div>
+							<div class="match-score">${match.player1_score} - ${match.player2_score}</div>
+						</div>
+					</div>
+				`;
+			}).join('');
+
+		} catch (error) {
+			console.error('[DashboardPage] Failed to load match history:', error);
+			console.error('[DashboardPage] Error details:', error instanceof Error ? error.message : error);
+			container.innerHTML = '<p class="error-state">Erreur de chargement</p>';
+		}
 	}
-}
+
+	private static updateDonutChart(winPercent: number): void
+	{
+		const winCircle = document.getElementById('win-circle');
+		if (!winCircle) return;
+
+		const radius = 50;
+		const circumference = 2 * Math.PI * radius;
+		const offset = circumference - (winPercent / 100) * circumference;
+
+		winCircle.setAttribute('stroke-dasharray', circumference.toString());
+		winCircle.setAttribute('stroke-dashoffset', offset.toString());
+	}
 
 }
