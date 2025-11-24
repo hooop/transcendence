@@ -127,6 +127,14 @@ private handleRoute(): void {
 	// CONNEXION
 	private renderLogin(): void
 	{
+		// Si l'utilisateur est connecté, rediriger vers le dashboard
+		const token = ApiService.getToken();
+		if (token)
+		{
+			this.navigate('/dashboard');
+			return;
+		}
+
 		this.updatePageContent(AuthPages.renderLogin())
 		setTimeout(() => AuthPages.setupLoginForm(), 100)
 	}
