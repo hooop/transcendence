@@ -489,6 +489,16 @@ console.log('[RankingChart] Premier match complet:', JSON.stringify(matches[0], 
 
 		const labels = rankings.map((_, index) => `M${index + 1}`);
 
+		
+		// Récupérer le contexte pour le dégradé
+		const ctx = canvas.getContext('2d');
+
+		// Dégradé vertical (du haut vers le bas)
+		const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+
+		gradient.addColorStop(0, "rgba(230, 132, 6, 0.35)");   // Orange léger
+		gradient.addColorStop(1, "rgba(44, 31, 22, 0)");       // Transparent
+
 		// Créer le graphique
 		this.rankingChart = new Chart(canvas, {
 			type: 'line',
@@ -497,13 +507,13 @@ console.log('[RankingChart] Premier match complet:', JSON.stringify(matches[0], 
 				datasets: [{
 					label: 'Ranking',
 					data: rankings,
-					borderColor: '#5ACB3C',
-					backgroundColor: 'rgba(90, 203, 60, 0.1)',
+					borderColor: '#e68406',
+					backgroundColor: gradient,   // <-- dégradé ici
 					borderWidth: 3,
 					tension: 0.4,
 					pointRadius: 5,
 					pointHoverRadius: 7,
-					pointBackgroundColor: '#5ACB3C',
+					pointBackgroundColor: '#2c1f16',
 					pointBorderColor: '#ffffff',
 					pointBorderWidth: 2,
 					fill: true
@@ -520,7 +530,7 @@ console.log('[RankingChart] Premier match complet:', JSON.stringify(matches[0], 
 						backgroundColor: 'rgba(0, 0, 0, 0.8)',
 						titleColor: '#ffffff',
 						bodyColor: '#ffffff',
-						borderColor: '#5ACB3C',
+						borderColor: '#e68406',
 						borderWidth: 1,
 						padding: 10,
 						displayColors: false,
@@ -534,10 +544,7 @@ console.log('[RankingChart] Premier match complet:', JSON.stringify(matches[0], 
 					y: {
 						beginAtZero: false,
 						ticks: {
-							color: '#8b8b8b',
-							font: {
-								size: 11
-							}
+							display: false
 						},
 						grid: {
 							color: 'rgba(139, 139, 139, 0.1)',
@@ -546,10 +553,7 @@ console.log('[RankingChart] Premier match complet:', JSON.stringify(matches[0], 
 					},
 					x: {
 						ticks: {
-							color: '#8b8b8b',
-							font: {
-								size: 11
-							}
+							display: false
 						},
 						grid: {
 							display: false
@@ -558,6 +562,7 @@ console.log('[RankingChart] Premier match complet:', JSON.stringify(matches[0], 
 				}
 			}
 		});
+
 
 	} catch (error) {
 		console.error('[DashboardPage] Failed to load ranking chart:', error);

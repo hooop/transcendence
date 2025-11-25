@@ -100,141 +100,167 @@ async function matchesRoutes(fastify, options) {
   });
 
 
-  // POST /api/matches/complete - Enregistrer un match déjà terminé
- // POST /api/matches/complete - Enregistrer un match déjà terminé
-  fastify.post('/complete', {
-    onRequest: [fastify.authenticate],
-  }, async (request, reply) => {
-    const { player2_id, opponent_name, winner_id, player1_score, player2_score, game_mode = 'local' } = request.body;
-    const player1_id = request.user.id;
+// POST /api/matches/complete - Enregistrer un match déjà terminé
+fastify.post('/complete', {
+  onRequest: [fastify.authenticate],
+}, async (request, reply) => {
+  const { player2_id, opponent_name, winner_id, player1_score, player2_score, game_mode = 'local' } = request.body;
+  const player1_id = request.user.id;
 
-    // Validation des données obligatoires
-    if (player1_score === undefined || player2_score === undefined) {
-      return reply.status(400).send({
-        error: 'Données manquantes : player1_score et player2_score sont obligatoires',
-      });
-    }
+  // Validation des données obligatoires
+  if (player1_score === undefined || player2_score === undefined) {
+    return reply.status(400).send({
+      error: 'Données manquantes : player1_score et player2_score sont obligatoires',
+    });
+  }
 
-    try {
-      // 1. Créer le match d'abord (sans rankings)
-      const insertResult = fastify.db.prepare(
-        `INSERT INTO matches (player1_id, player2_id, opponent_name, winner_id, player1_score, player2_score, game_mode, status, started_at, ended_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, 'completed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
-      ).run(
-        player1_id,
-        player2_id || null,
-        opponent_name || null,
-        winner_id,
-        player1_score,
-        player2_score,
-        game_mode
-      );
+  try {
+    // 1. Créer le match d'abord (sans rankings)
+    const insertResult = fastify.db.prepare(
+      `INSERT INTO matches (player1_id, player2_id, opponent_name, winner_id, player1_score, player2_score, game_mode, status, started_at, ended_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'completed', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`
+    ).run(
+      player1_id,
+      player2_id || null,
+      opponent_name || null,
+      winner_id,
+      player1_score,
+      player2_score,
+      game_mode
+    );
 
-      const match_id = insertResult.lastInsertRowid;
+    const match_id = insertResult.lastInsertRowid;
 
-      // 2. Mettre à jour les stats
+    // 2. Mettre à jour les stats
+    if (winner_id) {
+      // CAS 1: Victoire (winner_id existe)
+      const loser_id = winner_id === player1_id ? player2_id : player1_id;
 
-      if (winner_id) {
-        const loser_id = winner_id === player1_id ? player2_id : player1_id;
+      console.log(`[MATCHES.JS] winner_id: ${winner_id}, loser_id: ${loser_id}, player1: ${player1_id}, player2: ${player2_id}`);
 
-        // Mettre à jour les stats du gagnant
-        const winnerStats = fastify.db.prepare(
+      // Mettre à jour les stats du gagnant
+      const winnerStats = fastify.db.prepare(
+        'SELECT id FROM game_stats WHERE user_id = ?'
+      ).get(winner_id);
+
+      if (!winnerStats) {
+        // Créer les stats si elles n'existent pas
+        fastify.db.prepare(
+          `INSERT INTO game_stats (user_id, total_matches, wins, losses, total_points_scored, total_points_conceded, win_streak, best_win_streak, ranking_points)
+           VALUES (?, 1, 1, 0, ?, ?, 1, 1, 1025)`
+        ).run(winner_id, winner_id === player1_id ? player1_score : player2_score, winner_id === player1_id ? player2_score : player1_score);
+      } else {
+        fastify.db.prepare(
+          `UPDATE game_stats SET
+          total_matches = total_matches + 1,
+          wins = wins + 1,
+          total_points_scored = total_points_scored + ?,
+          total_points_conceded = total_points_conceded + ?,
+          win_streak = win_streak + 1,
+          best_win_streak = MAX(best_win_streak, win_streak + 1),
+          ranking_points = ranking_points + 25
+          WHERE user_id = ?`
+        ).run(
+          winner_id === player1_id ? player1_score : player2_score,
+          winner_id === player1_id ? player2_score : player1_score,
+          winner_id
+        );
+      }
+
+      // Mettre à jour les stats du perdant (seulement si c'est un vrai joueur)
+      if (loser_id) {
+        const loserStats = fastify.db.prepare(
           'SELECT id FROM game_stats WHERE user_id = ?'
-        ).get(winner_id);
+        ).get(loser_id);
 
-        if (!winnerStats) {
+        if (!loserStats) {
           // Créer les stats si elles n'existent pas
           fastify.db.prepare(
             `INSERT INTO game_stats (user_id, total_matches, wins, losses, total_points_scored, total_points_conceded, win_streak, best_win_streak, ranking_points)
-             VALUES (?, 1, 1, 0, ?, ?, 1, 1, 1025)`
-          ).run(winner_id, winner_id === player1_id ? player1_score : player2_score, winner_id === player1_id ? player2_score : player1_score);
+             VALUES (?, 1, 0, 1, ?, ?, 0, 0, 985)`
+          ).run(loser_id, loser_id === player1_id ? player1_score : player2_score, loser_id === player1_id ? player2_score : player1_score);
         } else {
           fastify.db.prepare(
             `UPDATE game_stats SET
             total_matches = total_matches + 1,
-            wins = wins + 1,
+            losses = losses + 1,
             total_points_scored = total_points_scored + ?,
             total_points_conceded = total_points_conceded + ?,
-            win_streak = win_streak + 1,
-            best_win_streak = MAX(best_win_streak, win_streak + 1),
-            ranking_points = ranking_points + 25
+            win_streak = 0,
+            ranking_points = MAX(ranking_points - 15, 0)
             WHERE user_id = ?`
           ).run(
-            winner_id === player1_id ? player1_score : player2_score,
-            winner_id === player1_id ? player2_score : player1_score,
-            winner_id
+            loser_id === player1_id ? player1_score : player2_score,
+            loser_id === player1_id ? player2_score : player1_score,
+            loser_id
           );
         }
-
-        // Mettre à jour les stats du perdant (seulement si c'est un vrai joueur)
-        if (loser_id) {
-          const loserStats = fastify.db.prepare(
-            'SELECT id FROM game_stats WHERE user_id = ?'
-          ).get(loser_id);
-
-          if (!loserStats) {
-            // Créer les stats si elles n'existent pas
-            fastify.db.prepare(
-              `INSERT INTO game_stats (user_id, total_matches, wins, losses, total_points_scored, total_points_conceded, win_streak, best_win_streak, ranking_points)
-               VALUES (?, 1, 0, 1, ?, ?, 0, 0, 985)`
-            ).run(loser_id, loser_id === player1_id ? player1_score : player2_score, loser_id === player1_id ? player2_score : player1_score);
-          } else {
-            fastify.db.prepare(
-              `UPDATE game_stats SET
-              total_matches = total_matches + 1,
-              losses = losses + 1,
-              total_points_scored = total_points_scored + ?,
-              total_points_conceded = total_points_conceded + ?,
-              win_streak = 0,
-              ranking_points = MAX(ranking_points - 15, 0)
-              WHERE user_id = ?`
-            ).run(
-              loser_id === player1_id ? player1_score : player2_score,
-              loser_id === player1_id ? player2_score : player1_score,
-              loser_id
-            );
-          }
-        }
       }
-
-      // 3. Maintenant sauvegarder les rankings APRÈS
-      const player1RankingAfter = fastify.db.prepare(
-        'SELECT ranking_points FROM game_stats WHERE user_id = ?'
+    } else {
+      // CAS 2: Défaite en mode local (winner_id = null)
+      // Le joueur connecté (player1) a perdu contre l'IA
+      console.log(`[MATCHES.JS] Défaite de player1: ${player1_id} contre IA`);
+      
+      const loserStats = fastify.db.prepare(
+        'SELECT id FROM game_stats WHERE user_id = ?'
       ).get(player1_id);
 
-      const player2RankingAfter = player2_id ? fastify.db.prepare(
-        'SELECT ranking_points FROM game_stats WHERE user_id = ?'
-      ).get(player2_id) : null;
-
-      // Mettre à jour le match avec les rankings APRÈS
-      fastify.db.prepare(
-        `UPDATE matches SET 
-          player1_ranking_after = ?,
-          player2_ranking_after = ?
-        WHERE id = ?`
-      ).run(
-        player1RankingAfter?.ranking_points || 1000,
-        player2RankingAfter?.ranking_points || null,
-        match_id
-      );
-
-      // Récupérer le match créé
-
-
-      // Récupérer le match créé
-      const match = fastify.db.prepare(
-        'SELECT * FROM matches WHERE id = ?'
-      ).get(match_id);
-
-      return reply.status(201).send(match);
-
-    } catch (error) {
-      fastify.log.error(error);
-      return reply.status(500).send({
-        error: 'Erreur lors de l\'enregistrement du match',
-      });
+      if (!loserStats) {
+        fastify.db.prepare(
+          `INSERT INTO game_stats (user_id, total_matches, wins, losses, total_points_scored, total_points_conceded, win_streak, best_win_streak, ranking_points)
+           VALUES (?, 1, 0, 1, ?, ?, 0, 0, 985)`
+        ).run(player1_id, player1_score, player2_score);
+      } else {
+        fastify.db.prepare(
+          `UPDATE game_stats SET
+          total_matches = total_matches + 1,
+          losses = losses + 1,
+          total_points_scored = total_points_scored + ?,
+          total_points_conceded = total_points_conceded + ?,
+          win_streak = 0,
+          ranking_points = MAX(ranking_points - 15, 0)
+          WHERE user_id = ?`
+        ).run(player1_score, player2_score, player1_id);
+      }
     }
-  });
+
+    // 3. Maintenant sauvegarder les rankings APRÈS
+    const player1RankingAfter = fastify.db.prepare(
+      'SELECT ranking_points FROM game_stats WHERE user_id = ?'
+    ).get(player1_id);
+
+    const player2RankingAfter = player2_id ? fastify.db.prepare(
+      'SELECT ranking_points FROM game_stats WHERE user_id = ?'
+    ).get(player2_id) : null;
+
+    console.log(`[MATCHES.JS /complete] Stats winner ${winner_id} mises à jour, ranking devrait être: ${player1RankingAfter?.ranking_points || 1000}`);
+
+    // Mettre à jour le match avec les rankings APRÈS
+    fastify.db.prepare(
+      `UPDATE matches SET 
+        player1_ranking_after = ?,
+        player2_ranking_after = ?
+      WHERE id = ?`
+    ).run(
+      player1RankingAfter?.ranking_points || 1000,
+      player2RankingAfter?.ranking_points || null,
+      match_id
+    );
+
+    // Récupérer le match créé
+    const match = fastify.db.prepare(
+      'SELECT * FROM matches WHERE id = ?'
+    ).get(match_id);
+
+    return reply.status(201).send(match);
+
+  } catch (error) {
+    fastify.log.error(error);
+    return reply.status(500).send({
+      error: 'Erreur lors de l\'enregistrement du match',
+    });
+  }
+});
 
 
 

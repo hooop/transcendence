@@ -818,13 +818,15 @@ private renderCountdown(): void
 				const opponentScore = this.state.rightScore;
 
 				// Mettre à jour les stats globales
-			/* 	await ApiService.updateUserStats(
+/* 			await ApiService.updateUserStats(
 					this.player1Id,
 					won,
 					score,
 					opponentScore
-				);
- */
+				); */
+
+				console.log('[PONGGAME] updateUserStats appelé pour player1:', this.player1Id, 'won:', won);
+ 
 				// Déterminer l'opponent_name selon le contexte
 				let opponentName: string | undefined;
 				if (this.isAIEnabled) {
@@ -837,6 +839,9 @@ private renderCountdown(): void
 
 			// Enregistrer le match complet dans l'historique
 			const winnerId = won ? this.player1Id : null;
+
+			console.log('[PONGGAME] winnerId envoyé:', winnerId, 'won:', won);
+			
 			await ApiService.saveLocalMatch({
 				player2_id: this.player2Id,
 				opponent_name: opponentName,

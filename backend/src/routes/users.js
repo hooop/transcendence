@@ -80,7 +80,8 @@ async function usersRoutes(fastify, options)
 	try {
 		const result = fastify.db.prepare(
 		`SELECT m.id, m.player1_score, m.player2_score, m.status, m.winner_id,
-				m.game_mode, m.duration_seconds, m.ended_at, m.opponent_name,
+				m.game_mode, m.duration_seconds, m.ended_at, m.opponent_name, m.created_at,
+				m.player1_ranking_after, m.player2_ranking_after,
 				p1.id as player1_id, p1.username as player1_username,
 				p1.display_name as player1_display_name,
 				p2.id as player2_id, p2.username as player2_username,

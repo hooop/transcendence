@@ -63,10 +63,14 @@ async function statsRoutes(fastify, options) {
         ).run(score, opponentScore, userId);
       }
 
+      
+
 // Récupérer les stats mises à jour
       const updatedStats = fastify.db.prepare(
         'SELECT * FROM game_stats WHERE user_id = ?'
       ).get(userId);
+
+      console.log(`[STATS.JS] Mise à jour stats pour user ${userId} - won: ${won}, ranking après: ${updatedStats.ranking_points}`);
 
       // Récupérer le ranking mis à jour
       const currentRanking = updatedStats.ranking_points;
