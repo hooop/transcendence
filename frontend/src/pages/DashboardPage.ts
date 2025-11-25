@@ -1,8 +1,29 @@
 import {ApiService} from '../services/api'
 import dashboardTemplate from '../templates/dashboard.html?raw'
+import Chart from 'chart.js/auto'
+
+interface Match {
+	id: number;
+	player1_id: number;
+	player2_id: number;
+	player1_score: number;
+	player2_score: number;
+	player1_ranking_after: number;
+	player2_ranking_after: number;
+	winner_id: number | null;
+	created_at: string;
+	ended_at: string;
+	opponent_name?: string;
+	player1_username?: string;
+	player2_username?: string;
+	player1_display_name?: string;
+	player2_display_name?: string;
+}
 
 export class DashboardPage
 {
+
+	private static rankingChart: Chart | null = null;
 
 	// Charge les données utilisateur (stats, amis, demandes en attente)
 	// et injecte les valeurs dans le template HTML
@@ -202,8 +223,9 @@ export class DashboardPage
 	{
 		this.loadTop3Ranking();
 		this.loadFriendsList();
-		this.loadPendingRequests()
+		this.loadPendingRequests();
 		this.loadMatchHistory();
+		this.loadRankingChart();
 
 		ApiService.getMe().then(async user => {
 			const stats = await ApiService.getUserStats(user.id);
@@ -424,6 +446,145 @@ export class DashboardPage
 
 		winCircle.setAttribute('stroke-dasharray', circumference.toString());
 		winCircle.setAttribute('stroke-dashoffset', offset.toString());
+	}
+
+
+	private static async loadRankingChart(): Promise<void>
+{
+	const canvas = document.getElementById('ranking-chart') as HTMLCanvasElement;
+	if (!canvas) return;
+
+	try {
+		const user = await ApiService.getMe();
+		const matches = await ApiService.getUserMatches(user.id, 5) as any[];
+
+console.log('[RankingChart] Matches récupérés:', matches);
+console.log('[RankingChart] Premier match complet:', JSON.stringify(matches[0], null, 2));
+
+		// Détruire l'ancien chart s'il existe
+		if (this.rankingChart) {
+			this.rankingChart.destroy();
+			this.rankingChart = null;
+		}
+
+		// Pas de matches = graphique vide
+		if (matches.length === 0) {
+			this.renderEmptyChart(canvas);
+			return;
+		}
+
+		// Extraire les rankings dans l'ordre chronologique
+		const sortedMatches = [...matches].sort(
+			(a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+		);
+
+		const rankings = sortedMatches.map(match => {
+			return match.player1_id === user.id
+				? match.player1_ranking_after
+				: match.player2_ranking_after;
+		});
+
+		console.log('[RankingChart] Rankings extraits:', rankings);
+		console.log('[RankingChart] User ID:', user.id);
+
+		const labels = rankings.map((_, index) => `M${index + 1}`);
+
+		// Créer le graphique
+		this.rankingChart = new Chart(canvas, {
+			type: 'line',
+			data: {
+				labels: labels,
+				datasets: [{
+					label: 'Ranking',
+					data: rankings,
+					borderColor: '#5ACB3C',
+					backgroundColor: 'rgba(90, 203, 60, 0.1)',
+					borderWidth: 3,
+					tension: 0.4,
+					pointRadius: 5,
+					pointHoverRadius: 7,
+					pointBackgroundColor: '#5ACB3C',
+					pointBorderColor: '#ffffff',
+					pointBorderWidth: 2,
+					fill: true
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: {
+						display: false
+					},
+					tooltip: {
+						backgroundColor: 'rgba(0, 0, 0, 0.8)',
+						titleColor: '#ffffff',
+						bodyColor: '#ffffff',
+						borderColor: '#5ACB3C',
+						borderWidth: 1,
+						padding: 10,
+						displayColors: false,
+						callbacks: {
+							title: () => 'Ranking',
+							label: (context) => `${context.parsed.y} pts`
+						}
+					}
+				},
+				scales: {
+					y: {
+						beginAtZero: false,
+						ticks: {
+							color: '#8b8b8b',
+							font: {
+								size: 11
+							}
+						},
+						grid: {
+							color: 'rgba(139, 139, 139, 0.1)',
+							drawBorder: false
+						}
+					},
+					x: {
+						ticks: {
+							color: '#8b8b8b',
+							font: {
+								size: 11
+							}
+						},
+						grid: {
+							display: false
+						}
+					}
+				}
+			}
+		});
+
+	} catch (error) {
+		console.error('[DashboardPage] Failed to load ranking chart:', error);
+	}
+}
+
+	private static renderEmptyChart(canvas: HTMLCanvasElement): void
+	{
+		this.rankingChart = new Chart(canvas, {
+			type: 'line',
+			data: {
+				labels: ['M1', 'M2', 'M3', 'M4', 'M5'],
+				datasets: [{
+					label: 'Ranking',
+					data: [],
+					borderColor: '#5ACB3C',
+					backgroundColor: 'rgba(90, 203, 60, 0.1)',
+				}]
+			},
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: { display: false }
+				}
+			}
+		});
 	}
 
 }
