@@ -1,13 +1,16 @@
 -- Permettre player2_id NULL pour les matchs locaux/IA
 -- SQLite ne supporte pas ALTER COLUMN, on doit recréer la table
 
+-- Nettoyer d'abord si la table temporaire existe déjà
+DROP TABLE IF EXISTS matches_new;
+
 -- Créer une nouvelle table temporaire avec la bonne structure
 CREATE TABLE matches_new (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  player1_id INTEGER NOT NULL,
-  player2_id INTEGER,  -- NULL autorisé maintenant
+  player1_id TEXT NOT NULL,
+  player2_id TEXT,
   opponent_name TEXT,
-  winner_id INTEGER,
+  winner_id TEXT,
   player1_score INTEGER DEFAULT 0,
   player2_score INTEGER DEFAULT 0,
   status TEXT DEFAULT 'pending',

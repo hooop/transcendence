@@ -45,114 +45,114 @@ services:
       - backend
 
   # Prometheus pour monitoring
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: ft_transcendence_prometheus
-    restart: unless-stopped
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml
-      - prometheus_data:/prometheus
-    ports:
-      - "9090:9090"
-    command:
-      - '--config.file=/etc/prometheus/prometheus.yml'
-      - '--storage.tsdb.path=/prometheus'
-    networks:
-      - transcendence_network
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: ft_transcendence_prometheus
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+  #     - ./monitoring/alert_rules.yml:/etc/prometheus/alert_rules.yml
+  #     - prometheus_data:/prometheus
+  #   ports:
+  #     - "9090:9090"
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+  #     - '--storage.tsdb.path=/prometheus'
+  #   networks:
+  #     - transcendence_network
 
-  # # Grafana pour visualisation
-  grafana:
-    image: grafana/grafana:latest
-    container_name: ft_transcendence_grafana
-    restart: unless-stopped
-    ports:
-      - "3001:3000"
-    volumes:
-      - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=simon123
-      - GF_INSTALL_PLUGINS=
-      - GF_USERS_ALLOW_SIGN_UP=false
-    networks:
-      - transcendence_network
-    depends_on:
-      - prometheus
+  # # # Grafana pour visualisation
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   container_name: ft_transcendence_grafana
+  #   restart: unless-stopped
+  #   ports:
+  #     - "3001:3000"
+  #   volumes:
+  #     - grafana_data:/var/lib/grafana
+  #     - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+  #   environment:
+  #     - GF_SECURITY_ADMIN_USER=admin
+  #     - GF_SECURITY_ADMIN_PASSWORD=simon123
+  #     - GF_INSTALL_PLUGINS=
+  #     - GF_USERS_ALLOW_SIGN_UP=false
+  #   networks:
+  #     - transcendence_network
+  #   depends_on:
+  #     - prometheus
 
-  # # Node Exporter pour métriques système
-  node-exporter:
-    image: prom/node-exporter:latest
-    container_name: ft_transcendence_node_exporter
-    restart: unless-stopped
-    ports:
-      - "9100:9100"
-    networks:
-      - transcendence_network
+  # # # Node Exporter pour métriques système
+  # node-exporter:
+  #   image: prom/node-exporter:latest
+  #   container_name: ft_transcendence_node_exporter
+  #   restart: unless-stopped
+  #   ports:
+  #     - "9100:9100"
+  #   networks:
+  #     - transcendence_network
 
-  # # Elasticsearch pour stockage des logs
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
-    container_name: ft_transcendence_elasticsearch
-    restart: unless-stopped
-    environment:
-      - discovery.type=single-node
-      - xpack.security.enabled=false
-      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
-    ports:
-      - "127.0.0.1:9200:9200"  # Accessible uniquement en local
-    volumes:
-      - elasticsearch_data:/usr/share/elasticsearch/data
-    networks:
-      - transcendence_network
+  # # # Elasticsearch pour stockage des logs
+  # elasticsearch:
+  #   image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+  #   container_name: ft_transcendence_elasticsearch
+  #   restart: unless-stopped
+  #   environment:
+  #     - discovery.type=single-node
+  #     - xpack.security.enabled=false
+  #     - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+  #   ports:
+  #     - "127.0.0.1:9200:9200"  # Accessible uniquement en local
+  #   volumes:
+  #     - elasticsearch_data:/usr/share/elasticsearch/data
+  #   networks:
+  #     - transcendence_network
 
-  # # Logstash pour traitement des logs
-  logstash:
-    image: docker.elastic.co/logstash/logstash:8.11.0
-    container_name: ft_transcendence_logstash
-    restart: unless-stopped
-    volumes:
-      - ./logging/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
-    ports:
-      - "5000:5000"
-    depends_on:
-      - elasticsearch
-    networks:
-      - transcendence_network
+  # # # Logstash pour traitement des logs
+  # logstash:
+  #   image: docker.elastic.co/logstash/logstash:8.11.0
+  #   container_name: ft_transcendence_logstash
+  #   restart: unless-stopped
+  #   volumes:
+  #     - ./logging/logstash.conf:/usr/share/logstash/pipeline/logstash.conf
+  #   ports:
+  #     - "5000:5000"
+  #   depends_on:
+  #     - elasticsearch
+  #   networks:
+  #     - transcendence_network
 
-  # # Kibana pour visualisation des logs
-  kibana:
-    image: docker.elastic.co/kibana/kibana:8.11.0
-    container_name: ft_transcendence_kibana
-    restart: unless-stopped
-    ports:
-      - "127.0.0.1:5601:5601"  # Accessible uniquement en local
-    environment:
-      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-    depends_on:
-      - elasticsearch
-    networks:
-      - transcendence_network
+  # # # Kibana pour visualisation des logs
+  # kibana:
+  #   image: docker.elastic.co/kibana/kibana:8.11.0
+  #   container_name: ft_transcendence_kibana
+  #   restart: unless-stopped
+  #   ports:
+  #     - "127.0.0.1:5601:5601"  # Accessible uniquement en local
+  #   environment:
+  #     - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+  #   depends_on:
+  #     - elasticsearch
+  #   networks:
+  #     - transcendence_network
 
-  # # Setup ILM - Initialisation de la politique de rétention des logs
-  elasticsearch-setup:
-    image: alpine:latest
-    container_name: ft_transcendence_elasticsearch_setup
-    volumes:
-      - ./logging/setup-ilm.sh:/setup/setup-ilm.sh:ro
-      - ./logging/ilm-policy.json:/setup/ilm-policy.json:ro
-      - ./logging/index-template.json:/setup/index-template.json:ro
-    environment:
-      - ELASTICSEARCH_HOST=http://elasticsearch:9200
-      - ELASTIC_USER=elastic
-      - ELASTIC_PASSWORD=transcendence_elk_2024
-    command: sh -c "apk add --no-cache curl bash && /setup/setup-ilm.sh"
-    depends_on:
-      - elasticsearch
-    networks:
-      - transcendence_network
-    restart: "no"
+  # # # Setup ILM - Initialisation de la politique de rétention des logs
+  # elasticsearch-setup:
+  #   image: alpine:latest
+  #   container_name: ft_transcendence_elasticsearch_setup
+  #   volumes:
+  #     - ./logging/setup-ilm.sh:/setup/setup-ilm.sh:ro
+  #     - ./logging/ilm-policy.json:/setup/ilm-policy.json:ro
+  #     - ./logging/index-template.json:/setup/index-template.json:ro
+  #   environment:
+  #     - ELASTICSEARCH_HOST=http://elasticsearch:9200
+  #     - ELASTIC_USER=elastic
+  #     - ELASTIC_PASSWORD=transcendence_elk_2024
+  #   command: sh -c "apk add --no-cache curl bash && /setup/setup-ilm.sh"
+  #   depends_on:
+  #     - elasticsearch
+  #   networks:
+  #     - transcendence_network
+  #   restart: "no"
 
 networks:
   transcendence_network:

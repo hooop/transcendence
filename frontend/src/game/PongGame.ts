@@ -818,13 +818,13 @@ private renderCountdown(): void
 				const opponentScore = this.state.rightScore;
 
 				// Mettre à jour les stats globales
-				await ApiService.updateUserStats(
+			/* 	await ApiService.updateUserStats(
 					this.player1Id,
 					won,
 					score,
 					opponentScore
 				);
-
+ */
 				// Déterminer l'opponent_name selon le contexte
 				let opponentName: string | undefined;
 				if (this.isAIEnabled) {

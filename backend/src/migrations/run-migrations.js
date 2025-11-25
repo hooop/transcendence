@@ -20,6 +20,20 @@ function runMigrations() {
     // Activer les foreign keys
     db.pragma('foreign_keys = ON');
 
+    // Créer la table de tracking des migrations si elle n'existe pas
+    db.exec(`
+      CREATE TABLE IF NOT EXISTS migrations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        filename TEXT UNIQUE NOT NULL,
+        executed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    console.log('✅ Table migrations initialisée');
+
+    // Récupérer les migrations déjà appliquées
+    const appliedMigrations = db.prepare('SELECT filename FROM migrations').all();
+    const appliedSet = new Set(appliedMigrations.map(m => m.filename));
+
     // Lire et exécuter chaque fichier de migration
     const migrationsDir = __dirname;
     const migrationFiles = fs.readdirSync(migrationsDir)
@@ -27,20 +41,26 @@ function runMigrations() {
       .sort(); // Trier pour exécuter dans l'ordre
 
     for (const file of migrationFiles) {
+      // Vérifier si la migration a déjà été appliquée
+      if (appliedSet.has(file)) {
+        console.log(`⏭️  Migration ${file} déjà appliquée, skip`);
+        continue;
+      }
+
       console.log(`\n📄 Exécution de la migration: ${file}`);
       const filePath = path.join(migrationsDir, file);
       const sql = fs.readFileSync(filePath, 'utf8');
 
       try {
         db.exec(sql);
+        
+        // Enregistrer la migration comme appliquée
+        db.prepare('INSERT INTO migrations (filename) VALUES (?)').run(file);
+        
         console.log(`✅ Migration ${file} exécutée avec succès`);
       } catch (error) {
-        // Ignorer l'erreur si la colonne existe déjà (pour 002_add_oauth_support.sql)
-        if (error.message.includes('duplicate column name')) {
-          console.log(`⚠️  Migration ${file} déjà appliquée (colonnes existantes)`);
-        } else {
-          throw error;
-        }
+        console.error(`❌ Erreur lors de l'exécution de ${file}:`, error.message);
+        throw error;
       }
     }
 

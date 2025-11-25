@@ -63,10 +63,35 @@ async function statsRoutes(fastify, options) {
         ).run(score, opponentScore, userId);
       }
 
-      // Récupérer les stats mises à jour
+// Récupérer les stats mises à jour
       const updatedStats = fastify.db.prepare(
         'SELECT * FROM game_stats WHERE user_id = ?'
       ).get(userId);
+
+      // Récupérer le ranking mis à jour
+      const currentRanking = updatedStats.ranking_points;
+
+      // Récupérer le dernier match de l'utilisateur pour y sauvegarder le ranking
+      const lastMatch = fastify.db.prepare(
+        `SELECT id, player1_id, player2_id FROM matches 
+         WHERE (player1_id = ? OR player2_id = ?) 
+         AND status = 'completed'
+         ORDER BY ended_at DESC 
+         LIMIT 1`
+      ).get(userId, userId);
+
+      if (lastMatch) {
+        // Déterminer si l'utilisateur est player1 ou player2
+        if (lastMatch.player1_id === userId) {
+          fastify.db.prepare(
+            'UPDATE matches SET player1_ranking_after = ? WHERE id = ?'
+          ).run(currentRanking, lastMatch.id);
+        } else {
+          fastify.db.prepare(
+            'UPDATE matches SET player2_ranking_after = ? WHERE id = ?'
+          ).run(currentRanking, lastMatch.id);
+        }
+      }
 
       return reply.status(200).send(updatedStats);
 
