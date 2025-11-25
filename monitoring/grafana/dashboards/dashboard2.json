@@ -380,5 +380,6 @@
   "timezone": "browser",
   "title": "Transcendence Global overview",
   "uid": "adrhbqz",
-  "version": 6
+  "version": 6,
+  "refresh": "5s"
 }
