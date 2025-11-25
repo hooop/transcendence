@@ -70,7 +70,9 @@ services:
       - "3001:3000"
     volumes:
       - grafana_data:/var/lib/grafana
-      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/provisioning/datasources:/etc/grafana/provisioning/datasources
+      - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/dashboards:/etc/grafana/dashboards
     environment:
       - GF_SECURITY_ADMIN_USER=admin
       - GF_SECURITY_ADMIN_PASSWORD=simon123
@@ -98,7 +100,8 @@ services:
     restart: unless-stopped
     environment:
       - discovery.type=single-node
-      - xpack.security.enabled=false
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=transcendence_elk_2024
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ports:
       - "127.0.0.1:9200:9200"  # Accessible uniquement en local
@@ -130,6 +133,9 @@ services:
       - "127.0.0.1:5601:5601"  # Accessible uniquement en local
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_SERVICEACCOUNTTOKEN=${KIBANA_SERVICE_TOKEN}
+      - XPACK_SECURITY_ENABLED=true
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=transcendence_kibana_encryption_key_min_32_chars_2024
     depends_on:
       - elasticsearch
     networks:
