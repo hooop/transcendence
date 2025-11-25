@@ -77,9 +77,9 @@
 		<div class="card tall wide">
 
 			<div class="card-header">
-				<span>Amis (</span>
-				<span class="friends-count">{{FRIENDS_COUNT}}</span>
-				<span>)</span>
+				<div class="stat-label-ami">AMIS (
+					<span class="friends-count">{{FRIENDS_COUNT}}</span> )
+				</div>
 			</div>
 
 			<div class="friends-search-wrapper">
@@ -102,10 +102,8 @@
 
 				<!-- Section demandes en attente -->
 				<div class="pending-section">
-					<div class="pending-title">
-						<span>Demandes en attente (</span>
-						<span class="pending-count">{{PENDING_COUNT}}</span>
-						<span>)</span>
+					<div class="stat-label-pending">EN ATTENTE (
+						<span class="pending-count">{{PENDING_COUNT}}</span> )
 					</div>
 
 					<div id="pending-requests-container">
@@ -120,7 +118,7 @@
 				<!-- HISTORIQUE DES MATCHS -->
 		<div class="card long">
 			<div class="card-header">
-				<span>5 derniers matchs</span>
+				<div class="stat-label-history">HISTORIQUE</div>
 			</div>
 
 			<div id="match-history-container">

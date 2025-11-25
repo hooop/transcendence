@@ -394,7 +394,7 @@ export class DashboardPage
 			console.log('[DashboardPage] Matches received:', matches);
 
 			if (matches.length === 0) {
-				container.innerHTML = '<p class="empty-state">Aucun match joué</p>';
+				container.innerHTML = '<p class="empty-state">Aucun match</p>';
 				return;
 			}
 
@@ -418,11 +418,16 @@ export class DashboardPage
 					<div class="match-item">
 						<div class="match-details">
 							<div class="match-date">${new Date(match.ended_at).toLocaleDateString('fr-FR')}</div>
-							<div class="match-opponent-line">
-								<span class="result-history ${isWinner ? 'victory' : 'defeat'}">${isWinner ? 'Victoire' : 'Défaite'}</span>
-								<span class="match-opponent">&nbsp;contre ${opponentName}</span>
+							<div class="match-score">
+								${match.player1_score} · ${match.player2_score}
+								${isWinner ? `<svg class="victory-icon" viewBox="-5 -10 98 98" xmlns="http://www.w3.org/2000/svg">
+    <path d="M 44,-10 C 44,17.062 22.062,39 -5,39 22.062,39 44,60.938 44,88 44,60.938 65.938,39 93,39 65.938,39 44,17.062 44,-10 Z"/>
+</svg>` : ''}
 							</div>
-							<div class="match-score">${match.player1_score} - ${match.player2_score}</div>
+							<div class="match-opponent-line">
+							<!--    <span class="result-history ${isWinner ? 'victory' : 'defeat'}">${isWinner ? 'Victoire' : 'Défaite'}</span> -->
+								<span class="match-opponent">&nbsp;vs ${opponentName}</span>
+							</div>
 						</div>
 					</div>
 				`;
@@ -499,69 +504,69 @@ console.log('[RankingChart] Premier match complet:', JSON.stringify(matches[0], 
 		gradient.addColorStop(0, "rgba(230, 132, 6, 0.35)");   // Orange léger
 		gradient.addColorStop(1, "rgba(44, 31, 22, 0)");       // Transparent
 
-		// Créer le graphique
-		this.rankingChart = new Chart(canvas, {
-			type: 'line',
-			data: {
-				labels: labels,
-				datasets: [{
-					label: 'Ranking',
-					data: rankings,
+	// Créer le graphique
+	this.rankingChart = new Chart(canvas, {
+		type: 'line',
+		data: {
+			labels: labels,
+			datasets: [{
+				label: 'Ranking',
+				data: rankings,
+				borderColor: '#e68406',
+				backgroundColor: gradient,   // <-- dégradé ici
+				borderWidth: 3,
+				tension: 0.4,
+				pointRadius: 5,
+				pointHoverRadius: 7,
+				pointBackgroundColor: '#ffffffff',
+				pointBorderColor: '#ffffff',
+				pointBorderWidth: 1,
+				fill: true
+			}]
+		},
+		options: {
+			responsive: true,
+			maintainAspectRatio: false,
+			plugins: {
+				legend: {
+					display: false
+				},
+				tooltip: {
+					backgroundColor: 'rgba(0, 0, 0, 0.8)',
+					titleColor: '#ffffff',
+					bodyColor: '#ffffff',
 					borderColor: '#e68406',
-					backgroundColor: gradient,   // <-- dégradé ici
-					borderWidth: 3,
-					tension: 0.4,
-					pointRadius: 5,
-					pointHoverRadius: 7,
-					pointBackgroundColor: '#2c1f16',
-					pointBorderColor: '#ffffff',
-					pointBorderWidth: 2,
-					fill: true
-				}]
+					borderWidth: 1,
+					padding: 10,
+					displayColors: false,
+					callbacks: {
+						title: () => 'Ranking',
+						label: (context) => `${context.parsed.y} pts`
+					}
+				}
 			},
-			options: {
-				responsive: true,
-				maintainAspectRatio: false,
-				plugins: {
-					legend: {
+			scales: {
+				y: {
+					beginAtZero: false,
+					ticks: {
 						display: false
 					},
-					tooltip: {
-						backgroundColor: 'rgba(0, 0, 0, 0.8)',
-						titleColor: '#ffffff',
-						bodyColor: '#ffffff',
-						borderColor: '#e68406',
-						borderWidth: 1,
-						padding: 10,
-						displayColors: false,
-						callbacks: {
-							title: () => 'Ranking',
-							label: (context) => `${context.parsed.y} pts`
-						}
+					grid: {
+						color: 'rgba(139, 139, 139, 0.1)',
+						drawBorder: false
 					}
 				},
-				scales: {
-					y: {
-						beginAtZero: false,
-						ticks: {
-							display: false
-						},
-						grid: {
-							color: 'rgba(139, 139, 139, 0.1)',
-							drawBorder: false
-						}
+				x: {
+					ticks: {
+						display: false
 					},
-					x: {
-						ticks: {
-							display: false
-						},
-						grid: {
-							display: false
-						}
+					grid: {
+						display: false
 					}
 				}
 			}
-		});
+		}
+	});
 
 
 	} catch (error) {
