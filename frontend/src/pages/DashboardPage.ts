@@ -259,6 +259,16 @@ export class DashboardPage
 		if (searchInput) {
 			searchInput.placeholder = i18n.t('dashboard.searchUser', 'Rechercher un utilisateur...');
 		}
+
+		const ctaLabel = document.getElementById('dashboard-cta');
+		if (ctaLabel) {
+			ctaLabel.innerHTML = i18n.t('dashboard.cta', 'Défiez<br>vos amis<br>en<br>ligne');
+		}
+
+		const playButton = document.getElementById('dashboard-play-button');
+		if (playButton) {
+			playButton.textContent = i18n.t('dashboard.playButton', 'Jouer');
+}
 	}
 
 	// Initialise le dashboard : charge les données (top3, amis, demandes),

@@ -71,7 +71,9 @@
     "points": "pts",
     "opponent": "Adversaire",
     "placeholderPoints": "0 pts",
-    "placeholderName": "-"
+    "placeholderName": "-",
+    "cta": "Défiez<br>vos amis<br>en<br>ligne",
+    "playButton": "Jouer"
   },
   "game": {
     "aiMode": "Mode IA",

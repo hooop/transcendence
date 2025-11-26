@@ -129,9 +129,9 @@ export class I18nService {
    */
   public getLanguageFlags(): Array<{ code: Language; flag: string; name: string }> {
     return [
-      { code: 'fr', flag: '🇫🇷', name: 'Français' },
-      { code: 'es', flag: '🇪🇸', name: 'Español' },
-      { code: 'en', flag: '🇬🇧', name: 'English' },
+      { code: 'fr', flag: 'fr', name: 'Français' },
+      { code: 'es', flag: 'es', name: 'Español' },
+      { code: 'en', flag: 'en', name: 'English' },
     ]
   }
 }
