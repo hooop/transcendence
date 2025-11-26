@@ -16,9 +16,13 @@
 			<li id="online-link" style="display: none;"><a href="/online" data-route>Match en ligne</a></li>
 		</ul>
 
-		<!-- Boutons de connexion (visible si non connecté) -->
-		<div class="auth-buttons" id="auth-buttons">
-			<a href="/login" class="btn white-dashed-btn" data-route>Connexion</a>
+		<!-- Boutons de connexion et language switcher (visible si non connecté) -->
+		<div class="auth-buttons-container" id="auth-buttons-container">
+			<!-- Language Switcher for non-authenticated users -->
+			<div id="header-language-container"></div>
+			<div class="auth-buttons" id="auth-buttons">
+				<a href="/login" class="btn white-dashed-btn" data-route>Connexion</a>
+			</div>
 		</div>
 
 		<!-- Info utilisateur (visible si connecté) -->
@@ -116,7 +120,7 @@
 			</button>
 
 			<div class="toggle-2fa-container">
-				<span class="toggle-2fa-label" id="2fa-label">Authentification a deux facteurs</span>
+				<span class="toggle-2fa-label" id="toggle-2fa-label">Authentification a deux facteurs</span>
 				<label class="toggle-switch">
 					<input type="checkbox" id="toggle-2fa-checkbox">
 					<span class="toggle-slider"></span>

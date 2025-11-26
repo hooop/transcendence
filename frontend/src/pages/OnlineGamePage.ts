@@ -1,6 +1,7 @@
 import { ApiService } from '../services/api';
 import { GameSocketService } from '../services/gameSocket';
 import { OnlinePongGame } from '../game/OnlinePongGame';
+import { i18n } from '../services/i18n';
 
 interface Room {
     roomId: string;
@@ -38,9 +39,9 @@ export class OnlineGamePage {
         this.container.innerHTML = `
             <div class="online-game-page">
                 <div class="page-header">
-                    <h1>Online Multiplayer</h1>
+                    <h1>${i18n.t('online.title', 'Multijoueur en ligne')}</h1>
                     <button id="refresh-rooms-btn" class="btn btn-secondary">
-                        <i class="fas fa-sync-alt"></i> Refresh
+                        <i class="fas fa-sync-alt"></i> ${i18n.t('online.refresh', 'Actualiser')}
                     </button>
                 </div>
                 <div id="online-game-content">
@@ -52,34 +53,34 @@ export class OnlineGamePage {
             <div id="create-room-modal" class="modal">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h2>Create Room</h2>
+                        <h2>${i18n.t('online.createRoomModal', 'Créer une salle')}</h2>
                         <span class="close">&times;</span>
                     </div>
                     <div class="modal-body">
                         <form id="create-room-form">
                             <div class="form-group">
-                                <label for="room-name">Room Name *</label>
+                                <label for="room-name">${i18n.t('online.roomName', 'Nom de la salle *')}</label>
                                 <input
                                     type="text"
                                     id="room-name"
                                     class="form-control"
-                                    placeholder="Enter room name"
+                                    placeholder="${i18n.t('online.enterRoomName', 'Entrez le nom de la salle')}"
                                     required
                                     maxlength="50"
                                 >
                             </div>
                             <div class="form-group">
-                                <label for="room-password">Password (Optional)</label>
+                                <label for="room-password">${i18n.t('online.password', 'Mot de passe (Optionnel)')}</label>
                                 <input
                                     type="password"
                                     id="room-password"
                                     class="form-control"
-                                    placeholder="Leave empty for public room"
+                                    placeholder="${i18n.t('online.leaveEmptyPublic', 'Laissez vide pour une salle publique')}"
                                     maxlength="50"
                                 >
                             </div>
                             <div class="form-group">
-                                <label for="max-score">Max Score</label>
+                                <label for="max-score">${i18n.t('online.maxScore', 'Score maximal')}</label>
                                 <select id="max-score" class="form-control">
                                     <option value="5">5</option>
                                     <option value="10" selected>10</option>
@@ -88,10 +89,10 @@ export class OnlineGamePage {
                             </div>
                             <div class="form-actions">
                                 <button type="button" class="btn btn-secondary" id="cancel-create-btn">
-                                    Cancel
+                                    ${i18n.t('online.cancel', 'Annuler')}
                                 </button>
                                 <button type="submit" class="btn btn-primary">
-                                    Create Room
+                                    ${i18n.t('online.create', 'Créer une salle')}
                                 </button>
                             </div>
                         </form>
@@ -103,27 +104,27 @@ export class OnlineGamePage {
             <div id="join-room-modal" class="modal">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h2>Enter Password</h2>
+                        <h2>${i18n.t('online.roomPassword', 'Mot de passe de la salle')}</h2>
                         <span class="close">&times;</span>
                     </div>
                     <div class="modal-body">
                         <form id="join-room-form">
                             <div class="form-group">
-                                <label for="join-password">Room Password</label>
+                                <label for="join-password">${i18n.t('online.roomPassword', 'Mot de passe de la salle')}</label>
                                 <input
                                     type="password"
                                     id="join-password"
                                     class="form-control"
-                                    placeholder="Enter room password"
+                                    placeholder="${i18n.t('online.enterRoomPassword', 'Entrez le mot de passe de la salle')}"
                                     required
                                 >
                             </div>
                             <div class="form-actions">
                                 <button type="button" class="btn btn-secondary" id="cancel-join-btn">
-                                    Cancel
+                                    ${i18n.t('online.cancel', 'Annuler')}
                                 </button>
                                 <button type="submit" class="btn btn-primary">
-                                    Join Room
+                                    ${i18n.t('online.join', 'Rejoindre une salle')}
                                 </button>
                             </div>
                         </form>
@@ -141,13 +142,13 @@ export class OnlineGamePage {
         return `
             <div class="room-browser">
                 <div class="room-browser-header">
-                    <h2>Available Rooms</h2>
+                    <h2>${i18n.t('online.availableRooms', 'Salles disponibles')}</h2>
                     <button id="create-room-btn" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Create Room
+                        <i class="fas fa-plus"></i> ${i18n.t('online.createRoom', 'Créer une salle')}
                     </button>
                 </div>
                 <div id="rooms-list" class="rooms-list">
-                    <div class="loading">Loading rooms...</div>
+                    <div class="loading">${i18n.t('online.loadingRooms', 'Chargement des salles...')}</div>
                 </div>
             </div>
         `;
@@ -158,8 +159,8 @@ export class OnlineGamePage {
             return `
                 <div class="no-rooms">
                     <i class="fas fa-inbox"></i>
-                    <p>No rooms available</p>
-                    <p class="text-muted">Create a new room to start playing!</p>
+                    <p>${i18n.t('online.noRoomsAvailable', 'Aucune salle disponible')}</p>
+                    <p class="text-muted">${i18n.t('online.createRoomHelp', 'Créez une nouvelle salle pour commencer à jouer!')}</p>
                 </div>
             `;
         }
@@ -189,7 +190,7 @@ export class OnlineGamePage {
                 <div class="room-info">
                     <div class="info-item">
                         <i class="fas fa-user"></i>
-                        <span>Host: ${room.creator.username}</span>
+                        <span>${i18n.t('online.host', 'Hôte')}: ${room.creator.username}</span>
                     </div>
                     <div class="info-item">
                         <i class="fas fa-users"></i>
@@ -197,17 +198,17 @@ export class OnlineGamePage {
                     </div>
                     <div class="info-item">
                         <i class="fas fa-trophy"></i>
-                        <span>Max Score: ${room.maxScore}</span>
+                        <span>${i18n.t('online.maxScore', 'Score maximal')}: ${room.maxScore}</span>
                     </div>
                 </div>
                 <div class="room-actions">
                     ${canJoin ? `
                         <button class="btn btn-primary join-room-btn" data-room-id="${room.roomId}" data-has-password="${room.hasPassword}">
-                            <i class="fas fa-sign-in-alt"></i> Join
+                            <i class="fas fa-sign-in-alt"></i> ${i18n.t('online.join', 'Rejoindre une salle')}
                         </button>
                     ` : `
                         <button class="btn btn-secondary" disabled>
-                            ${isPlaying ? 'In Progress' : 'Full'}
+                            ${isPlaying ? i18n.t('online.inProgress', 'En cours') : i18n.t('online.full', 'Pleine')}
                         </button>
                     `}
                 </div>
@@ -228,18 +229,18 @@ export class OnlineGamePage {
                 <div class="waiting-room-header">
                     <h2>${room.roomName}</h2>
                     <button id="leave-room-btn" class="btn btn-danger">
-                        <i class="fas fa-sign-out-alt"></i> Leave Room
+                        <i class="fas fa-sign-out-alt"></i> ${i18n.t('online.leaveRoom', 'Quitter la salle')}
                     </button>
                 </div>
                 <div class="room-details">
                     <div class="detail-item">
                         <i class="fas fa-trophy"></i>
-                        <span>First to ${room.maxScore} points</span>
+                        <span>${i18n.t('online.firstToPoints', `Premier à ${room.maxScore} points`)}</span>
                     </div>
                     ${room.hasPassword ? `
                         <div class="detail-item">
                             <i class="fas fa-lock"></i>
-                            <span>Password Protected</span>
+                            <span>${i18n.t('online.passwordProtected', 'Protégée par un mot de passe')}</span>
                         </div>
                     ` : ''}
                 </div>
@@ -247,9 +248,9 @@ export class OnlineGamePage {
                     <div class="player-card ${this.isHost ? 'current-user' : ''}">
                         <i class="fas fa-user"></i>
                         <h3>${room.creator.username}</h3>
-                        <span class="player-role">Host</span>
+                        <span class="player-role">${i18n.t('online.host', 'Hôte')}</span>
                         <div class="ready-indicator ${this.isHost && this.isReady ? 'ready' : ''}">
-                            ${this.isHost && this.isReady ? '<i class="fas fa-check"></i> Ready' : '<i class="fas fa-clock"></i> Not Ready'}
+                            ${this.isHost && this.isReady ? `<i class="fas fa-check"></i> ${i18n.t('online.ready', 'Prêt')}` : `<i class="fas fa-clock"></i> ${i18n.t('online.notReady', 'Non prêt')}`}
                         </div>
                     </div>
                     <div class="vs-divider">VS</div>
@@ -257,13 +258,13 @@ export class OnlineGamePage {
                         ${opponent ? `
                             <i class="fas fa-user"></i>
                             <h3>${opponent.username}</h3>
-                            <span class="player-role">Guest</span>
+                            <span class="player-role">${i18n.t('online.guest', 'Invité')}</span>
                             <div class="ready-indicator ${!this.isHost && this.isReady ? 'ready' : ''}">
-                                ${!this.isHost && this.isReady ? '<i class="fas fa-check"></i> Ready' : '<i class="fas fa-clock"></i> Not Ready'}
+                                ${!this.isHost && this.isReady ? `<i class="fas fa-check"></i> ${i18n.t('online.ready', 'Prêt')}` : `<i class="fas fa-clock"></i> ${i18n.t('online.notReady', 'Non prêt')}`}
                             </div>
                         ` : `
                             <i class="fas fa-user-plus"></i>
-                            <h3>Waiting for opponent...</h3>
+                            <h3>${i18n.t('online.waitingForOpponent', 'En attente de l\'adversaire...')}</h3>
                             <div class="loading-dots">
                                 <span></span><span></span><span></span>
                             </div>
@@ -272,19 +273,19 @@ export class OnlineGamePage {
                 </div>
                 <div class="waiting-room-actions">
                     <button id="ready-btn" class="btn btn-primary ${this.isReady ? 'ready' : ''}" ${!opponent ? 'disabled' : ''}>
-                        ${this.isReady ? '<i class="fas fa-check"></i> Ready!' : '<i class="fas fa-hand-paper"></i> Ready'}
+                        ${this.isReady ? `<i class="fas fa-check"></i> ${i18n.t('online.ready', 'Prêt')}!` : `<i class="fas fa-hand-paper"></i> ${i18n.t('online.ready', 'Prêt')}`}
                     </button>
                 </div>
                 ${opponent && !this.isReady ? `
                     <div class="info-message">
                         <i class="fas fa-info-circle"></i>
-                        Click "Ready" when you're prepared to start the game
+                        ${i18n.t('online.readyMessage', 'Cliquez sur "Prêt" lorsque vous êtes prêt à commencer le jeu')}
                     </div>
                 ` : ''}
                 ${opponent && this.isReady && !this.opponentReady ? `
                     <div class="info-message">
                         <i class="fas fa-hourglass-half"></i>
-                        Waiting for opponent to ready up...
+                        ${i18n.t('online.waitingForOpponentReady', 'En attente que l\'adversaire soit prêt...')}
                     </div>
                 ` : ''}
             </div>
@@ -312,28 +313,28 @@ export class OnlineGamePage {
                         ${isWinner ? '<i class="fas fa-trophy"></i>' : '<i class="fas fa-frown"></i>'}
                     </div>
                     <h1 class="result-title">
-                        ${isWinner ? 'Victory!' : 'Defeat'}
+                        ${isWinner ? i18n.t('online.victory', 'Victoire !') : i18n.t('online.defeat', 'Défaite')}
                     </h1>
                     <h2 class="winner-announcement">
-                        ${winner} wins!
+                        ${i18n.t('online.wins', `${winner} gagne !`)}
                     </h2>
                     <div class="final-score">
-                        <h3>Final Score</h3>
+                        <h3>${i18n.t('online.finalScore', 'Score final')}</h3>
                         <div class="score-display">
                             <div class="score-item">
-                                <span class="score-label" id="end-player1-name">Player 1</span>
+                                <span class="score-label" id="end-player1-name">${i18n.t('online.player1', 'Joueur 1')}</span>
                                 <span class="score-value">${finalScore.left}</span>
                             </div>
                             <span class="score-separator">-</span>
                             <div class="score-item">
-                                <span class="score-label" id="end-player2-name">Player 2</span>
+                                <span class="score-label" id="end-player2-name">${i18n.t('online.player2', 'Joueur 2')}</span>
                                 <span class="score-value">${finalScore.right}</span>
                             </div>
                         </div>
                     </div>
                     <div class="end-actions">
                         <button id="back-to-rooms-btn" class="btn btn-primary">
-                            <i class="fas fa-arrow-left"></i> Back to Rooms
+                            <i class="fas fa-arrow-left"></i> ${i18n.t('online.backToRooms', 'Retour aux salles')}
                         </button>
                     </div>
                 </div>

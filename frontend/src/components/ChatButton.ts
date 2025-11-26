@@ -2,6 +2,7 @@
 
 import { ChatService, Conversation } from '../services/ChatService';
 import { ChatManager } from './ChatManager';
+import { i18n } from '../services/i18n';
 
 export class ChatButton {
     private container: HTMLElement;
@@ -17,6 +18,26 @@ export class ChatButton {
         this.container = this.createButton();
         this.loadConversations();
         this.setupRealtimeUpdates();
+        this.setupLanguageListener();
+    }
+
+    private setupLanguageListener(): void {
+        // Traduire au démarrage si les traductions sont déjà chargées
+        setTimeout(() => {
+            this.translateChatLabels();
+        }, 100);
+
+        // Écouter les changements de langue
+        window.addEventListener('languageChanged', () => {
+            this.translateChatLabels();
+        });
+    }
+
+    private translateChatLabels(): void {
+        const messagesTitle = this.container.querySelector('#chat-messages-title');
+        if (messagesTitle) {
+            messagesTitle.textContent = i18n.t('chat.messages', 'Messages');
+        }
     }
 
     private createButton(): HTMLElement {
@@ -32,7 +53,7 @@ export class ChatButton {
             </button>
             <div class="chat-dropdown" style="display: none;">
                 <div class="chat-dropdown-header">
-                    <h3>Messages</h3>
+                    <h3 id="chat-messages-title">Messages</h3>
                 </div>
                 <div class="chat-conversations-list" id="conversations-list">
                     <div class="chat-loading">Chargement...</div>
@@ -76,8 +97,8 @@ export class ChatButton {
         if (this.conversations.length === 0) {
             list.innerHTML = `
                 <div class="chat-empty">
-                    <p>Aucune conversation</p>
-                    <small>Commencez à discuter avec vos amis !</small>
+                    <p>${i18n.t('chat.noConversations', 'Aucune conversation')}</p>
+                    <small>${i18n.t('chat.startChatting', 'Commencez à discuter avec vos amis !')}</small>
                 </div>
             `;
             return;

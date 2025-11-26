@@ -1,4 +1,5 @@
 import { ApiService } from './services/api'
+import { i18n } from './services/i18n'
 
 export class Sidebar {
     private sidebar: HTMLElement | null = null
@@ -38,6 +39,7 @@ export class Sidebar {
 		this.setupEventListeners()
 		this.loadUserData()
 		this.load2FAStatus()
+		this.setupLanguageSwitcher()
 	}
 
     private setupEventListeners(): void {
@@ -143,13 +145,13 @@ export class Sidebar {
 
 		// Vérifier le type
 		if (!file.type.startsWith('image/')) {
-			alert('Veuillez sélectionner une image')
+			alert(i18n.t('sidebar.imageRequired', 'Veuillez sélectionner une image'))
 			return
 		}
 
 		// Vérifier la taille (max 5MB)
 		if (file.size > 5 * 1024 * 1024) {
-			alert('Fichier trop volumineux. Maximum 5MB')
+			alert(i18n.t('sidebar.fileTooLarge', 'Fichier trop volumineux. Maximum 5MB'))
 			return
 		}
 
@@ -167,7 +169,7 @@ export class Sidebar {
 			console.log('Avatar updated successfully');
 
 		} catch (error: any) {
-			alert(error.message || 'Échec de l\'upload')
+			alert(error.message || i18n.t('sidebar.uploadFailed', 'Échec de l\'upload'))
 		}
 
 		// Reset input
@@ -176,16 +178,16 @@ export class Sidebar {
 
 		private async handleDeleteAvatar(): Promise<void>
 {
-    if (!confirm('Voulez-vous vraiment supprimer votre photo de profil ?')) {
+    if (!confirm(i18n.t('sidebar.deleteAvatarConfirm', 'Voulez-vous vraiment supprimer votre photo de profil ?'))) {
         return
     }
 
     try {
         await ApiService.deleteAvatar()
-        
+
         // Récupérer l'utilisateur mis à jour
         const updatedUser = await ApiService.getMe()
-        
+
         await this.loadUserData()
 
         window.dispatchEvent(new CustomEvent('userProfileUpdated', {
@@ -196,7 +198,7 @@ export class Sidebar {
 
     } catch (error: any) {
         console.error('Erreur delete:', error)
-        alert(error.message || 'Échec de la suppression')
+        alert(error.message || i18n.t('sidebar.deletionFailed', 'Échec de la suppression'))
     }
 }
 
@@ -205,7 +207,7 @@ export class Sidebar {
 		const newDisplayName = this.displayNameInput?.value.trim()
 
 		if (!newDisplayName) {
-			alert('Le pseudo ne peut pas être vide')
+			alert(i18n.t('sidebar.nicknameEmpty', 'Le pseudo ne peut pas être vide'))
 			return
 		}
 
@@ -221,7 +223,7 @@ export class Sidebar {
 			// Mettre à jour le localStorage
 			localStorage.setItem('user', JSON.stringify(updatedUser.user))
 
-			alert('Pseudo mis à jour avec succès !')
+			alert(i18n.t('sidebar.nicknameUpdated', 'Pseudo mis à jour avec succès !'))
 
 			// Recharger les données de la sidebar
 			await this.loadUserData()
@@ -236,13 +238,13 @@ export class Sidebar {
 		}
 		catch (error: any)
 		{
-			alert(error.message || 'Échec de la mise à jour')
+			alert(error.message || i18n.t('sidebar.updateFailed', 'Échec de la mise à jour'))
 		}
 	}
 
 	private async handleLogout(): Promise<void>
 	{
-		if (!confirm('Voulez-vous vraiment vous déconnecter ?')) {
+		if (!confirm(i18n.t('sidebar.logoutConfirm', 'Voulez-vous vraiment vous déconnecter ?'))) {
 			return
 		}
 
@@ -251,7 +253,7 @@ export class Sidebar {
 			window.location.href = '/'
 		} catch (error: any) {
 			console.error('Erreur logout:', error)
-			alert(error.message || 'Échec de la déconnexion')
+			alert(error.message || i18n.t('sidebar.logoutFailed', 'Échec de la déconnexion'))
 		}
 	}
 
@@ -265,6 +267,71 @@ export class Sidebar {
 			console.log('2FA status not loaded (user may not be authenticated)')
 			this.twoFAEnabled = false
 			this.update2FACheckbox()
+		}
+	}
+
+	private setupLanguageSwitcher(): void
+	{
+		// Appliquer les traductions au démarrage après que les traductions soient chargées
+		window.addEventListener('translationsLoaded', () => {
+			this.updateSidebarText()
+		})
+
+		// Si les traductions sont déjà chargées, les appliquer immédiatement
+		setTimeout(() => {
+			if (Object.keys(i18n.getAllTranslations()).length > 0) {
+				this.updateSidebarText()
+			}
+		}, 100)
+
+		// Écouter les changements de langue
+		window.addEventListener('languageChanged', () => {
+			this.updateSidebarText()
+		})
+	}
+
+	private updateSidebarText(): void
+	{
+		// Mettre à jour les textes de la sidebar avec les nouvelles traductions
+		const saveBtn = this.saveDisplayNameBtn
+		if (saveBtn) {
+			saveBtn.textContent = i18n.t('sidebar.saveDisplayName', 'Sauvegarder')
+		}
+
+		const deleteBtn = this.deleteAvatarBtn
+		if (deleteBtn) {
+			deleteBtn.textContent = i18n.t('sidebar.deleteAvatar', 'Supprimer la photo')
+		}
+
+		const logoutLink = this.logoutLink
+		if (logoutLink) {
+			const logoutSpan = logoutLink.querySelector('.material-symbols-outlined')
+			logoutLink.textContent = ''
+			if (logoutSpan) {
+				logoutLink.appendChild(logoutSpan)
+			}
+			logoutLink.appendChild(document.createTextNode(i18n.t('sidebar.logout', 'Se déconnecter')))
+		}
+
+		// Mettre à jour les labels si nécessaire
+		const displayNameLabel = this.sidebar?.querySelector('label[for="sidebar-display-name"]')
+		if (displayNameLabel) {
+			displayNameLabel.textContent = i18n.t('sidebar.displayName', 'Modifier votre pseudo')
+		}
+
+		const emailLabel = this.sidebar?.querySelector('label[for="sidebar-email"]')
+		if (emailLabel) {
+			emailLabel.textContent = i18n.t('sidebar.email', 'Email')
+		}
+
+		const usernameLabel = this.sidebar?.querySelector('label[for="sidebar-username"]')
+		if (usernameLabel) {
+			usernameLabel.textContent = i18n.t('sidebar.username', 'Nom d\'utilisateur')
+		}
+
+		const twoFALabel = this.sidebar?.querySelector('.toggle-2fa-label')
+		if (twoFALabel) {
+			twoFALabel.textContent = i18n.t('sidebar.twoFA', 'Authentification de deux facteurs')
 		}
 	}
 
@@ -284,19 +351,19 @@ export class Sidebar {
 			if (newState) {
 				const response = await ApiService.enable2FA()
 				this.twoFAEnabled = true
-				alert('Authentification a deux facteurs activee ! Un code vous sera envoye par email lors de votre prochaine connexion.')
+				alert(i18n.t('sidebar.twoFAEnabled', 'Authentification a deux facteurs activee ! Un code vous sera envoye par email lors de votre prochaine connexion.'))
 			} else {
-				if (!confirm('Voulez-vous vraiment desactiver l\'authentification a deux facteurs ?')) {
+				if (!confirm(i18n.t('sidebar.twoFADisableConfirm', 'Voulez-vous vraiment desactiver l\'authentification a deux facteurs ?'))) {
 					checkbox.checked = true
 					return
 				}
 				const response = await ApiService.disable2FA()
 				this.twoFAEnabled = false
-				alert('Authentification a deux facteurs desactivee')
+				alert(i18n.t('sidebar.twoFADisabled', 'Authentification a deux facteurs desactivee'))
 			}
 		} catch (error: any) {
 			console.error('Erreur toggle 2FA:', error)
-			const errorMessage = error.message || 'Echec de la modification 2FA'
+			const errorMessage = error.message || i18n.t('sidebar.twoFAToggleError', 'Erreur lors de la modification de l\'authentification de deux facteurs')
 			alert(errorMessage)
 			checkbox.checked = this.twoFAEnabled
 		}

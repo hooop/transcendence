@@ -1,4 +1,5 @@
 import { ApiService } from '../services/api'
+import { i18n } from '../services/i18n'
 
 import loginTemplate from '../templates/login.html?raw'
 import registerTemplate from '../templates/register.html?raw'
@@ -16,6 +17,76 @@ export class AuthPages
 	static renderRegister(): string
 	{
 		return registerTemplate;
+	}
+
+	// Translate login page
+	static translateLoginPage(): void {
+		const h2 = document.querySelector('.login-form-content h2')
+		const subtitle = document.querySelector('.login-form-content .subtitle')
+		const usernameLabel = document.querySelector('label[for="username"]')
+		const usernameInput = document.querySelector('#username') as HTMLInputElement
+		const passwordLabel = document.querySelector('label[for="password"]')
+		const passwordInput = document.querySelector('#password') as HTMLInputElement
+		const togglePasswordBtn = document.querySelector('.toggle-password') as HTMLButtonElement
+		const submitBtn = document.querySelector('.btn-login') as HTMLButtonElement
+		const twoFALabel = document.querySelector('label[for="2fa-code"]')
+		const twoFAInput = document.querySelector('#2fa-code') as HTMLInputElement
+		const twoFASubmitBtn = document.querySelector('#2fa-form button[type="submit"]') as HTMLButtonElement
+		const backBtn = document.querySelector('#back-to-login') as HTMLButtonElement
+		const dividerSpan = document.querySelector('.divider span')
+		const oauthText = document.querySelector('.oauth-text')
+		const signupLink = document.querySelector('.signup-link a')
+
+		if (h2) h2.textContent = i18n.t('auth.login', 'Connexion')
+		if (subtitle) subtitle.textContent = i18n.t('auth.loginSubtitle', 'Connectez-vous a votre compte')
+		if (usernameLabel) usernameLabel.textContent = i18n.t('auth.usernameOrEmail', 'Nom d\'utilisateur ou email')
+		if (usernameInput) usernameInput.placeholder = i18n.t('auth.usernameOrEmail', 'Nom d\'utilisateur ou email')
+		if (passwordLabel) passwordLabel.textContent = i18n.t('auth.password', 'Mot de passe')
+		if (passwordInput) passwordInput.placeholder = i18n.t('auth.password', 'Mot de passe')
+		if (togglePasswordBtn) togglePasswordBtn.setAttribute('aria-label', i18n.t('auth.showPassword', 'Afficher le mot de passe'))
+		if (submitBtn) submitBtn.textContent = i18n.t('auth.signIn', 'Se connecter')
+		if (twoFALabel) twoFALabel.textContent = i18n.t('auth.verificationCode', 'Code de verification')
+		if (twoFAInput) twoFAInput.placeholder = i18n.t('auth.enterCode', 'Entrez le code a 6 chiffres')
+		if (twoFASubmitBtn) twoFASubmitBtn.textContent = i18n.t('auth.verify', 'Verifier')
+		if (backBtn) backBtn.textContent = i18n.t('auth.back', 'Retour')
+		if (dividerSpan) dividerSpan.textContent = i18n.t('auth.or', 'ou')
+		if (oauthText) oauthText.textContent = i18n.t('auth.signInWith', 'Se connecter avec')
+		if (signupLink) signupLink.textContent = i18n.t('auth.createAccount', 'Creer un compte')
+	}
+
+	// Translate register page
+	static translateRegisterPage(): void {
+		const h2 = document.querySelector('.register-form-content h2')
+		const subtitle = document.querySelector('.register-form-content .subtitle')
+		const usernameLabel = document.querySelector('label[for="username"]')
+		const usernameInput = document.querySelector('#username') as HTMLInputElement
+		const emailLabel = document.querySelector('label[for="email"]')
+		const emailInput = document.querySelector('#email') as HTMLInputElement
+		const nicknameLabel = document.querySelector('label[for="display_name"]')
+		const nicknameInput = document.querySelector('#display_name') as HTMLInputElement
+		const passwordLabel = document.querySelector('label[for="password"]')
+		const passwordInput = document.querySelector('#password') as HTMLInputElement
+		const togglePasswordBtn = document.querySelector('.toggle-password') as HTMLButtonElement
+		const submitBtn = document.querySelector('.btn-register') as HTMLButtonElement
+		const dividerSpan = document.querySelector('.divider span')
+		const oauthText = document.querySelector('.oauth-text')
+		const loginLink = document.querySelector('.signup-link a')
+
+		if (h2) h2.textContent = i18n.t('auth.register', 'Inscription')
+		if (subtitle) subtitle.textContent = i18n.t('auth.registerSubtitle', 'Créez un compte')
+		if (usernameLabel) usernameLabel.textContent = i18n.t('auth.username', 'Nom d\'utilisateur *')
+		if (usernameInput) usernameInput.placeholder = i18n.t('auth.chooseUsername', 'Choisir un nom d\'utilisateur')
+		if (emailLabel) emailLabel.textContent = i18n.t('auth.email', 'Email *')
+		if (emailInput) emailInput.placeholder = 'your.email@example.com'
+		if (nicknameLabel) nicknameLabel.textContent = i18n.t('auth.nickname', 'Pseudo')
+		if (nicknameInput) nicknameInput.placeholder = i18n.t('auth.chooseNickname', 'Choisir un pseudo (facultatif)')
+		if (passwordLabel) passwordLabel.textContent = i18n.t('auth.password', 'Mot de passe *')
+		if (passwordInput) passwordInput.placeholder = i18n.t('auth.passwordMinLength', 'Minimum 8 caractères')
+		if (togglePasswordBtn) togglePasswordBtn.setAttribute('aria-label', i18n.t('auth.showPassword', 'Afficher le mot de passe'))
+		if (submitBtn) submitBtn.textContent = i18n.t('auth.signUp', 'S\'inscrire')
+		if (dividerSpan) dividerSpan.textContent = i18n.t('auth.or', 'ou')
+		if (oauthText) oauthText.textContent = i18n.t('auth.signInWith', 'Se connecter avec')
+		if (loginLink) loginLink.textContent = i18n.t('auth.signInLink', 'Connectez-vous')
 	}
 
     // Page de callback OAuth42
@@ -66,6 +137,14 @@ export class AuthPages
 	// Gérer la soumission du formulaire de connexion
 	static setupLoginForm(): void
 	{
+		// Traduire la page de connexion
+		this.translateLoginPage()
+
+		// Écouter les changements de langue
+		window.addEventListener('languageChanged', () => {
+			this.translateLoginPage()
+		})
+
 		const form = document.getElementById('login-form') as HTMLFormElement;
 		const errorDiv = document.getElementById('login-error') as HTMLDivElement;
 		const twoFAForm = document.getElementById('2fa-form') as HTMLFormElement;
@@ -137,7 +216,7 @@ export class AuthPages
                 // Désactiver le bouton
                 const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
                 submitBtn.disabled = true;
-                submitBtn.textContent = 'Connexion...';
+                submitBtn.textContent = i18n.t('auth.loggingIn', 'Connexion...');
 
                 try
 				{
@@ -151,7 +230,7 @@ export class AuthPages
                         // Afficher le formulaire 2FA
                         form.style.display = 'none';
                         twoFAForm.style.display = 'block';
-                        twoFAMessage.textContent = `Un code de verification a ete envoye a ${codeResponse.email}`;
+                        twoFAMessage.textContent = `${i18n.t('auth.verificationMessage', 'Un code de verification a ete envoye a votre email')} ${codeResponse.email}`;
 
                         // Focus sur l'input du code
                         const twoFACodeInput = document.getElementById('2fa-code') as HTMLInputElement;
@@ -163,16 +242,16 @@ export class AuthPages
 
                     // Réactiver le bouton
                     submitBtn.disabled = false;
-                    submitBtn.textContent = 'Se connecter';
+                    submitBtn.textContent = i18n.t('auth.signIn', 'Se connecter');
                 }
 				catch (error: any)
 				{
-                    errorDiv.textContent = error.message || 'Login failed';
+                    errorDiv.textContent = error.message || i18n.t('auth.signInLink', 'Login failed');
                     errorDiv.style.display = 'block';
 
                     // Réactiver le bouton
                     submitBtn.disabled = false;
-                    submitBtn.textContent = 'Se connecter';
+                    submitBtn.textContent = i18n.t('auth.signIn', 'Se connecter');
                 }
             });
         }
@@ -191,7 +270,7 @@ export class AuthPages
                 // Désactiver le bouton
                 const submitBtn = twoFAForm.querySelector('button[type="submit"]') as HTMLButtonElement;
                 submitBtn.disabled = true;
-                submitBtn.textContent = 'Verification...';
+                submitBtn.textContent = i18n.t('auth.verify', 'Verification...');
 
                 try {
                     await ApiService.verify2FACode(currentUsername, code);
@@ -199,12 +278,12 @@ export class AuthPages
                     // Rediriger vers le dashboard
                     window.location.href = '/dashboard';
                 } catch (error: any) {
-                    twoFAErrorDiv.textContent = error.message || 'Code invalide';
+                    twoFAErrorDiv.textContent = error.message || i18n.t('auth.invalidCode', 'Code invalide');
                     twoFAErrorDiv.style.display = 'block';
 
                     // Réactiver le bouton
                     submitBtn.disabled = false;
-                    submitBtn.textContent = 'Verifier';
+                    submitBtn.textContent = i18n.t('auth.verify', 'Verifier');
                 }
             });
         }
@@ -212,6 +291,14 @@ export class AuthPages
 
 	// Gérer la soumission du formulaire d'inscription
 	static setupRegisterForm(): void {
+		// Traduire la page d'inscription
+		this.translateRegisterPage()
+
+		// Écouter les changements de langue
+		window.addEventListener('languageChanged', () => {
+			this.translateRegisterPage()
+		})
+
 		const form = document.getElementById('register-form') as HTMLFormElement;
 		const errorDiv = document.getElementById('register-error') as HTMLDivElement;
 
@@ -257,7 +344,7 @@ export class AuthPages
 				// Désactiver le bouton
 				const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
 				submitBtn.disabled = true;
-				submitBtn.textContent = 'Creating account...';
+				submitBtn.textContent = i18n.t('auth.creating', 'Creating account...');
 
 				try
 				{
@@ -268,12 +355,12 @@ export class AuthPages
 				}
 				catch (error: any)
 				{
-					errorDiv.textContent = error.message || 'Registration failed';
+					errorDiv.textContent = error.message || i18n.t('auth.registrationFailed', 'Registration failed');
 					errorDiv.style.display = 'block';
 
 					// Réactiver le bouton
 					submitBtn.disabled = false;
-					submitBtn.textContent = 'S\'inscrire';
+					submitBtn.textContent = i18n.t('auth.signUp', 'S\'inscrire');
 				}
 			});
 		}

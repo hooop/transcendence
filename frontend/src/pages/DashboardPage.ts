@@ -1,4 +1,5 @@
 import {ApiService} from '../services/api'
+import { i18n } from '../services/i18n'
 import dashboardTemplate from '../templates/dashboard.html?raw'
 import Chart from 'chart.js/auto'
 
@@ -80,7 +81,7 @@ export class DashboardPage
 			const friendsData = await ApiService.getFriends();
 
 			if (friendsData.friends.length === 0) {
-				container.innerHTML = '<p class="empty-state">Aucun ami pour le moment</p>';
+				container.innerHTML = `<p class="empty-state">${i18n.t('dashboard.noFriends', 'Aucun ami pour le moment')}</p>`;
 				return;
 			}
 
@@ -94,14 +95,14 @@ export class DashboardPage
 						<span class="friend-name">${friend.display_name || friend.username}</span>
 					</div>
 					<div class="friend-actions">
-						<button class="btn-chat" onclick="window.openChatWithFriend('${friend.id}', '${friend.username}', '${friend.display_name || friend.username}', '${friend.avatar_url || ''}', ${friend.is_online})">Chat</button>
-						<button class="btn-remove-friend" onclick="window.removeFriend('${friend.friendship_id}')">Supprimer</button>
+						<button class="btn-chat" onclick="window.openChatWithFriend('${friend.id}', '${friend.username}', '${friend.display_name || friend.username}', '${friend.avatar_url || ''}', ${friend.is_online})">${i18n.t('dashboard.chat', 'Chat')}</button>
+						<button class="btn-remove-friend" onclick="window.removeFriend('${friend.friendship_id}')">${i18n.t('dashboard.delete', 'Supprimer')}</button>
 					</div>
 				</div>
 			`).join('');
 
 		} catch (error) {
-			container.innerHTML = '<p class="error-state">Erreur de chargement</p>';
+			container.innerHTML = `<p class="error-state">${i18n.t('dashboard.loadingError', 'Erreur de chargement')}</p>`;
 		}
 	}
 
@@ -142,13 +143,13 @@ export class DashboardPage
 									</div>
 								</div>
 								<button class="btn-add" onclick="window.sendFriendRequest('${user.id}')">
-									Ajouter
+									${i18n.t('dashboard.add', 'Ajouter')}
 								</button>
 							</div>
 						`).join('');
 						searchResults.style.display = 'block';
 					} else {
-						searchResults.innerHTML = '<div class="empty-state">Aucun utilisateur trouvé</div>';
+						searchResults.innerHTML = `<div class="empty-state">${i18n.t('dashboard.noUserFound', 'Aucun utilisateur trouvé')}</div>`;
 						searchResults.style.display = 'block';
 					}
 				} catch (error) {
@@ -217,10 +218,63 @@ export class DashboardPage
 
 
 
+	// Traduit tous les labels du dashboard
+	private static translateDashboardLabels(): void
+	{
+		const matchesLabel = document.getElementById('dashboard-label-matches');
+		if (matchesLabel) {
+			matchesLabel.textContent = i18n.t('dashboard.matchesPlayed', 'MATCHS JOUES');
+		}
+
+		const victoriesLabel = document.getElementById('dashboard-label-victories');
+		if (victoriesLabel) {
+			victoriesLabel.textContent = i18n.t('dashboard.victories', 'VICTOIRES');
+		}
+
+		const performancesLabel = document.getElementById('dashboard-label-performances');
+		if (performancesLabel) {
+			performancesLabel.textContent = i18n.t('dashboard.performances', 'PERFORMANCES');
+		}
+
+		const friendsLabel = document.getElementById('dashboard-label-friends');
+		if (friendsLabel) {
+			const friendsCount = friendsLabel.querySelector('.friends-count');
+			const friendsText = i18n.t('dashboard.friends', 'AMIS');
+			friendsLabel.innerHTML = `${friendsText} (<span class="friends-count">${friendsCount?.textContent || '0'}</span> )`;
+		}
+
+		const pendingLabel = document.getElementById('dashboard-label-pending');
+		if (pendingLabel) {
+			const pendingCount = pendingLabel.querySelector('.pending-count');
+			const pendingText = i18n.t('dashboard.pending', 'EN ATTENTE');
+			pendingLabel.innerHTML = `${pendingText} (<span class="pending-count">${pendingCount?.textContent || '0'}</span> )`;
+		}
+
+		const historyLabel = document.getElementById('dashboard-label-history');
+		if (historyLabel) {
+			historyLabel.textContent = i18n.t('dashboard.history', 'HISTORIQUE');
+		}
+
+		const searchInput = document.getElementById('dashboard-search-users') as HTMLInputElement;
+		if (searchInput) {
+			searchInput.placeholder = i18n.t('dashboard.searchUser', 'Rechercher un utilisateur...');
+		}
+	}
+
 	// Initialise le dashboard : charge les données (top3, amis, demandes),
 	// configure la recherche et définit les fonctions globales (ajout/suppression ami, chat)
 	static setupEventListeners(): void
 	{
+		// Écouter les changements de langue
+		window.addEventListener('languageChanged', () => {
+			this.translateDashboardLabels();
+			this.loadFriendsList();
+			this.loadPendingRequests();
+			this.loadMatchHistory();
+		});
+
+		this.translateDashboardLabels();
+
 		this.loadTop3Ranking();
 		this.loadFriendsList();
 		this.loadPendingRequests();
@@ -263,7 +317,7 @@ export class DashboardPage
 		(window as any).sendFriendRequest = async (userId: string) => {
 			try {
 				await ApiService.sendFriendRequest(userId);
-				alert('Demande d\'ami envoyée !');
+				alert(i18n.t('dashboard.friendRequestSent', 'Demande d\'ami envoyée !'));
 				// Rafraîchir la liste d'amis
 				await this.loadFriendsList();
 				// Fermer les résultats de recherche
@@ -272,13 +326,13 @@ export class DashboardPage
 					searchResults.style.display = 'none';
 				}
 			} catch (error: any) {
-				alert(error.message || 'Échec de l\'envoi de la demande');
+				alert(error.message || i18n.t('dashboard.failedToSendRequest', 'Échec de l\'envoi de la demande'));
 			}
 		};
 
 		// Fonction globale pour supprimer un ami
 		(window as any).removeFriend = async (friendshipId: string) => {
-			if (confirm('Supprimer cet ami ?')) {
+			if (confirm(i18n.t('dashboard.deleteFriendConfirm', 'Supprimer cet ami ?'))) {
 				try {
 					await ApiService.removeFriend(friendshipId);
 					await this.loadFriendsList();
@@ -295,7 +349,7 @@ export class DashboardPage
 				await this.loadPendingRequests();
 				await this.loadFriendsList();
 			} catch (error: any) {
-				alert(error.message || 'Erreur');
+				alert(error.message || i18n.t('dashboard.error', 'Erreur'));
 			}
 		};
 
@@ -305,7 +359,7 @@ export class DashboardPage
 				await ApiService.rejectFriendRequest(friendshipId);
 				await this.loadPendingRequests();
 			} catch (error: any) {
-				alert(error.message || 'Erreur');
+				alert(error.message || i18n.t('dashboard.error', 'Erreur'));
 			}
 		};
 
@@ -340,7 +394,7 @@ export class DashboardPage
 			}
 
 			if (pendingData.received.length === 0) {
-				container.innerHTML = '<p class="empty-state">Aucune demande en attente</p>';
+				container.innerHTML = `<p class="empty-state">${i18n.t('dashboard.noPendingRequests', 'Aucune demande en attente')}</p>`;
 				return;
 			}
 
@@ -356,14 +410,14 @@ export class DashboardPage
 
 
 					<div class="friend-actions">
-						<button class="btn-accept" onclick="window.acceptFriendRequest('${request.friendship_id}')">Accepter</button>
-						<button class="btn-reject" onclick="window.rejectFriendRequest('${request.friendship_id}')">Refuser</button>
+						<button class="btn-accept" onclick="window.acceptFriendRequest('${request.friendship_id}')">${i18n.t('dashboard.accept', 'Accepter')}</button>
+						<button class="btn-reject" onclick="window.rejectFriendRequest('${request.friendship_id}')">${i18n.t('dashboard.reject', 'Refuser')}</button>
 					</div>
 				</div>
 			`).join('');
 
 		} catch (error) {
-			container.innerHTML = '<p class="error-state">Erreur de chargement</p>';
+			container.innerHTML = `<p class="error-state">${i18n.t('dashboard.loadingError', 'Erreur de chargement')}</p>`;
 		}
 	}
 
@@ -394,7 +448,7 @@ export class DashboardPage
 			console.log('[DashboardPage] Matches received:', matches);
 
 			if (matches.length === 0) {
-				container.innerHTML = '<p class="empty-state">Aucun match</p>';
+				container.innerHTML = `<p class="empty-state">${i18n.t('dashboard.noMatches', 'Aucun match')}</p>`;
 				return;
 			}
 
@@ -436,7 +490,7 @@ export class DashboardPage
 		} catch (error) {
 			console.error('[DashboardPage] Failed to load match history:', error);
 			console.error('[DashboardPage] Error details:', error instanceof Error ? error.message : error);
-			container.innerHTML = '<p class="error-state">Erreur de chargement</p>';
+			container.innerHTML = `<p class="error-state">${i18n.t('dashboard.loadingError', 'Erreur de chargement')}</p>`;
 		}
 	}
 

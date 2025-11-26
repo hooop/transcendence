@@ -38,7 +38,7 @@
 		<!-- TOTAL MATCH -->
 		<div class="card">
 			<div class="stat-item">
-				<div class="stat-label-match">MATCHS JOUES</div>
+				<div class="stat-label-match" id="dashboard-label-matches">MATCHS JOUES</div>
 				<div class="stat-value">{{TOTAL_MATCHES}}</div>
 			</div>
 		</div>
@@ -46,7 +46,7 @@
 		<!-- VICTOIRES -->
 		<div class="card">
 			<div class="stat-item">
-				<div class="stat-label-vict">VICTOIRES</div>
+				<div class="stat-label-vict" id="dashboard-label-victories">VICTOIRES</div>
 				<div class="donut-chart-container">
 					<svg width="120" height="120" viewBox="0 0 120 120">
 						<defs>
@@ -66,7 +66,7 @@
 		<!-- PERFORMANCES -->
 		<div class="card">
 			<div class="stat-item">
-				<div class="stat-label-perf">PERFORMANCES</div>
+				<div class="stat-label-perf" id="dashboard-label-performances">PERFORMANCES</div>
 				<div class="chart-container">
 					<canvas id="ranking-chart"></canvas>
 				</div>
@@ -77,7 +77,7 @@
 		<div class="card">
 
 			<div class="card-header">
-				<div class="stat-label-ami">AMIS (
+				<div class="stat-label-ami" id="dashboard-label-friends">AMIS (
 					<span class="friends-count">{{FRIENDS_COUNT}}</span> )
 				</div>
 			</div>
@@ -87,6 +87,7 @@
 					type="text"
 					id="dashboard-search-users"
 					placeholder="Rechercher un utilisateur..."
+				data-i18n-placeholder="dashboard.searchUser"
 					autocomplete="off"
 				/>
 				<div id="dashboard-search-results" class="dashboard-search-results"></div>
@@ -102,7 +103,7 @@
 
 				<!-- Section demandes en attente -->
 				<div class="pending-section">
-					<div class="stat-label-pending">EN ATTENTE (
+					<div class="stat-label-pending" id="dashboard-label-pending">EN ATTENTE (
 						<span class="pending-count">{{PENDING_COUNT}}</span> )
 					</div>
 
@@ -118,7 +119,7 @@
 				<!-- HISTORIQUE DES MATCHS -->
 		<div class="card">
 			<div class="card-header">
-				<div class="stat-label-history">HISTORIQUE</div>
+				<div class="stat-label-history" id="dashboard-label-history">HISTORIQUE</div>
 			</div>
 
 			<div id="match-history-container">

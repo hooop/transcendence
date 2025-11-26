@@ -12,6 +12,7 @@
 // TournamentConfigPage.setupEventListeners(manager, onUpdate)	Gère les clics
 
 import { TournamentManager }	from '../tournament/TournamentManager'
+import { i18n } from '../services/i18n'
 import tournamentConfigTemplate	from '../templates/tournament-config.html?raw'
 
 export class TournamentConfigPage
@@ -39,10 +40,10 @@ if (playerCountNumber)
 	playerCountNumber.textContent = state.players.length.toString()
 }
 
-// Ajouter le "s" si plus d’un joueur
+// Ajouter le "s" si plus d'un joueur
 if (playerCountLabel)
 {
-	playerCountLabel.textContent = state.players.length > 1 ? 'joueurs' : 'joueur'
+	playerCountLabel.textContent = state.players.length > 1 ? i18n.t('tournament.playersCount', 'joueurs') : i18n.t('tournament.playerCountSingular', 'joueur')
 }
 
 		// Ajouter la classe valid-count si le nombre est valide
@@ -81,10 +82,40 @@ if (playerCountLabel)
 		{
 			actionsContainer.innerHTML = `
 				<button id="start-tournament" class="btn-start-tournament" ${!canStart.canStart ? 'disabled' : ''}>
-					Commencer le tournoi
+					${i18n.t('tournament.startTournament', 'Commencer le tournoi')}
 				</button>
 			`
 		}
+	}
+
+	/**
+	 * Translate tournament page elements
+	 */
+	static translateTournamentPage(): void
+	{
+		const configTitle = document.getElementById('tournament-config-title');
+		const challengeText = document.getElementById('tournament-challenge-text');
+		const subtitleText = document.getElementById('tournament-subtitle-text');
+		const aiLabel = document.getElementById('tournament-ai-label');
+		const nicknameLabel = document.getElementById('tournament-nickname-label');
+		const difficultyOption = document.getElementById('tournament-difficulty-option');
+		const easyOption = document.getElementById('tournament-easy-option');
+		const mediumOption = document.getElementById('tournament-medium-option');
+		const hardOption = document.getElementById('tournament-hard-option');
+		const addPlayerBtn = document.getElementById('tournament-add-player-btn');
+		const resetLink = document.getElementById('reset-tournament');
+
+		if (configTitle) configTitle.textContent = i18n.t('tournament.configuration', 'Configuration');
+		if (challengeText) challengeText.textContent = i18n.t('tournament.challengeFriends', 'Défiez vos amis');
+		if (subtitleText) subtitleText.textContent = i18n.t('tournament.maxPlayers', 'Jouez à 2, 4 ou 8 joueurs max');
+		if (aiLabel) aiLabel.textContent = i18n.t('tournament.aiPlayer', 'Joueur IA');
+		if (nicknameLabel) nicknameLabel.textContent = i18n.t('tournament.yourNickname', 'Votre pseudo *');
+		if (difficultyOption) difficultyOption.textContent = i18n.t('tournament.difficulty', 'Difficulté');
+		if (easyOption) easyOption.textContent = i18n.t('tournament.easy', 'Facile');
+		if (mediumOption) mediumOption.textContent = i18n.t('tournament.medium', 'Moyen');
+		if (hardOption) hardOption.textContent = i18n.t('tournament.hard', 'Difficile');
+		if (addPlayerBtn) addPlayerBtn.textContent = i18n.t('tournament.addPlayer', 'Ajouter joueur');
+		if (resetLink) resetLink.textContent = i18n.t('tournament.resetTournament', 'Réinitialiser le tournoi');
 	}
 
 	/**
@@ -92,6 +123,13 @@ if (playerCountLabel)
 	 */
 	static setupEventListeners(tournamentManager: TournamentManager, onUpdate: () => void): void
 	{
+		// Translate page on setup
+		this.translateTournamentPage();
+
+		// Listen for language changes
+		window.addEventListener('languageChanged', () => {
+			this.translateTournamentPage();
+		});
 		// Toggle AI
 		const aiToggle = document.getElementById('ai-toggle') as HTMLInputElement
 		const aiDifficultySelect = document.getElementById('ai-difficulty-select') as HTMLSelectElement

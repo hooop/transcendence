@@ -1,6 +1,7 @@
 // Fenêtre de chat style Facebook (popup en bas à droite)
 
 import { ChatService, ChatMessage } from '../services/ChatService';
+import { i18n } from '../services/i18n';
 
 export interface ChatWindowOptions {
     userId: string;
@@ -29,6 +30,8 @@ export class ChatWindow {
         this.attachEventListeners();
         this.loadMessages();
         this.setupRealtimeListeners();
+        this.setupLanguageListener();
+        this.translateChatLabels();
     }
 
     private createWindow(): HTMLElement {
@@ -54,12 +57,12 @@ export class ChatWindow {
             <div class="chat-window-body">
                 <div class="chat-messages" id="chat-messages-${this.options.userId}"></div>
                 <div class="chat-typing-indicator" style="display: none;">
-                    <span>${this.options.displayName} est en train d'écrire...</span>
+                    <span id="chat-typing-${this.options.userId}">${this.options.displayName} est en train d'écrire...</span>
                 </div>
             </div>
             <div class="chat-window-footer">
-                <input type="text" class="chat-input" placeholder="Écrivez un message..." />
-                <button class="btn-send">Envoyer</button>
+                <input type="text" class="chat-input" id="chat-input-${this.options.userId}" placeholder="Écrivez un message..." />
+                <button class="btn-send" id="chat-send-${this.options.userId}">Envoyer</button>
             </div>
         `;
 
@@ -142,6 +145,35 @@ export class ChatWindow {
         });
 
         this.unsubscribers.push(unsubMessage, unsubTyping, unsubStatus);
+    }
+
+    private setupLanguageListener(): void {
+        // Traduire au démarrage si les traductions sont déjà chargées
+        setTimeout(() => {
+            this.translateChatLabels();
+        }, 100);
+
+        // Écouter les changements de langue
+        window.addEventListener('languageChanged', () => {
+            this.translateChatLabels();
+        });
+    }
+
+    private translateChatLabels(): void {
+        const inputElement = this.container.querySelector(`#chat-input-${this.options.userId}`) as HTMLInputElement;
+        if (inputElement) {
+            inputElement.placeholder = i18n.t('chat.writeMessage', 'Écrivez un message...');
+        }
+
+        const sendButton = this.container.querySelector(`#chat-send-${this.options.userId}`);
+        if (sendButton) {
+            sendButton.textContent = i18n.t('chat.send', 'Envoyer');
+        }
+
+        const typingIndicator = this.container.querySelector(`#chat-typing-${this.options.userId}`);
+        if (typingIndicator) {
+            typingIndicator.textContent = i18n.t('chat.typing', `${this.options.displayName} est en train d'écrire...`);
+        }
     }
 
     private async loadMessages(): Promise<void> {
