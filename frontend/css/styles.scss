@@ -465,7 +465,12 @@
   opacity: 0.5;
 }
 
-
+.form-group input:disabled {
+    background: var(--bg-input);
+    color: var(--text-secondary);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
 
 
 /* Password input avec icône œil */
@@ -3198,6 +3203,7 @@ body.fullscreen-game .app-footer {
     font-size: 14px;
     cursor: pointer;
     transition: all 0.3s;
+    margin-bottom: 40px;
 }
 
 .btn-delete-avatar:hover {
@@ -3288,10 +3294,11 @@ body.fullscreen-game .app-footer {
 
 .toggle-2fa-container {
     display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: 20px;
+    flex-direction: column;
+    align-items: left;
+    margin-top: auto;
     padding: 12px 0;
+    gap: 12px;
 }
 
 .toggle-2fa-label {
@@ -3355,7 +3362,7 @@ body.fullscreen-game .app-footer {
     align-items: center;
     justify-content: left;
     gap: 0.8rem; /* Espace entre l'icône et le texte */
-    margin-top: auto;
+    margin-top: 20px;
     color: var(--text-secondary);
     text-decoration: none;
 	font-size: 14px;

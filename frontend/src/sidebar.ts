@@ -113,6 +113,16 @@ export class Sidebar {
 				}
 			}
 
+			// Email (disabled mais affiche la valeur)
+			if (this.emailElement) {
+				(this.emailElement as HTMLInputElement).value = user.email
+			}
+
+			// Username (disabled mais affiche la valeur)
+			if (this.usernameElement) {
+				(this.usernameElement as HTMLInputElement).value = user.username
+			}
+
 			// Remplir le champ pseudo
 			if (this.displayNameInput)
 			{
@@ -147,7 +157,7 @@ export class Sidebar {
 			// Upload avatar et récupère l'utilisateur mis à jour
 			const updatedUser = await ApiService.uploadAvatar(file);
 
-			// Recharger les données dans ka sidebar
+			// Recharger les données dans la sidebar
 			await this.loadUserData()
 
 			window.dispatchEvent(new CustomEvent('userProfileUpdated', {
@@ -164,24 +174,31 @@ export class Sidebar {
 		target.value = ''
 	}
 
-	private async handleDeleteAvatar(): Promise<void>
-	{
-		console.log('handleDeleteAvatar appelée')
+		private async handleDeleteAvatar(): Promise<void>
+{
+    if (!confirm('Voulez-vous vraiment supprimer votre photo de profil ?')) {
+        return
+    }
 
-		if (!confirm('Voulez-vous vraiment supprimer votre photo de profil ?')) {
-			return
-		}
+    try {
+        await ApiService.deleteAvatar()
+        
+        // Récupérer l'utilisateur mis à jour
+        const updatedUser = await ApiService.getMe()
+        
+        await this.loadUserData()
 
-		try {
-			console.log('Appel API deleteAvatar')
-			await ApiService.deleteAvatar()
-			console.log('Avatar supprimé avec succès')
-			await this.loadUserData()
-		} catch (error: any) {
-			console.error('Erreur delete:', error)
-			alert(error.message || 'Échec de la suppression')
-		}
-	}
+        window.dispatchEvent(new CustomEvent('userProfileUpdated', {
+            detail: { user: updatedUser }
+        }))
+
+        console.log('Avatar deleted successfully')
+
+    } catch (error: any) {
+        console.error('Erreur delete:', error)
+        alert(error.message || 'Échec de la suppression')
+    }
+}
 
 	private async handleSaveDisplayName(): Promise<void>
 	{

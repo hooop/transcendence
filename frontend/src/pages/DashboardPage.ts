@@ -489,6 +489,8 @@ console.log('[RankingChart] Premier match complet:', JSON.stringify(matches[0], 
 				: match.player2_ranking_after;
 		});
 
+		rankings.unshift(1000);
+		
 		console.log('[RankingChart] Rankings extraits:', rankings);
 		console.log('[RankingChart] User ID:', user.id);
 

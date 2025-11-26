@@ -341,19 +341,24 @@ export class ApiService {
         return data;
     }
 
-	static async deleteAvatar(): Promise<void> {
-    const response = await fetch(`${API_URL}/api/upload/avatar`, {
-        method: 'DELETE',
-        headers: {
-            'Authorization': `Bearer ${this.token}`,
-        },
-    });
+        static async deleteAvatar(): Promise<{ user: User }> {
+            const response = await fetch(`${API_URL}/api/upload/avatar`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${this.token}`,
+                },
+            });
 
-    if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Failed to delete avatar');
-    }
-}
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.error || 'Failed to delete avatar');
+            }
+
+            const data = await response.json();
+            // Mettre à jour l'utilisateur en localStorage
+            localStorage.setItem('user', JSON.stringify(data.user));
+            return data;
+        }
 
 	static async updateProfile(userId: number, data: { display_name?: string; username?: string; email?: string }): Promise<any>
 	{

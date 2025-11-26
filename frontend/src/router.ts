@@ -356,10 +356,14 @@ private handleRoute(): void {
 					nameEl.textContent = updatedUser.display_name || updatedUser.username;
 				}
 
-				// Mettre à jour l'avatar si nécessaire
+				// Mettre à jour l'avatar
 				const avatarEl = document.getElementById('header-user-avatar');
-				if (avatarEl && updatedUser.avatar_url) {
-					avatarEl.innerHTML = `<img src="${updatedUser.avatar_url}" alt="${updatedUser.username}">`;
+				if (avatarEl) {
+					if (updatedUser.avatar_url) {
+						avatarEl.innerHTML = `<img src="${updatedUser.avatar_url}" alt="${updatedUser.username}">`;
+					} else {
+						avatarEl.textContent = updatedUser.username.charAt(0).toUpperCase();
+					}
 				}
 			});
 
