@@ -1,4 +1,4 @@
-.PHONY: help up build down down-v clean manu up-d nuke
+.PHONY: help prepare up build down down-v clean manu up-d nuke
 
 # Variables
 DOCKER_COMPOSE = sudo docker-compose
@@ -7,6 +7,7 @@ SERVICES_MONITORING = prometheus grafana node-exporter elasticsearch logstash ki
 
 help:
 	@echo "Commandes disponibles:"
+	@echo "  make prepare   - Prépare l'environnement (place le .env à la racine)"
 	@echo "  make up        - Lance tous les services avec rebuild (sudo docker-compose up --build)"
 	@echo "  make up-d      - Lance tous les services en arrière-plan (sudo docker-compose up -d)"
 	@echo "  make build     - Build tous les services sans les lancer"
@@ -15,6 +16,17 @@ help:
 	@echo "  make clean     - Alias pour down-v"
 	@echo "  make manu      - Build uniquement frontend et backend (sans monitoring)"
 	@echo "  make nuke      - RESET COMPLET: arrête tout, supprime volumes/réseaux/images et prune le système"
+
+# Prépare l'environnement (copie le .env depuis le home)
+prepare:
+	@if [ ! -f ~/.env ]; then \
+		echo "Erreur: Fichier .env non trouvé dans le home directory"; \
+		echo "Merci de placer le fichier .env dans ~/ ($(HOME))"; \
+		exit 1; \
+	fi
+	@cp ~/.env .env
+	@echo "✓ Fichier .env copié depuis $(HOME)/.env"
+	@echo "✓ Environnement prêt pour le démarrage"
 
 # Lance tous les services avec rebuild
 up:

@@ -80,8 +80,8 @@ services:
       - ./monitoring/grafana/provisioning/dashboards:/etc/grafana/provisioning/dashboards
       - ./monitoring/grafana/dashboards:/etc/grafana/dashboards
     environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=simon123
+      - GF_SECURITY_ADMIN_USER=${GF_SECURITY_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GF_SECURITY_ADMIN_PASSWORD:-simon123}
       - GF_INSTALL_PLUGINS=
       - GF_USERS_ALLOW_SIGN_UP=false
     networks:
@@ -107,7 +107,7 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=true
-      - ELASTIC_PASSWORD=transcendence_elk_2024
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-transcendence_elk_2024}
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ports:
       - "127.0.0.1:9200:9200"  # Accessible uniquement en local
@@ -141,7 +141,7 @@ services:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
       - ELASTICSEARCH_SERVICEACCOUNTTOKEN=${KIBANA_SERVICE_TOKEN}
       - XPACK_SECURITY_ENABLED=true
-      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=transcendence_kibana_encryption_key_min_32_chars_2024
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=${XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY:-transcendence_kibana_encryption_key_min_32_chars_2024}
     depends_on:
       - elasticsearch
     networks:
@@ -157,8 +157,8 @@ services:
       - ./logging/index-template.json:/setup/index-template.json:ro
     environment:
       - ELASTICSEARCH_HOST=http://elasticsearch:9200
-      - ELASTIC_USER=elastic
-      - ELASTIC_PASSWORD=transcendence_elk_2024
+      - ELASTIC_USER=${ELASTIC_USER:-elastic}
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-transcendence_elk_2024}
     command: sh -c "apk add --no-cache curl bash && /setup/setup-ilm.sh"
     depends_on:
       - elasticsearch
