@@ -3526,8 +3526,7 @@ body.fullscreen-game .app-footer {
     grid-template-columns: repeat(4, 1fr);
     grid-template-rows: repeat(3, 1fr);
     gap: 20px;
-    height: calc(100vh - 60px);
-    padding: 20px;
+    height: calc(90vh - 60px);
 }
 
 /* TOP 3 : colonne 1, rows 1-3 */
