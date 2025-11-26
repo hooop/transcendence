@@ -101,6 +101,16 @@ async function authRoutes(fastify, options) {
         });
       }
 
+      // Vérifier si le 2FA est activé
+      if (user.two_factor_enabled) {
+        // Ne pas se connecter immédiatement, indiquer que le 2FA est requis
+        return {
+          two_factor_required: true,
+          message: 'Authentification à deux facteurs requise',
+          // Pas de token fourni, l'utilisateur doit d'abord appeler /api/2fa/send-code
+        };
+      }
+
       // Mettre à jour le statut en ligne
       fastify.db.prepare(
         'UPDATE users SET is_online = 1 WHERE id = ?'
@@ -119,6 +129,7 @@ async function authRoutes(fastify, options) {
           email: user.email,
           display_name: user.display_name,
           avatar_url: user.avatar_url,
+          two_factor_enabled: false,
         },
         token,
       };

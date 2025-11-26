@@ -68,6 +68,13 @@ export class AuthPages
 	{
 		const form = document.getElementById('login-form') as HTMLFormElement;
 		const errorDiv = document.getElementById('login-error') as HTMLDivElement;
+		const twoFAForm = document.getElementById('2fa-form') as HTMLFormElement;
+		const twoFAErrorDiv = document.getElementById('2fa-error') as HTMLDivElement;
+		const twoFAMessage = document.getElementById('2fa-message') as HTMLParagraphElement;
+		const backToLoginBtn = document.getElementById('back-to-login') as HTMLButtonElement;
+
+		let currentUsername = '';
+		let currentPassword = '';
 
 		// Toggle password visibility
 		const passwordInput = document.getElementById('password') as HTMLInputElement;
@@ -101,6 +108,17 @@ export class AuthPages
 			});
 		}
 
+		// Bouton retour au login
+		if (backToLoginBtn) {
+			backToLoginBtn.addEventListener('click', () => {
+				form.style.display = 'block';
+				twoFAForm.style.display = 'none';
+				twoFAErrorDiv.style.display = 'none';
+				const twoFACodeInput = document.getElementById('2fa-code') as HTMLInputElement;
+				if (twoFACodeInput) twoFACodeInput.value = '';
+			});
+		}
+
         if (form)
 		{
             form.addEventListener('submit', async (e) => {
@@ -110,20 +128,42 @@ export class AuthPages
                 const username = formData.get('username') as string;
                 const password = formData.get('password') as string;
 
+                currentUsername = username;
+                currentPassword = password;
+
                 // Cacher les erreurs précédentes
                 errorDiv.style.display = 'none';
 
                 // Désactiver le bouton
                 const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
                 submitBtn.disabled = true;
-                submitBtn.textContent = 'Signing in...';
+                submitBtn.textContent = 'Connexion...';
 
                 try
 				{
-                    await ApiService.login(username, password);
+                    const response = await ApiService.login(username, password);
 
-                    // Rediriger vers le dashboard
-                    window.location.href = '/dashboard';
+                    // Si 2FA requis
+                    if ('two_factor_required' in response && response.two_factor_required) {
+                        // Envoyer le code par email
+                        const codeResponse = await ApiService.send2FACode(username, password);
+
+                        // Afficher le formulaire 2FA
+                        form.style.display = 'none';
+                        twoFAForm.style.display = 'block';
+                        twoFAMessage.textContent = `Un code de verification a ete envoye a ${codeResponse.email}`;
+
+                        // Focus sur l'input du code
+                        const twoFACodeInput = document.getElementById('2fa-code') as HTMLInputElement;
+                        if (twoFACodeInput) twoFACodeInput.focus();
+                    } else {
+                        // Connexion réussie sans 2FA
+                        window.location.href = '/dashboard';
+                    }
+
+                    // Réactiver le bouton
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Se connecter';
                 }
 				catch (error: any)
 				{
@@ -132,7 +172,39 @@ export class AuthPages
 
                     // Réactiver le bouton
                     submitBtn.disabled = false;
-                    submitBtn.textContent = 'Sign In';
+                    submitBtn.textContent = 'Se connecter';
+                }
+            });
+        }
+
+        // Gérer la soumission du formulaire 2FA
+        if (twoFAForm) {
+            twoFAForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const formData = new FormData(twoFAForm);
+                const code = formData.get('code') as string;
+
+                // Cacher les erreurs précédentes
+                twoFAErrorDiv.style.display = 'none';
+
+                // Désactiver le bouton
+                const submitBtn = twoFAForm.querySelector('button[type="submit"]') as HTMLButtonElement;
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Verification...';
+
+                try {
+                    await ApiService.verify2FACode(currentUsername, code);
+
+                    // Rediriger vers le dashboard
+                    window.location.href = '/dashboard';
+                } catch (error: any) {
+                    twoFAErrorDiv.textContent = error.message || 'Code invalide';
+                    twoFAErrorDiv.style.display = 'block';
+
+                    // Réactiver le bouton
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Verifier';
                 }
             });
         }

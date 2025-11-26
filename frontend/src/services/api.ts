@@ -77,10 +77,12 @@ export class ApiService {
     }
 
     // Headers avec authentification
-    private static getHeaders(): HeadersInit {
-        const headers: HeadersInit = {
-            'Content-Type': 'application/json',
-        };
+    private static getHeaders(includeContentType: boolean = true): HeadersInit {
+        const headers: HeadersInit = {};
+
+        if (includeContentType) {
+            headers['Content-Type'] = 'application/json';
+        }
 
         if (this.token) {
             headers['Authorization'] = `Bearer ${this.token}`;
@@ -109,7 +111,7 @@ export class ApiService {
         return data;
     }
 
-    static async login(username: string, password: string): Promise<AuthResponse> {
+    static async login(username: string, password: string): Promise<AuthResponse | { two_factor_required: true; message: string }> {
         const response = await fetch(`${API_URL}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -119,6 +121,46 @@ export class ApiService {
         if (!response.ok) {
             const error = await response.json();
             throw new Error(error.error || 'Login failed');
+        }
+
+        const data = await response.json();
+
+        // Si 2FA requis, retourner la réponse telle quelle
+        if (data.two_factor_required) {
+            return data;
+        }
+
+        // Sinon, enregistrer le token et l'utilisateur
+        this.setToken(data.token);
+        localStorage.setItem('user', JSON.stringify(data.user));
+        return data;
+    }
+
+    static async send2FACode(username: string, password: string): Promise<{ message: string; email: string }> {
+        const response = await fetch(`${API_URL}/api/2fa/send-code`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password }),
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to send 2FA code');
+        }
+
+        return await response.json();
+    }
+
+    static async verify2FACode(username: string, code: string): Promise<AuthResponse> {
+        const response = await fetch(`${API_URL}/api/2fa/verify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, code }),
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Invalid code');
         }
 
         const data = await response.json();
@@ -470,6 +512,48 @@ export class ApiService {
 
         if (!response.ok) {
             throw new Error('Failed to save match');
+        }
+
+        return await response.json();
+    }
+
+    // ===== Two-Factor Authentication =====
+
+    static async get2FAStatus(): Promise<{ two_factor_enabled: boolean }> {
+        const response = await fetch(`${API_URL}/api/2fa/status`, {
+            headers: this.getHeaders(false),
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to get 2FA status');
+        }
+
+        return await response.json();
+    }
+
+    static async enable2FA(): Promise<{ message: string }> {
+        const response = await fetch(`${API_URL}/api/2fa/enable`, {
+            method: 'POST',
+            headers: this.getHeaders(false),
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'Failed to enable 2FA' }));
+            throw new Error(error.error || error.message || 'Failed to enable 2FA');
+        }
+
+        return await response.json();
+    }
+
+    static async disable2FA(): Promise<{ message: string }> {
+        const response = await fetch(`${API_URL}/api/2fa/disable`, {
+            method: 'POST',
+            headers: this.getHeaders(false),
+        });
+
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({ error: 'Failed to disable 2FA' }));
+            throw new Error(error.error || error.message || 'Failed to disable 2FA');
         }
 
         return await response.json();

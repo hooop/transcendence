@@ -14,6 +14,8 @@ export class Sidebar {
 	private displayNameInput: HTMLInputElement | null = null
 	private saveDisplayNameBtn: HTMLElement | null = null
 	private logoutLink: HTMLElement | null = null
+	private toggle2FACheckbox: HTMLInputElement | null = null
+	private twoFAEnabled: boolean = false
 
 	constructor()
 	{
@@ -31,9 +33,11 @@ export class Sidebar {
 		this.displayNameInput = document.getElementById('sidebar-display-name') as HTMLInputElement
 		this.saveDisplayNameBtn = document.getElementById('save-displayname-btn')
 		this.logoutLink = document.getElementById('sidebar-logout-link')
+		this.toggle2FACheckbox = document.getElementById('toggle-2fa-checkbox') as HTMLInputElement
 
 		this.setupEventListeners()
 		this.loadUserData()
+		this.load2FAStatus()
 	}
 
     private setupEventListeners(): void {
@@ -78,7 +82,12 @@ export class Sidebar {
 		this.logoutLink?.addEventListener('click', async (e) => {
 			e.preventDefault()
 			await this.handleLogout()
-})
+		})
+
+		// Toggle 2FA
+		this.toggle2FACheckbox?.addEventListener('change', async (e) => {
+			await this.handleToggle2FA(e)
+		})
     }
 
 	private async loadUserData(): Promise<void>
@@ -226,6 +235,53 @@ export class Sidebar {
 		} catch (error: any) {
 			console.error('Erreur logout:', error)
 			alert(error.message || 'Échec de la déconnexion')
+		}
+	}
+
+	private async load2FAStatus(): Promise<void>
+	{
+		try {
+			const status = await ApiService.get2FAStatus()
+			this.twoFAEnabled = status.two_factor_enabled
+			this.update2FACheckbox()
+		} catch (error: any) {
+			console.log('2FA status not loaded (user may not be authenticated)')
+			this.twoFAEnabled = false
+			this.update2FACheckbox()
+		}
+	}
+
+	private update2FACheckbox(): void
+	{
+		if (!this.toggle2FACheckbox) return
+
+		this.toggle2FACheckbox.checked = this.twoFAEnabled
+	}
+
+	private async handleToggle2FA(e: Event): Promise<void>
+	{
+		const checkbox = e.target as HTMLInputElement
+		const newState = checkbox.checked
+
+		try {
+			if (newState) {
+				const response = await ApiService.enable2FA()
+				this.twoFAEnabled = true
+				alert('Authentification a deux facteurs activee ! Un code vous sera envoye par email lors de votre prochaine connexion.')
+			} else {
+				if (!confirm('Voulez-vous vraiment desactiver l\'authentification a deux facteurs ?')) {
+					checkbox.checked = true
+					return
+				}
+				const response = await ApiService.disable2FA()
+				this.twoFAEnabled = false
+				alert('Authentification a deux facteurs desactivee')
+			}
+		} catch (error: any) {
+			console.error('Erreur toggle 2FA:', error)
+			const errorMessage = error.message || 'Echec de la modification 2FA'
+			alert(errorMessage)
+			checkbox.checked = this.twoFAEnabled
 		}
 	}
 

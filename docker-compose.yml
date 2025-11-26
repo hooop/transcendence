@@ -17,6 +17,12 @@ services:
       OAUTH42_CLIENT_SECRET: ${OAUTH42_CLIENT_SECRET}
       OAUTH42_CALLBACK_URL: ${OAUTH42_CALLBACK_URL:-http://localhost:3000/api/auth/42/callback}
       FRONTEND_URL: ${FRONTEND_URL:-http://localhost:8080}
+      EMAIL_HOST: ${EMAIL_HOST:-smtp.gmail.com}
+      EMAIL_PORT: ${EMAIL_PORT:-587}
+      EMAIL_SECURE: ${EMAIL_SECURE:-false}
+      EMAIL_USER: ${EMAIL_USER}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      EMAIL_FROM: ${EMAIL_FROM:-noreply@transcendence.com}
     ports:
       - "3000:3000"
     volumes:

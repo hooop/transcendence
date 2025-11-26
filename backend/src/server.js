@@ -77,6 +77,7 @@ async function start() {
     await app.register(require('./routes/health'));
     await app.register(require('./routes/auth'), { prefix: '/api/auth' });
     await app.register(require('./routes/oauth42'), { prefix: '/api/auth' });
+    await app.register(require('./routes/twoFactor'), { prefix: '/api/2fa' });
     await app.register(require('./routes/users'), { prefix: '/api/users' });
     await app.register(require('./routes/matches'), { prefix: '/api/matches' });
     await app.register(require('./routes/friendships'), { prefix: '/api/friendships' });

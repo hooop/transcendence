@@ -52,6 +52,29 @@
 				<button type="submit" class="btn-login">Se connecter</button>
 			</form>
 
+			<form id="2fa-form" style="display: none;">
+				<p class="subtitle" id="2fa-message">Un code de verification a ete envoye a votre email</p>
+
+				<div class="form-group">
+					<label for="2fa-code">Code de verification</label>
+					<input
+						type="text"
+						id="2fa-code"
+						name="code"
+						required
+						placeholder="Entrez le code a 6 chiffres"
+						maxlength="6"
+						pattern="[0-9]{6}"
+						autocomplete="one-time-code"
+						class="input-2fa-code"
+					/>
+				</div>
+
+				<div id="2fa-error" class="error-message" style="display: none;"></div>
+				<button type="submit" class="btn-login">Verifier</button>
+				<button type="button" id="back-to-login" class="btn-secondary" style="margin-top: 10px;">Retour</button>
+			</form>
+
 
 
 
