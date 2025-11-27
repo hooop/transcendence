@@ -53,6 +53,8 @@ export class DashboardPage
 			html = html.replace('{{TOTAL_MATCHES}}', totalMatches.toString());
 			html = html.replace('{{WINS}}', wins.toString());
 			html = html.replace('{{LOSSES}}', losses.toString());
+			html = html.replace('{{WINS_LABEL}}', i18n.t('dashboard.wins', 'victoires'));
+			html = html.replace('{{LOSSES_LABEL}}', i18n.t('dashboard.losses', 'défaites'));
 			html = html.replace('{{WIN_PERCENT}}', winPercent.toString());
 			html = html.replace('{{LOSS_PERCENT}}', lossPercent.toString());
 			html = html.replace('{{FRIENDS_COUNT}}', friendsData.total.toString());
@@ -268,7 +270,24 @@ export class DashboardPage
 		const playButton = document.getElementById('dashboard-play-button');
 		if (playButton) {
 			playButton.textContent = i18n.t('dashboard.playButton', 'Jouer');
-}
+		}
+
+		// Mettre à jour les labels des victoires et défaites
+		this.updateWinsLossesLabels();
+	}
+
+	// Met à jour les labels "victoires" et "défaites" selon la langue
+	private static updateWinsLossesLabels(): void
+	{
+		const winsLossesElements = document.querySelectorAll('.wins-losses');
+		if (winsLossesElements.length >= 2) {
+			const winsLabel = i18n.t('dashboard.wins', 'victoires');
+			const lossesLabel = i18n.t('dashboard.losses', 'défaites');
+
+			// Les éléments contiennent déjà le nombre, on doit extraire juste le nombre
+			winsLossesElements[0].textContent = winsLossesElements[0].textContent.split(' ')[0] + ' ' + winsLabel;
+			winsLossesElements[1].textContent = winsLossesElements[1].textContent.split(' ')[0] + ' ' + lossesLabel;
+		}
 	}
 
 	// Initialise le dashboard : charge les données (top3, amis, demandes),

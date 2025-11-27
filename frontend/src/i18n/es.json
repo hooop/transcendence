@@ -71,7 +71,9 @@
     "points": "pts",
     "opponent": "Oponente",
     "cta": "Desafía<br>a tus amigos<br>en línea",
-    "playButton": "Jugar"
+    "playButton": "Jugar",
+    "wins": "victorias",
+    "losses": "derrotas"
   },
   "game": {
     "aiMode": "Modo IA",
@@ -83,7 +85,15 @@
     "hasWon": "¡ganó!",
     "playAgain": "Jugar de nuevo",
     "home": "Inicio",
-    "returnToTournament": "Volver al torneo"
+    "returnToTournament": "Volver al torneo",
+    "startGame": "Toca ESPACIO para lanzar un partido",
+    "localPlayer": "Jugador local",
+    "aiPlayer": "IA",
+    "leftPlayer": "Jugador izquierdo",
+    "rightPlayer": "Jugador derecho",
+    "tournamentVictory": "¡Felicidades ${winnerName}, avanzas a la siguiente ronda!",
+    "tournamentElimination": "Lo siento ${loserName}, el torneo termina aquí para ti.",
+    "finalScore": "Puntuación final: ${leftScore} - ${rightScore}"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -106,6 +116,7 @@
     "username": "Nombre de usuario *",
     "chooseUsername": "Elige un nombre de usuario",
     "email": "Correo electrónico *",
+    "emailPlaceholder": "tu.email@example.com",
     "nickname": "Seudónimo",
     "chooseNickname": "Elige un seudónimo (opcional)",
     "passwordMinLength": "Mínimo 8 caracteres",

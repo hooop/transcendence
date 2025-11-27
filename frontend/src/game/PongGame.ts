@@ -3,6 +3,7 @@ import { Ball } from './Ball'
 import { Paddle } from './Paddle'
 import { AIPlayer, AIDifficulty } from './AIPlayer'
 import { ApiService } from '../services/api'
+import { i18n } from '../services/i18n'
 
 export class PongGame
 {
@@ -676,9 +677,10 @@ private renderCountdown(): void
 		}
 		else if (!this.state.isRunning && !this.state.winner)
 		{
+			const startGameText = i18n.t('game.startGame', 'Toucher ESPACE pour lancer une partie');
 			statusElement.innerHTML =
 			`
-				<span class="status-message start">Toucher <kbd>ESPACE</kbd> pour lancer une partie</span>
+				<span class="status-message start">${startGameText.replace('ESPACE', '<kbd>ESPACE</kbd>')}</span>
 			`
 		}
 		else
@@ -956,6 +958,59 @@ private renderCountdown(): void
 		return {
 			left: this.state.leftScore,
 			right: this.state.rightScore
+		}
+	}
+
+	// Met à jour les labels du jeu selon la langue actuelle
+	updateGameLabels(): void
+	{
+		console.log('[PongGame] updateGameLabels called');
+
+		// Mettre à jour le label "Mode IA"
+		const aiModeLabel = document.getElementById('ai-mode-label');
+		if (aiModeLabel) {
+			const aiModeText = i18n.t('game.aiMode', 'Mode IA');
+			aiModeLabel.textContent = aiModeText;
+			console.log('[PongGame] Updated aiMode:', aiModeText);
+		} else {
+			console.log('[PongGame] ai-mode-label NOT FOUND');
+		}
+
+		// Mettre à jour les options de difficulté
+		const difficultyPlaceholder = document.getElementById('difficulty-placeholder') as HTMLOptionElement;
+		if (difficultyPlaceholder) {
+			const diffText = i18n.t('game.difficulty', 'Difficulté');
+			difficultyPlaceholder.text = diffText;
+			console.log('[PongGame] Updated difficulty placeholder:', diffText);
+		} else {
+			console.log('[PongGame] difficulty-placeholder NOT FOUND');
+		}
+
+		const easyOption = document.getElementById('difficulty-easy') as HTMLOptionElement;
+		if (easyOption) {
+			const easyText = i18n.t('game.easy', 'Facile');
+			easyOption.text = easyText;
+			console.log('[PongGame] Updated easy:', easyText);
+		} else {
+			console.log('[PongGame] difficulty-easy NOT FOUND');
+		}
+
+		const mediumOption = document.getElementById('difficulty-medium') as HTMLOptionElement;
+		if (mediumOption) {
+			const mediumText = i18n.t('game.medium', 'Moyen');
+			mediumOption.text = mediumText;
+			console.log('[PongGame] Updated medium:', mediumText);
+		} else {
+			console.log('[PongGame] difficulty-medium NOT FOUND');
+		}
+
+		const hardOption = document.getElementById('difficulty-hard') as HTMLOptionElement;
+		if (hardOption) {
+			const hardText = i18n.t('game.hard', 'Difficile');
+			hardOption.text = hardText;
+			console.log('[PongGame] Updated hard:', hardText);
+		} else {
+			console.log('[PongGame] difficulty-hard NOT FOUND');
 		}
 	}
 }

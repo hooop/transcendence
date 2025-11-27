@@ -6,6 +6,7 @@ import { DashboardPage }		from './pages/DashboardPage'
 import { ApiService }			from './services/api'
 import { TournamentConfigPage } from './pages/TournamentConfigPage'
 import { OnlineGamePage }		from './pages/OnlineGamePage'
+import { i18n }					from './services/i18n'
 
 import gameModeTemplate			from './templates/game.html?raw';
 import homeTemplate				from './templates/home.html?raw';
@@ -122,6 +123,51 @@ private handleRoute(): void {
 
 		// Sinon, afficher la page d'accueil avec login/register
 		this.updatePageContent(homeTemplate);
+
+		// Mettre à jour les labels i18n après un court délai pour que le DOM soit prêt
+		setTimeout(() => {
+			this.updateHomeLabels();
+
+			// Écouter les changements de langue
+			window.addEventListener('languageChanged', () => {
+				this.updateHomeLabels();
+			})
+		}, 50);
+	}
+
+	private updateHomeLabels(): void
+	{
+		// Mettre à jour le titre 1
+		const title1 = document.getElementById('home-title-1');
+		if (title1) {
+			title1.textContent = i18n.t('home.title1', '1972 : Une révolution naît');
+		}
+
+		// Mettre à jour le contenu 1
+		const content1 = document.getElementById('home-content-1');
+		if (content1) {
+			content1.textContent = i18n.t('home.content1', 'Il y a plus de 50 ans, dans les laboratoires d\'Atari, nait un premier jeu vidéo révolutionnaire. Pong, avec sa simplicité déconcertante et son gameplay addictif, capture l\'essence même du divertissement électronique.');
+		}
+
+		// Mettre à jour le titre 2
+		const title2 = document.getElementById('home-title-2');
+		if (title2) {
+			title2.textContent = i18n.t('home.title2', '2025 : L\'héritage continue');
+		}
+
+		// Mettre à jour le contenu 2
+		const content2 = document.getElementById('home-content-2');
+		if (content2) {
+			content2.textContent = i18n.t('home.content2', 'Aujourd\'hui, SuperPong garde l\'âme du jeu original tout en l\'emmenant vers de nouveaux horizons. Jouez en ligne, affrontez l\'IA, participez à des tournois épiques et construisez votre légende.');
+		}
+
+		// Mettre à jour le bouton Jouer
+		const playButton = document.getElementById('home-play-button');
+		if (playButton) {
+			playButton.textContent = i18n.t('home.play', 'Jouer');
+		}
+
+		console.log('[Router] Home labels updated');
 	}
 
 	// CONNEXION
@@ -136,14 +182,44 @@ private handleRoute(): void {
 		}
 
 		this.updatePageContent(AuthPages.renderLogin())
-		setTimeout(() => AuthPages.setupLoginForm(), 100)
+
+		console.log('[ROUTER] renderLogin: setting up form');
+
+		// Attendre que les traductions soient chargées
+		const setupLogin = () => {
+			console.log('[ROUTER] setupLogin called, calling AuthPages.setupLoginForm()');
+			AuthPages.setupLoginForm()
+		}
+
+		// Écouter le chargement des traductions
+		window.addEventListener('translationsLoaded', setupLogin, { once: true })
+
+		// Fallback après délai au cas où les traductions sont déjà chargées
+		setTimeout(() => {
+			console.log('[ROUTER] setupLogin timeout, calling directly');
+			setupLogin()
+			window.removeEventListener('translationsLoaded', setupLogin)
+		}, 150)
 	}
 
 	// INSCRIPTION
 	private renderRegister(): void
 	{
 		this.updatePageContent(AuthPages.renderRegister())
-		setTimeout(() => AuthPages.setupRegisterForm(), 100)
+
+		// Attendre que les traductions soient chargées
+		const setupRegister = () => {
+			AuthPages.setupRegisterForm()
+		}
+
+		// Écouter le chargement des traductions
+		window.addEventListener('translationsLoaded', setupRegister, { once: true })
+
+		// Fallback après délai au cas où les traductions sont déjà chargées
+		setTimeout(() => {
+			setupRegister()
+			window.removeEventListener('translationsLoaded', setupRegister)
+		}, 150)
 	}
 
 	private renderOAuthCallback(): void
@@ -201,6 +277,11 @@ private handleRoute(): void {
 		{
 			this.initPongGame(false, AIDifficulty.MEDIUM);
 			this.setupGameOptions();
+
+			// Mettre à jour les labels i18n après initialisation complète
+			if (this.currentGame) {
+				this.currentGame.updateGameLabels()
+			}
 		}, 100);
 	}
 
@@ -263,6 +344,27 @@ private handleRoute(): void {
 						: `<span class="status-message">${message}</span>`
 				}
 			}
+
+			// Mettre à jour les labels du jeu après que les traductions soient chargées
+			window.addEventListener('translationsLoaded', () => {
+				if (this.currentGame) {
+					this.currentGame.updateGameLabels()
+				}
+			}, { once: true })
+
+			// Écouter les changements de langue
+			window.addEventListener('languageChanged', () => {
+				if (this.currentGame) {
+					this.currentGame.updateGameLabels()
+				}
+			})
+
+			// Si les traductions sont déjà chargées, mettre à jour immédiatement
+			setTimeout(() => {
+				if (this.currentGame) {
+					this.currentGame.updateGameLabels()
+				}
+			}, 100)
 		}
 	}
 

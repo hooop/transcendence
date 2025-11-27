@@ -73,7 +73,9 @@
     "placeholderPoints": "0 pts",
     "placeholderName": "-",
     "cta": "Défiez<br>vos amis<br>en<br>ligne",
-    "playButton": "Jouer"
+    "playButton": "Jouer",
+    "wins": "victoires",
+    "losses": "défaites"
   },
   "game": {
     "aiMode": "Mode IA",
@@ -116,6 +118,7 @@
     "username": "Nom d'utilisateur *",
     "chooseUsername": "Choisir un nom d'utilisateur",
     "email": "Email *",
+    "emailPlaceholder": "your.email@example.com",
     "nickname": "Pseudo",
     "chooseNickname": "Choisir un pseudo (facultatif)",
     "passwordMinLength": "Minimum 8 caractères",

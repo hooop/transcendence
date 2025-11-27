@@ -112,25 +112,31 @@ export class ApiService {
     }
 
     static async login(username: string, password: string): Promise<AuthResponse | { two_factor_required: true; message: string }> {
+        console.log('[API] Login attempt for user:', username);
         const response = await fetch(`${API_URL}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password }),
         });
 
+        console.log('[API] Login response status:', response.status);
         if (!response.ok) {
             const error = await response.json();
+            console.error('[API] Login error:', error);
             throw new Error(error.error || 'Login failed');
         }
 
         const data = await response.json();
+        console.log('[API] Login data received:', data);
 
         // Si 2FA requis, retourner la réponse telle quelle
         if (data.two_factor_required) {
+            console.log('[API] 2FA required');
             return data;
         }
 
         // Sinon, enregistrer le token et l'utilisateur
+        console.log('[API] Login successful, setting token');
         this.setToken(data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
         return data;

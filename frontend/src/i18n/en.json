@@ -73,7 +73,9 @@
     "placeholderPoints": "0 pts",
     "placeholderName": "-",
     "cta": "Challenge<br>your friends<br>online",
-    "playButton": "Play"
+    "playButton": "Play",
+    "wins": "wins",
+    "losses": "losses"
   },
   "game": {
     "aiMode": "AI Mode",
@@ -116,6 +118,7 @@
     "username": "Username *",
     "chooseUsername": "Choose a username",
     "email": "Email *",
+    "emailPlaceholder": "your.email@example.com",
     "nickname": "Nickname",
     "chooseNickname": "Choose a nickname (optional)",
     "passwordMinLength": "Minimum 8 characters",

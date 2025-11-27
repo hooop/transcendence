@@ -21,72 +21,108 @@ export class AuthPages
 
 	// Translate login page
 	static translateLoginPage(): void {
-		const h2 = document.querySelector('.login-form-content h2')
-		const subtitle = document.querySelector('.login-form-content .subtitle')
-		const usernameLabel = document.querySelector('label[for="username"]')
-		const usernameInput = document.querySelector('#username') as HTMLInputElement
-		const passwordLabel = document.querySelector('label[for="password"]')
-		const passwordInput = document.querySelector('#password') as HTMLInputElement
-		const togglePasswordBtn = document.querySelector('.toggle-password') as HTMLButtonElement
-		const submitBtn = document.querySelector('.btn-login') as HTMLButtonElement
-		const twoFALabel = document.querySelector('label[for="2fa-code"]')
-		const twoFAInput = document.querySelector('#2fa-code') as HTMLInputElement
-		const twoFASubmitBtn = document.querySelector('#2fa-form button[type="submit"]') as HTMLButtonElement
-		const backBtn = document.querySelector('#back-to-login') as HTMLButtonElement
-		const dividerSpan = document.querySelector('.divider span')
-		const oauthText = document.querySelector('.oauth-text')
-		const signupLink = document.querySelector('.signup-link a')
+		try {
+			const h2 = document.querySelector('.login-form-content h2')
+			const subtitle = document.querySelector('.login-form-content .subtitle')
 
-		if (h2) h2.textContent = i18n.t('auth.login', 'Connexion')
-		if (subtitle) subtitle.textContent = i18n.t('auth.loginSubtitle', 'Connectez-vous a votre compte')
-		if (usernameLabel) usernameLabel.textContent = i18n.t('auth.usernameOrEmail', 'Nom d\'utilisateur ou email')
-		if (usernameInput) usernameInput.placeholder = i18n.t('auth.usernameOrEmail', 'Nom d\'utilisateur ou email')
-		if (passwordLabel) passwordLabel.textContent = i18n.t('auth.password', 'Mot de passe')
-		if (passwordInput) passwordInput.placeholder = i18n.t('auth.password', 'Mot de passe')
-		if (togglePasswordBtn) togglePasswordBtn.setAttribute('aria-label', i18n.t('auth.showPassword', 'Afficher le mot de passe'))
-		if (submitBtn) submitBtn.textContent = i18n.t('auth.signIn', 'Se connecter')
-		if (twoFALabel) twoFALabel.textContent = i18n.t('auth.verificationCode', 'Code de verification')
-		if (twoFAInput) twoFAInput.placeholder = i18n.t('auth.enterCode', 'Entrez le code a 6 chiffres')
-		if (twoFASubmitBtn) twoFASubmitBtn.textContent = i18n.t('auth.verify', 'Verifier')
-		if (backBtn) backBtn.textContent = i18n.t('auth.back', 'Retour')
-		if (dividerSpan) dividerSpan.textContent = i18n.t('auth.or', 'ou')
-		if (oauthText) oauthText.textContent = i18n.t('auth.signInWith', 'Se connecter avec')
-		if (signupLink) signupLink.textContent = i18n.t('auth.createAccount', 'Creer un compte')
+			// Use getElementById for elements with numeric IDs
+			const loginForm = document.getElementById('login-form') as HTMLFormElement
+			const twoFAForm = document.getElementById('2fa-form') as HTMLFormElement
+
+			let usernameLabel: Element | null = null
+			let usernameInput: HTMLInputElement | null = null
+			let passwordLabel: Element | null = null
+			let passwordInput: HTMLInputElement | null = null
+			let togglePasswordBtn: HTMLButtonElement | null = null
+			let submitBtn: HTMLButtonElement | null = null
+
+			if (loginForm) {
+				usernameLabel = loginForm.querySelector('label[for="username"]')
+				usernameInput = loginForm.querySelector('#username') as HTMLInputElement
+				passwordLabel = loginForm.querySelector('label[for="password"]')
+				passwordInput = loginForm.querySelector('#password') as HTMLInputElement
+				togglePasswordBtn = loginForm.querySelector('.toggle-password') as HTMLButtonElement
+				submitBtn = loginForm.querySelector('button[type="submit"]') as HTMLButtonElement
+			}
+
+			let twoFALabel: Element | null = null
+			let twoFAInput: HTMLInputElement | null = null
+			let twoFASubmitBtn: HTMLButtonElement | null = null
+
+			if (twoFAForm) {
+				twoFALabel = twoFAForm.querySelector('label')
+				twoFAInput = document.getElementById('2fa-code') as HTMLInputElement
+				twoFASubmitBtn = twoFAForm.querySelector('button[type="submit"]') as HTMLButtonElement
+			}
+
+			const backBtn = document.getElementById('back-to-login') as HTMLButtonElement
+			const dividerSpan = document.querySelector('.divider span')
+			const oauthText = document.querySelector('.oauth-text')
+			const noAccountText = document.getElementById('no-account-text')
+			const signupLink = document.querySelector('.signup-link a')
+
+			if (h2) {
+				h2.textContent = i18n.t('auth.login', 'Connexion');
+			}
+			if (subtitle) subtitle.textContent = i18n.t('auth.loginSubtitle', 'Connectez-vous a votre compte')
+			if (usernameLabel) usernameLabel.textContent = i18n.t('auth.usernameOrEmail', 'Nom d\'utilisateur ou email')
+			if (usernameInput) usernameInput.placeholder = i18n.t('auth.usernameOrEmail', 'Nom d\'utilisateur ou email')
+			if (passwordLabel) passwordLabel.textContent = i18n.t('auth.password', 'Mot de passe')
+			if (passwordInput) passwordInput.placeholder = i18n.t('auth.password', 'Mot de passe')
+			if (togglePasswordBtn) togglePasswordBtn.setAttribute('aria-label', i18n.t('auth.showPassword', 'Afficher le mot de passe'))
+			if (submitBtn) submitBtn.textContent = i18n.t('auth.signIn', 'Se connecter')
+			if (twoFALabel) twoFALabel.textContent = i18n.t('auth.verificationCode', 'Code de verification')
+			if (twoFAInput) twoFAInput.placeholder = i18n.t('auth.enterCode', 'Entrez le code a 6 chiffres')
+			if (twoFASubmitBtn) twoFASubmitBtn.textContent = i18n.t('auth.verify', 'Verifier')
+			if (backBtn) backBtn.textContent = i18n.t('auth.back', 'Retour')
+			if (dividerSpan) dividerSpan.textContent = i18n.t('auth.or', 'ou')
+			if (oauthText) oauthText.textContent = i18n.t('auth.signInWith', 'Se connecter avec')
+			if (noAccountText) noAccountText.textContent = i18n.t('auth.dontHaveAccount', 'Pas encore de compte ?')
+			if (signupLink) signupLink.textContent = i18n.t('auth.createAccount', 'Creer un compte')
+		} catch (error) {
+			console.error('[AUTH] Error translating login page:', error)
+		}
 	}
 
 	// Translate register page
 	static translateRegisterPage(): void {
-		const h2 = document.querySelector('.register-form-content h2')
-		const subtitle = document.querySelector('.register-form-content .subtitle')
-		const usernameLabel = document.querySelector('label[for="username"]')
-		const usernameInput = document.querySelector('#username') as HTMLInputElement
-		const emailLabel = document.querySelector('label[for="email"]')
-		const emailInput = document.querySelector('#email') as HTMLInputElement
-		const nicknameLabel = document.querySelector('label[for="display_name"]')
-		const nicknameInput = document.querySelector('#display_name') as HTMLInputElement
-		const passwordLabel = document.querySelector('label[for="password"]')
-		const passwordInput = document.querySelector('#password') as HTMLInputElement
-		const togglePasswordBtn = document.querySelector('.toggle-password') as HTMLButtonElement
-		const submitBtn = document.querySelector('.btn-register') as HTMLButtonElement
-		const dividerSpan = document.querySelector('.divider span')
-		const oauthText = document.querySelector('.oauth-text')
-		const loginLink = document.querySelector('.signup-link a')
+		try {
+			const h2 = document.querySelector('.register-form-content h2')
+			const subtitle = document.querySelector('.register-form-content .subtitle')
+			const usernameLabel = document.querySelector('#register-form label[for="username"]')
+			const usernameInput = document.querySelector('#register-form #username') as HTMLInputElement
+			const emailLabel = document.querySelector('#register-form label[for="email"]')
+			const emailInput = document.querySelector('#register-form #email') as HTMLInputElement
+			const nicknameLabel = document.querySelector('#register-form label[for="display_name"]')
+			const nicknameInput = document.querySelector('#register-form #display_name') as HTMLInputElement
+			const passwordLabel = document.querySelector('#register-form label[for="password"]')
+			const passwordInput = document.querySelector('#register-form #password') as HTMLInputElement
+			const togglePasswordBtn = document.querySelector('#register-form .toggle-password') as HTMLButtonElement
+			const submitBtn = document.querySelector('#register-form button[type="submit"]') as HTMLButtonElement
+			const dividerSpan = document.querySelector('.divider span')
+			const oauthText = document.querySelector('.oauth-text')
+			const alreadyAccountText = document.getElementById('already-account-text')
+			const loginLink = document.querySelector('.signup-link a')
 
-		if (h2) h2.textContent = i18n.t('auth.register', 'Inscription')
-		if (subtitle) subtitle.textContent = i18n.t('auth.registerSubtitle', 'Créez un compte')
-		if (usernameLabel) usernameLabel.textContent = i18n.t('auth.username', 'Nom d\'utilisateur *')
-		if (usernameInput) usernameInput.placeholder = i18n.t('auth.chooseUsername', 'Choisir un nom d\'utilisateur')
-		if (emailLabel) emailLabel.textContent = i18n.t('auth.email', 'Email *')
-		if (emailInput) emailInput.placeholder = 'your.email@example.com'
-		if (nicknameLabel) nicknameLabel.textContent = i18n.t('auth.nickname', 'Pseudo')
-		if (nicknameInput) nicknameInput.placeholder = i18n.t('auth.chooseNickname', 'Choisir un pseudo (facultatif)')
-		if (passwordLabel) passwordLabel.textContent = i18n.t('auth.password', 'Mot de passe *')
-		if (passwordInput) passwordInput.placeholder = i18n.t('auth.passwordMinLength', 'Minimum 8 caractères')
-		if (togglePasswordBtn) togglePasswordBtn.setAttribute('aria-label', i18n.t('auth.showPassword', 'Afficher le mot de passe'))
-		if (submitBtn) submitBtn.textContent = i18n.t('auth.signUp', 'S\'inscrire')
-		if (dividerSpan) dividerSpan.textContent = i18n.t('auth.or', 'ou')
-		if (oauthText) oauthText.textContent = i18n.t('auth.signInWith', 'Se connecter avec')
-		if (loginLink) loginLink.textContent = i18n.t('auth.signInLink', 'Connectez-vous')
+			if (h2) h2.textContent = i18n.t('auth.register', 'Inscription')
+			if (subtitle) subtitle.textContent = i18n.t('auth.registerSubtitle', 'Créez un compte')
+			if (usernameLabel) usernameLabel.textContent = i18n.t('auth.username', 'Nom d\'utilisateur *')
+			if (usernameInput) usernameInput.placeholder = i18n.t('auth.chooseUsername', 'Choisir un nom d\'utilisateur')
+			if (emailLabel) emailLabel.textContent = i18n.t('auth.email', 'Email *')
+			if (emailInput) emailInput.placeholder = i18n.t('auth.emailPlaceholder', 'your.email@example.com')
+			if (nicknameLabel) nicknameLabel.textContent = i18n.t('auth.nickname', 'Pseudo')
+			if (nicknameInput) nicknameInput.placeholder = i18n.t('auth.chooseNickname', 'Choisir un pseudo (facultatif)')
+			if (passwordLabel) passwordLabel.textContent = i18n.t('auth.password', 'Mot de passe *')
+			if (passwordInput) passwordInput.placeholder = i18n.t('auth.passwordMinLength', 'Minimum 8 caractères')
+			if (togglePasswordBtn) togglePasswordBtn.setAttribute('aria-label', i18n.t('auth.showPassword', 'Afficher le mot de passe'))
+			if (submitBtn) submitBtn.textContent = i18n.t('auth.signUp', 'S\'inscrire')
+			if (dividerSpan) dividerSpan.textContent = i18n.t('auth.or', 'ou')
+			if (oauthText) oauthText.textContent = i18n.t('auth.signInWith', 'Se connecter avec')
+			if (alreadyAccountText) alreadyAccountText.textContent = i18n.t('auth.alreadyHaveAccount', 'Déjà un compte ?')
+			if (loginLink) loginLink.textContent = i18n.t('auth.signInLink', 'Connectez-vous')
+		} catch (error) {
+			console.error('[AUTH] Error translating register page:', error)
+		}
 	}
 
     // Page de callback OAuth42
@@ -202,11 +238,13 @@ export class AuthPages
 		{
             form.addEventListener('submit', async (e) => {
                 e.preventDefault();
+                console.log('[LOGIN] Form submitted, preventDefault called');
 
                 const formData = new FormData(form);
                 const username = formData.get('username') as string;
                 const password = formData.get('password') as string;
 
+                console.log('[LOGIN] Username:', username, 'Password length:', password?.length);
                 currentUsername = username;
                 currentPassword = password;
 
@@ -217,6 +255,7 @@ export class AuthPages
                 const submitBtn = form.querySelector('button[type="submit"]') as HTMLButtonElement;
                 submitBtn.disabled = true;
                 submitBtn.textContent = i18n.t('auth.loggingIn', 'Connexion...');
+                console.log('[LOGIN] Button disabled, calling API login');
 
                 try
 				{

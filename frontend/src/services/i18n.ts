@@ -52,9 +52,10 @@ export class I18nService {
       this.translations.es = esTranslations.default
       this.translations.en = enTranslations.default
 
-      console.log('Translations loaded successfully')
+      console.log('[I18N] Translations loaded successfully for:', this.currentLanguage)
 
       // Émettre un événement pour notifier que les traductions sont chargées
+      console.log('[I18N] Dispatching translationsLoaded event');
       window.dispatchEvent(new CustomEvent('translationsLoaded', {
         detail: { language: this.currentLanguage }
       }))
