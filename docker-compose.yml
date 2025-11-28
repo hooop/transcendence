@@ -107,12 +107,18 @@ services:
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=true
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.verification_mode=certificate
+      - xpack.security.transport.ssl.key=/usr/share/elasticsearch/config/certs/elasticsearch/elasticsearch.key
+      - xpack.security.transport.ssl.certificate=/usr/share/elasticsearch/config/certs/elasticsearch/elasticsearch.crt
+      - xpack.security.transport.ssl.certificate_authorities=/usr/share/elasticsearch/config/certs/ca/ca.crt
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-transcendence_elk_2024}
       - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
     ports:
       - "127.0.0.1:9200:9200"  # Accessible uniquement en local
     volumes:
       - elasticsearch_data:/usr/share/elasticsearch/data
+      - ./elasticsearch-certs:/usr/share/elasticsearch/config/certs:ro
     networks:
       - transcendence_network
 
@@ -139,7 +145,8 @@ services:
       - "127.0.0.1:5601:5601"  # Accessible uniquement en local
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - ELASTICSEARCH_SERVICEACCOUNTTOKEN=${KIBANA_SERVICE_TOKEN}
+      - ELASTICSEARCH_USERNAME=kibana_user
+      - ELASTICSEARCH_PASSWORD=elasticsearch
       - XPACK_SECURITY_ENABLED=true
       - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=${XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY:-transcendence_kibana_encryption_key_min_32_chars_2024}
     depends_on:

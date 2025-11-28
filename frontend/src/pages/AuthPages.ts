@@ -146,7 +146,7 @@ export class AuthPages
                 return `
                     <div class="auth-page">
                         <div class="auth-container">
-                            <h2>✅ Authentication Successful!</h2>
+                            <h2>Authentication Successful!</h2>
                             <p>Welcome ${user.display_name || user.username}!</p>
                             <p>Redirecting to dashboard...</p>
                             <div class="loading-spinner"></div>
@@ -162,7 +162,7 @@ export class AuthPages
         return `
             <div class="auth-page">
                 <div class="auth-container">
-                    <h2>❌ Authentication Failed</h2>
+                    <h2>Authentication Failed</h2>
                     <p>There was a problem with your authentication.</p>
                     <a href="/login" data-route class="btn btn-primary">Back to Login</a>
                 </div>

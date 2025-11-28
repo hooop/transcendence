@@ -165,9 +165,8 @@ export class AIPlayer {
         )
     }
 
-    /**
-     * Déplace la raquette vers la position cible
-     */
+
+    // Déplace la raquette vers la position cible
     movePaddle(paddle: Paddle): void {
         const paddleCenter = paddle.position.y
         const distance = this.targetY - paddleCenter
@@ -186,31 +185,19 @@ export class AIPlayer {
         }
     }
 
-    /**
-     * Change la difficulté de l'IA
-     */
     setDifficulty(difficulty: AIDifficulty): void {
         this.difficulty = difficulty
         this.aiConfig = this.getAIConfig(difficulty)
     }
 
-    /**
-     * Retourne la difficulté actuelle
-     */
     getDifficulty(): AIDifficulty {
         return this.difficulty
     }
 
-    /**
-     * Obtient l'intervalle d'accélération en ms
-     */
     getSpeedIncreaseInterval(): number {
         return this.aiConfig.speedIncreaseInterval
     }
 
-    /**
-     * Réinitialise l'état de l'IA
-     */
     reset(): void {
         this.lastUpdateTime = 0
         this.targetY = this.config.height / 2

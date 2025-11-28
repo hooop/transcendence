@@ -87,6 +87,27 @@ else
 fi
 
 echo ""
+echo "👤 Création de l'utilisateur Kibana..."
+
+# Créer l'utilisateur kibana_user pour Kibana (au lieu d'utiliser le superuser elastic)
+# Utiliser curl pour appeler l'API Elasticsearch directement
+RESPONSE=$(curl -s -w "\n%{http_code}" -u "$ELASTIC_USER:$ELASTIC_PASSWORD" -X POST "$ELASTICSEARCH_HOST/_security/user/kibana_user" \
+  -H 'Content-Type: application/json' \
+  -d '{"password":"elasticsearch","roles":["kibana_system"]}')
+
+HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+BODY=$(echo "$RESPONSE" | head -n-1)
+
+if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 201 ]; then
+  echo "✅ Utilisateur kibana_user créé avec succès"
+elif echo "$BODY" | grep -q "user already exists"; then
+  echo "ℹ️  Utilisateur kibana_user existe déjà"
+else
+  echo "⚠️  Erreur lors de la création de l'utilisateur (HTTP $HTTP_CODE)"
+  echo "$BODY"
+fi
+
+echo ""
 echo "🎉 Configuration ILM terminée avec succès!"
 echo ""
 echo "📊 Résumé de la politique:"
