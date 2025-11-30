@@ -182,24 +182,7 @@ private handleRoute(): void {
 		}
 
 		this.updatePageContent(AuthPages.renderLogin())
-
-		console.log('[ROUTER] renderLogin: setting up form');
-
-		// Attendre que les traductions soient chargées
-		const setupLogin = () => {
-			console.log('[ROUTER] setupLogin called, calling AuthPages.setupLoginForm()');
-			AuthPages.setupLoginForm()
-		}
-
-		// Écouter le chargement des traductions
-		window.addEventListener('translationsLoaded', setupLogin, { once: true })
-
-		// Fallback après délai au cas où les traductions sont déjà chargées
-		setTimeout(() => {
-			console.log('[ROUTER] setupLogin timeout, calling directly');
-			setupLogin()
-			window.removeEventListener('translationsLoaded', setupLogin)
-		}, 150)
+		setTimeout(() => AuthPages.setupLoginForm(), 0)
 	}
 
 	// INSCRIPTION

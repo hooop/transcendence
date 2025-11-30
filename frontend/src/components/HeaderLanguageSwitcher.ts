@@ -31,7 +31,7 @@ private render(): void {
             data-language="${lang.code}"
             title="${lang.name}"
           >
-            ${lang.code.toUpperCase()}
+            ${lang.code === 'fr' ? 'Fr' : lang.code === 'es' ? 'Es' : 'En'}
           </button>
         `
         )
