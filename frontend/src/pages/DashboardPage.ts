@@ -225,12 +225,12 @@ export class DashboardPage
 	{
 		const matchesLabel = document.getElementById('dashboard-label-matches');
 		if (matchesLabel) {
-			matchesLabel.textContent = i18n.t('dashboard.matchesPlayed', 'MATCHS JOUES');
+			matchesLabel.textContent = i18n.t('dashboard.matchesPlayed', 'Match joués');
 		}
 
 		const victoriesLabel = document.getElementById('dashboard-label-victories');
 		if (victoriesLabel) {
-			victoriesLabel.textContent = i18n.t('dashboard.victories', 'VICTOIRES');
+			victoriesLabel.textContent = i18n.t('dashboard.victories', 'Victoires');
 		}
 
 		const performancesLabel = document.getElementById('dashboard-label-performances');

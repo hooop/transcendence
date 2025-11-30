@@ -889,7 +889,7 @@
 .stat-label-match {
      width: fit-content;
 	font-weight: 400;
-	font-size: 10px;
+	font-size: 13px;
 	font-family: 'Inter', Helvetica, sans-serif;
     background-color: #132728;
     color: #09d4c6;
@@ -900,7 +900,7 @@
 .stat-label-vict {
     width: fit-content;
 	font-weight: 400;
-	font-size: 10px;
+	font-size: 13px;
 	font-family: 'Inter', Helvetica, sans-serif;
     background-color: #16162a;
     color: #1d64ec;
@@ -911,7 +911,7 @@
 .stat-label-history {
     width: fit-content;
 	font-weight: 400;
-	font-size: 10px;
+	font-size: 13px;
 	font-family: 'Inter', Helvetica, sans-serif;
     background-color: #2A1616;
     color: #EC1D20;
@@ -922,19 +922,20 @@
 .stat-label-pending {
     width: fit-content;
 	font-weight: 400;
-	font-size: 10px;
+	font-size: 13px;
 	font-family: 'Inter', Helvetica, sans-serif;
     background-color: #2A1626;
     color: #B71B91;
     border-radius: 8px;
     padding: 10px;
+    margin-bottom: 20px;
     margin-top: 20px;
 }
 
 .stat-label-ami {
     width: fit-content;
 	font-weight: 400;
-	font-size: 10px;
+	font-size: 13px;
 	font-family: 'Inter', Helvetica, sans-serif;
     background-color: #162A1B;
     color: #1FCD4A;
@@ -953,7 +954,7 @@
 .stat-label-perf {
     width: fit-content;
 	font-weight: 400;
-	font-size: 10px;
+	font-size: 13px;
 	font-family: 'Inter', Helvetica, sans-serif;
     background-color: #2c1f16;
     color: #e68406;
