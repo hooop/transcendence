@@ -1,4 +1,4 @@
-.PHONY: help prepare up build down down-v clean manu up-d nuke
+.PHONY: help prepare up build down down-v clean manu up-d nuke seed
 
 # Variables
 DOCKER_COMPOSE = sudo docker-compose
@@ -8,9 +8,10 @@ SERVICES_MONITORING = prometheus grafana node-exporter elasticsearch logstash ki
 help:
 	@echo "Commandes disponibles:"
 	@echo "  make prepare   - Prépare l'environnement (place le .env à la racine)"
-	@echo "  make up        - Lance tous les services avec rebuild (sudo docker-compose up --build)"
+	@echo "  make up        - Lance tous les services avec rebuild + seed BDD automatique"
 	@echo "  make up-d      - Lance tous les services en arrière-plan (sudo docker-compose up -d)"
 	@echo "  make build     - Build tous les services sans les lancer"
+	@echo "  make seed      - Remplit la base de données avec les données de test"
 	@echo "  make down      - Arrête tous les services (sudo docker-compose down)"
 	@echo "  make down-v    - Arrête tous les services et supprime les volumes (sudo docker-compose down -v)"
 	@echo "  make clean     - Alias pour down-v"
@@ -28,9 +29,22 @@ prepare:
 	@echo "✓ Fichier .env copié depuis $(HOME)/.env"
 	@echo "✓ Environnement prêt pour le démarrage"
 
-# Lance tous les services avec rebuild
+# Lance tous les services avec rebuild + seed automatique
+# Lance tous les services avec rebuild + seed automatique
 up:
-	$(DOCKER_COMPOSE) up --build
+	$(DOCKER_COMPOSE) up --build -d
+	@echo "⏳ Attente du démarrage du backend..."
+	@until $(DOCKER_COMPOSE) exec -T backend node -e "process.exit(0)" 2>/dev/null; do \
+		echo "Backend pas encore prêt, attente..."; \
+		sleep 2; \
+	done
+	@echo "✓ Backend prêt"
+	@make seed
+	@echo ""
+	@echo "✅ Services lancés et base de données remplie!"
+	@echo "📊 4 utilisateurs de test créés (mot de passe: pwd123)"
+	@echo ""
+	$(DOCKER_COMPOSE) logs -f
 
 # Lance tous les services en arrière-plan
 up-d:
@@ -39,6 +53,12 @@ up-d:
 # Build tous les services
 build:
 	$(DOCKER_COMPOSE) build
+
+# Remplit la base de données avec des données de test
+seed:
+	@echo "🌱 Remplissage de la base de données..."
+	@$(DOCKER_COMPOSE) exec -T backend npm run fillbdd
+	@echo "✓ Base de données remplie avec succès"
 
 # Arrête tous les services
 down:

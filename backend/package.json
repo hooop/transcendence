@@ -7,6 +7,7 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "migrate": "node src/migrations/run-migrations.js",
+     "fillbdd": "node src/seeds/fillbdd.js",
     "test": "jest"
   },
   "keywords": [
@@ -38,4 +39,6 @@
     "nodemon": "^3.0.2",
     "pino-pretty": "^13.1.1"
   }
+
+  
 }

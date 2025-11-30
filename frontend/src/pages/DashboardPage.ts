@@ -538,126 +538,126 @@ export class DashboardPage
 
 
 	private static async loadRankingChart(): Promise<void>
-{
-	const canvas = document.getElementById('ranking-chart') as HTMLCanvasElement;
-	if (!canvas) return;
+	{
+		const canvas = document.getElementById('ranking-chart') as HTMLCanvasElement;
+		if (!canvas) return;
 
-	try {
-		const user = await ApiService.getMe();
-		const matches = await ApiService.getUserMatches(user.id, 5) as any[];
+		try {
+			const user = await ApiService.getMe();
+			const matches = await ApiService.getUserMatches(user.id, 5) as any[];
 
-console.log('[RankingChart] Matches récupérés:', matches);
-console.log('[RankingChart] Premier match complet:', JSON.stringify(matches[0], null, 2));
+	console.log('[RankingChart] Matches récupérés:', matches);
+	console.log('[RankingChart] Premier match complet:', JSON.stringify(matches[0], null, 2));
 
-		// Détruire l'ancien chart s'il existe
-		if (this.rankingChart) {
-			this.rankingChart.destroy();
-			this.rankingChart = null;
-		}
+			// Détruire l'ancien chart s'il existe
+			if (this.rankingChart) {
+				this.rankingChart.destroy();
+				this.rankingChart = null;
+			}
 
-		// Pas de matches = graphique vide
-		if (matches.length === 0) {
-			this.renderEmptyChart(canvas);
-			return;
-		}
+			// Pas de matches = graphique vide
+			if (matches.length === 0) {
+				this.renderEmptyChart(canvas);
+				return;
+			}
 
-		// Extraire les rankings dans l'ordre chronologique
-		const sortedMatches = [...matches].sort(
-			(a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-		);
+			// Extraire les rankings dans l'ordre chronologique
+			const sortedMatches = [...matches].sort(
+				(a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+			);
 
-		const rankings = sortedMatches.map(match => {
-			return match.player1_id === user.id
-				? match.player1_ranking_after
-				: match.player2_ranking_after;
-		});
+			const rankings = sortedMatches.map(match => {
+				return match.player1_id === user.id
+					? match.player1_ranking_after
+					: match.player2_ranking_after;
+			});
 
-		rankings.unshift(1000);
-		
-		console.log('[RankingChart] Rankings extraits:', rankings);
-		console.log('[RankingChart] User ID:', user.id);
+			/* rankings.unshift(1000); */
+			
+			console.log('[RankingChart] Rankings extraits:', rankings);
+			console.log('[RankingChart] User ID:', user.id);
 
-		const labels = rankings.map((_, index) => `M${index + 1}`);
+			const labels = rankings.map((_, index) => `M${index}`);
 
-		
-		// Récupérer le contexte pour le dégradé
-		const ctx = canvas.getContext('2d');
+			
+			// Récupérer le contexte pour le dégradé
+			const ctx = canvas.getContext('2d');
 
-		// Dégradé vertical (du haut vers le bas)
-		const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+			// Dégradé vertical (du haut vers le bas)
+			const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
 
-		gradient.addColorStop(0, "rgba(230, 132, 6, 0.35)");   // Orange léger
-		gradient.addColorStop(1, "rgba(44, 31, 22, 0)");       // Transparent
+			gradient.addColorStop(0, "rgba(230, 132, 6, 0.35)");   // Orange léger
+			gradient.addColorStop(1, "rgba(44, 31, 22, 0)");       // Transparent
 
-	// Créer le graphique
-	this.rankingChart = new Chart(canvas, {
-		type: 'line',
-		data: {
-			labels: labels,
-			datasets: [{
-				label: 'Ranking',
-				data: rankings,
-				borderColor: '#e68406',
-				backgroundColor: gradient,   // <-- dégradé ici
-				borderWidth: 3,
-				tension: 0.4,
-				pointRadius: 5,
-				pointHoverRadius: 7,
-				pointBackgroundColor: '#ffffffff',
-				pointBorderColor: '#ffffff',
-				pointBorderWidth: 1,
-				fill: true
-			}]
-		},
-		options: {
-			responsive: true,
-			maintainAspectRatio: false,
-			plugins: {
-				legend: {
-					display: false
-				},
-				tooltip: {
-					backgroundColor: 'rgba(0, 0, 0, 0.8)',
-					titleColor: '#ffffff',
-					bodyColor: '#ffffff',
+		// Créer le graphique
+		this.rankingChart = new Chart(canvas, {
+			type: 'line',
+			data: {
+				labels: labels,
+				datasets: [{
+					label: 'Ranking',
+					data: rankings,
 					borderColor: '#e68406',
-					borderWidth: 1,
-					padding: 10,
-					displayColors: false,
-					callbacks: {
-						title: () => 'Ranking',
-						label: (context) => `${context.parsed.y} pts`
-					}
-				}
+					backgroundColor: gradient,   // <-- dégradé ici
+					borderWidth: 3,
+					tension: 0.4,
+					pointRadius: 5,
+					pointHoverRadius: 7,
+					pointBackgroundColor: '#ffffffff',
+					pointBorderColor: '#ffffff',
+					pointBorderWidth: 1,
+					fill: true
+				}]
 			},
-			scales: {
-				y: {
-					beginAtZero: false,
-					ticks: {
+			options: {
+				responsive: true,
+				maintainAspectRatio: false,
+				plugins: {
+					legend: {
 						display: false
 					},
-					grid: {
-						color: 'rgba(139, 139, 139, 0.1)',
-						drawBorder: false
+					tooltip: {
+						backgroundColor: 'rgba(0, 0, 0, 0.8)',
+						titleColor: '#ffffff',
+						bodyColor: '#ffffff',
+						borderColor: '#e68406',
+						borderWidth: 1,
+						padding: 10,
+						displayColors: false,
+						callbacks: {
+							title: () => 'Ranking',
+							label: (context) => `${context.parsed.y} pts`
+						}
 					}
 				},
-				x: {
-					ticks: {
-						display: false
+				scales: {
+					y: {
+						beginAtZero: false,
+						ticks: {
+							display: false
+						},
+						grid: {
+							color: 'rgba(139, 139, 139, 0.1)',
+							drawBorder: false
+						}
 					},
-					grid: {
-						display: false
+					x: {
+						ticks: {
+							display: false
+						},
+						grid: {
+							display: false
+						}
 					}
 				}
 			}
+		});
+
+
+		} catch (error) {
+			console.error('[DashboardPage] Failed to load ranking chart:', error);
 		}
-	});
-
-
-	} catch (error) {
-		console.error('[DashboardPage] Failed to load ranking chart:', error);
 	}
-}
 
 	private static renderEmptyChart(canvas: HTMLCanvasElement): void
 	{
