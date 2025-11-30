@@ -27,6 +27,8 @@ export class PongGame
 
 	// Contrôles clavier
 	private keys: Set<string> = new Set()
+	private keydownHandler!: (e: KeyboardEvent) => void
+	private keyupHandler!: (e: KeyboardEvent) => void
 
 	// Compte à rebours
 	private countdownActive: boolean = false
@@ -226,36 +228,32 @@ export class PongGame
 		)
 	}
 
-    private setupEventListeners(): void
+	private setupEventListeners(): void
 	{
-		// Écouter les touches du clavier pour le mouvement
-		document.addEventListener(
-			'keydown',
-			(e) =>
+		// Stocker les handlers pour pouvoir les supprimer plus tard
+		this.keydownHandler = (e: KeyboardEvent) =>
+		{
+			// Empêcher le comportement par défaut pour les touches de jeu
+			if (this.isGameKey(e.key))
 			{
-				// Empêcher le comportement par défaut pour les touches de jeu
-				if (this.isGameKey(e.key))
-				{
-					e.preventDefault()
-				}
-				this.keys.add(e.key.toLowerCase())
+				e.preventDefault()
 			}
-		)
+			this.keys.add(e.key.toLowerCase())
+		}
 
-		document.addEventListener(
-			'keyup',
-			(e) =>
+		this.keyupHandler = (e: KeyboardEvent) =>
+		{
+			// Empêcher le comportement par défaut pour les touches de jeu
+			if (this.isGameKey(e.key))
 			{
-				// Empêcher le comportement par défaut pour les touches de jeu
-				if (this.isGameKey(e.key))
-				{
-					e.preventDefault()
-				}
-				this.keys.delete(e.key.toLowerCase())
+				e.preventDefault()
 			}
-		)
+			this.keys.delete(e.key.toLowerCase())
+		}
 
-		// Ajouter les contrôles de jeu DÈS LE DÉBUT (pas seulement au start)
+		// Attacher les listeners
+		document.addEventListener('keydown', this.keydownHandler)
+		document.addEventListener('keyup', this.keyupHandler)
 		document.addEventListener('keydown', this.handleGameControls)
 
 		// S'assurer que le canvas peut recevoir le focus
@@ -731,9 +729,11 @@ private renderCountdown(): void
 	{
 		this.stop()
 
-		// Nettoyer tous les listeners
+		// Nettoyer TOUS les listeners
+		document.removeEventListener('keydown', this.keydownHandler)
+		document.removeEventListener('keyup', this.keyupHandler)
 		document.removeEventListener('keydown', this.handleGameControls)
-		window.removeEventListener('resize', () => this.resizeCanvas())  // NOUVEAU
+		window.removeEventListener('resize', () => this.resizeCanvas())
 
 		console.log('🧹 Game destroyed')
 	}
