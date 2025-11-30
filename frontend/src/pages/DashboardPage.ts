@@ -502,7 +502,7 @@ export class DashboardPage
 						<div class="match-details">
 							<div class="match-date">${new Date(match.ended_at).toLocaleDateString('fr-FR')}</div>
 							<div class="match-score">
-								${match.player1_score} · ${match.player2_score}
+								${match.player1_id === user.id ? match.player1_score : match.player2_score} · ${match.player1_id === user.id ? match.player2_score : match.player1_score}
 								${isWinner ? `<svg class="victory-icon" viewBox="-5 -10 98 98" xmlns="http://www.w3.org/2000/svg">
     <path d="M 44,-10 C 44,17.062 22.062,39 -5,39 22.062,39 44,60.938 44,88 44,60.938 65.938,39 93,39 65.938,39 44,17.062 44,-10 Z"/>
 </svg>` : ''}
