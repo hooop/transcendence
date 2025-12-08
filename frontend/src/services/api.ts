@@ -1,6 +1,7 @@
 // Service API pour communiquer avec le backend
+import { config } from '../config/env';
 
-const API_URL = 'http://localhost:3000';
+const API_URL = config.API_URL;
 
 export interface User {
     id: string;

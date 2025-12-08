@@ -1,4 +1,5 @@
 import { ApiService } from './api';
+import { config } from '../config/env';
 
 export interface GameState {
     ball: { x: number; y: number; vx: number; vy: number };
@@ -37,7 +38,7 @@ export class GameSocketService {
 
     connect(): Promise<void> {
         return new Promise((resolve, reject) => {
-            const WS_URL = 'ws://localhost:3000/api/game/ws';
+            const WS_URL = config.GAME_WS_URL;
             this.ws = new WebSocket(WS_URL);
 
             this.ws.onopen = () => {

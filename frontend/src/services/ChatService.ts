@@ -1,6 +1,5 @@
 // Service de chat avec WebSocket
-
-const WS_URL = 'ws://localhost:3000';
+import { config } from '../config/env';
 
 export interface ChatMessage {
     id: string;
@@ -60,7 +59,7 @@ export class ChatService {
         }
 
         this.isManualClose = false;
-        this.ws = new WebSocket(`${WS_URL}/api/chat/ws?token=${token}`);
+        this.ws = new WebSocket(`${config.CHAT_WS_URL}?token=${token}`);
 
         this.ws.onopen = () => {
             console.log('WebSocket connecté au chat');
@@ -203,7 +202,7 @@ export class ChatService {
     // API HTTP pour récupérer les conversations et l'historique
     static async getConversations(): Promise<{ conversations: Conversation[]; total: number }> {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:3000/api/chat/conversations', {
+        const response = await fetch(`${config.API_URL}/api/chat/conversations`, {
             headers: {
                 'Authorization': `Bearer ${token}`,
             },
@@ -218,7 +217,7 @@ export class ChatService {
 
     static async getMessages(userId: string, limit: number = 50, before?: string): Promise<{ messages: ChatMessage[]; total: number }> {
         const token = localStorage.getItem('token');
-        let url = `http://localhost:3000/api/chat/messages/${userId}?limit=${limit}`;
+        let url = `${config.API_URL}/api/chat/messages/${userId}?limit=${limit}`;
         if (before) {
             url += `&before=${before}`;
         }
