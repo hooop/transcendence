@@ -6,6 +6,9 @@
 
 ## Fonctionnalités de SuperPong
 
+- Gameplay en plein écran
+  - Le jeu s’affiche en fullscreen pour une immersion maximale.
+
 - Entraînement
   - Jouer en tant qu’invité sans compte.
   - Jouer à deux sur le même ordinateur ou contre une IA pour s’entraîner.
