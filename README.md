@@ -1,5 +1,8 @@
-## Transcendence 
-**Transcendence** est le projet final du tronc commun de l’École 42 visant à créer une plateforme de jeux en ligne. Dans ce cadre, nous avons développé SuperPong, une version moderne et en ligne du classique Pong, avec des fonctionnalités avancées pour s’entraîner, jouer et participer à des tournois.
+## Transcendence
+
+**Transcendence** est un projet de l’École 42 dont l’objectif est de développer un jeu en ligne. Dans ce cadre, nous avons créé **SuperPong**, une version moderne et en ligne du classique Pong, avec des fonctionnalités pour s’entraîner, jouer et participer à des tournois.
+
+![Aperçu du site SuperPong](home.png)
 
 ## Fonctionnalités de SuperPong
 
