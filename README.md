@@ -4,6 +4,10 @@
 
 ![Aperçu du site SuperPong](home.png)
 
+![Aperçu du site SuperPong](pong.png)
+
+![Aperçu du site SuperPong](dash.png)
+
 ## Fonctionnalités de SuperPong
 
 - Entraînement
@@ -19,5 +23,5 @@
   - Classement des joueurs en fonction des performances.
 
 ## Dashboard utilisateur
-Suivi des statistiques personnelles (victoires, défaites, points).
-Gestion du profil.
+- Suivi des statistiques personnelles (victoires, défaites, points).
+- Gestion du profil.
