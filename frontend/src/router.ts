@@ -7,6 +7,7 @@ import { ApiService }			from './services/api'
 import { TournamentConfigPage } from './pages/TournamentConfigPage'
 import { OnlineGamePage }		from './pages/OnlineGamePage'
 import { i18n }					from './services/i18n'
+import { escapeHtml }			from './utils/security'
 
 import gameModeTemplate			from './templates/game.html?raw';
 import homeTemplate				from './templates/home.html?raw';
@@ -414,7 +415,7 @@ private handleRoute(): void {
 
 				if (avatarEl) {
 					if (user.avatar_url) {
-						avatarEl.innerHTML = `<img src="${user.avatar_url}" alt="${user.username}">`;
+						avatarEl.innerHTML = `<img src="${escapeHtml(user.avatar_url)}" alt="${escapeHtml(user.username)}">`;
 					} else {
 						avatarEl.textContent = user.username.charAt(0).toUpperCase();
 					}
@@ -445,7 +446,7 @@ private handleRoute(): void {
 				const avatarEl = document.getElementById('header-user-avatar');
 				if (avatarEl) {
 					if (updatedUser.avatar_url) {
-						avatarEl.innerHTML = `<img src="${updatedUser.avatar_url}" alt="${updatedUser.username}">`;
+						avatarEl.innerHTML = `<img src="${escapeHtml(updatedUser.avatar_url)}" alt="${escapeHtml(updatedUser.username)}">`;
 					} else {
 						avatarEl.textContent = updatedUser.username.charAt(0).toUpperCase();
 					}

@@ -13,6 +13,7 @@
 
 import { TournamentManager }	from '../tournament/TournamentManager'
 import { i18n } from '../services/i18n'
+import { escapeHtml, escapeHtmlAttr } from '../utils/security'
 import tournamentConfigTemplate	from '../templates/tournament-config.html?raw'
 
 export class TournamentConfigPage
@@ -69,8 +70,8 @@ if (playerCountLabel)
 		// ICI POUR GERER LISTE JOUEUR AJOUTE CONFIG TOURNOI
 				playersListContent.innerHTML = state.players.map(player => `
 					<div class="player-item">
-						<span class="player-alias">├ ${player.alias}</span>
-						<button class="btn-remove-player" data-remove-player="${player.id}">✕</button>
+						<span class="player-alias">├ ${escapeHtml(player.alias)}</span>
+						<button class="btn-remove-player" data-remove-player="${escapeHtmlAttr(player.id)}">✕</button>
 					</div>
 				`).join('')
 

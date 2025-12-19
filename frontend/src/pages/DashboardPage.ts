@@ -2,6 +2,7 @@ import {ApiService} from '../services/api'
 import { i18n } from '../services/i18n'
 import dashboardTemplate from '../templates/dashboard.html?raw'
 import Chart from 'chart.js/auto'
+import { escapeHtml, escapeHtmlAttr } from '../utils/security'
 
 interface Match {
 	id: number;
@@ -94,11 +95,11 @@ export class DashboardPage
 							${this.getAvatarHTML(friend)}
 							${friend.is_online ? '<span class="online-indicator"></span>' : ''}
 						</div>
-						<span class="friend-name">${friend.display_name || friend.username}</span>
+						<span class="friend-name">${escapeHtml(friend.display_name || friend.username)}</span>
 					</div>
 					<div class="friend-actions">
-						<button class="btn-chat" onclick="window.openChatWithFriend('${friend.id}', '${friend.username}', '${friend.display_name || friend.username}', '${friend.avatar_url || ''}', ${friend.is_online})">${i18n.t('dashboard.chat', 'Chat')}</button>
-						<button class="btn-remove-friend" onclick="window.removeFriend('${friend.friendship_id}')">${i18n.t('dashboard.delete', 'Supprimer')}</button>
+						<button class="btn-chat" onclick="window.openChatWithFriend('${escapeHtmlAttr(friend.id)}', '${escapeHtmlAttr(friend.username)}', '${escapeHtmlAttr(friend.display_name || friend.username)}', '${escapeHtmlAttr(friend.avatar_url || '')}', ${friend.is_online})">${i18n.t('dashboard.chat', 'Chat')}</button>
+						<button class="btn-remove-friend" onclick="window.removeFriend('${escapeHtmlAttr(friend.friendship_id)}')">${i18n.t('dashboard.delete', 'Supprimer')}</button>
 					</div>
 				</div>
 			`).join('');
@@ -140,11 +141,11 @@ export class DashboardPage
 								<div class="friend-info">
 									${this.getAvatarHTML(user)}
 									<div class="friend-details">
-										<div class="friend-name">${user.display_name || user.username}</div>
-										<div class="friend-username">@${user.username}</div>
+										<div class="friend-name">${escapeHtml(user.display_name || user.username)}</div>
+										<div class="friend-username">@${escapeHtml(user.username)}</div>
 									</div>
 								</div>
-								<button class="btn-add" onclick="window.sendFriendRequest('${user.id}')">
+								<button class="btn-add" onclick="window.sendFriendRequest('${escapeHtmlAttr(user.id)}')">
 									${i18n.t('dashboard.add', 'Ajouter')}
 								</button>
 							</div>
@@ -185,7 +186,7 @@ export class DashboardPage
 			if (player && avatarEl && nameEl && pointsEl) {
 				// Avatar
 				if (player.avatar_url) {
-					avatarEl.innerHTML = `<img src="${player.avatar_url}" alt="${player.username}">`;
+					avatarEl.innerHTML = `<img src="${escapeHtml(player.avatar_url)}" alt="${escapeHtml(player.username)}">`;
 				} else {
 					avatarEl.textContent = player.username.charAt(0).toUpperCase();
 					avatarEl.classList.add('avatar-initial');
@@ -432,15 +433,15 @@ export class DashboardPage
 					<div class="friend-info">
 						${this.getAvatarHTML(request)}
 						<div class="friend-details">
-							<div class="friend-name">${request.display_name}</div>
+							<div class="friend-name">${escapeHtml(request.display_name)}</div>
 						</div>
 					</div>
 
 
 
 					<div class="friend-actions">
-						<button class="btn-accept" onclick="window.acceptFriendRequest('${request.friendship_id}')">${i18n.t('dashboard.accept', 'Accepter')}</button>
-						<button class="btn-reject" onclick="window.rejectFriendRequest('${request.friendship_id}')">${i18n.t('dashboard.reject', 'Refuser')}</button>
+						<button class="btn-accept" onclick="window.acceptFriendRequest('${escapeHtmlAttr(request.friendship_id)}')">${i18n.t('dashboard.accept', 'Accepter')}</button>
+						<button class="btn-reject" onclick="window.rejectFriendRequest('${escapeHtmlAttr(request.friendship_id)}')">${i18n.t('dashboard.reject', 'Refuser')}</button>
 					</div>
 				</div>
 			`).join('');
@@ -509,7 +510,7 @@ export class DashboardPage
 							</div>
 							<div class="match-opponent-line">
 							<!--    <span class="result-history ${isWinner ? 'victory' : 'defeat'}">${isWinner ? 'Victoire' : 'Défaite'}</span> -->
-								<span class="match-opponent">&nbsp;vs ${opponentName}</span>
+								<span class="match-opponent">&nbsp;vs ${escapeHtml(opponentName)}</span>
 							</div>
 						</div>
 					</div>

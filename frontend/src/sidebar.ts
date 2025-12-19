@@ -1,5 +1,6 @@
 import { ApiService } from './services/api'
 import { i18n } from './services/i18n'
+import { escapeHtml } from './utils/security'
 
 export class Sidebar {
     private sidebar: HTMLElement | null = null
@@ -101,7 +102,7 @@ export class Sidebar {
 			if (this.avatarElement)
 			{
 				if (user.avatar_url) {
-					this.avatarElement.innerHTML = `<img src="${user.avatar_url}" alt="${user.username}">`
+					this.avatarElement.innerHTML = `<img src="${escapeHtml(user.avatar_url)}" alt="${escapeHtml(user.username)}">`
 					// Afficher le bouton supprimer
 					if (this.deleteAvatarBtn) {
 						this.deleteAvatarBtn.style.display = 'block'
