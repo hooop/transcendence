@@ -394,7 +394,15 @@ export class AuthPages
 				}
 				catch (error: any)
 				{
-					errorDiv.textContent = error.message || i18n.t('auth.registrationFailed', 'Registration failed');
+					// Afficher le message d'erreur principal
+					let errorMessage = error.message || i18n.t('auth.registrationFailed', 'Registration failed');
+					
+					// Si des détails sont présents, les ajouter
+					if (error.details && Array.isArray(error.details)) {
+						errorMessage += '\n' + error.details.join('\n');
+					}
+					
+					errorDiv.textContent = errorMessage;
 					errorDiv.style.display = 'block';
 
 					// Réactiver le bouton

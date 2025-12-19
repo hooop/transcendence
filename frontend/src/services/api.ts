@@ -103,7 +103,9 @@ export class ApiService {
 
         if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.error || 'Registration failed');
+            const err: any = new Error(error.error || 'Registration failed');
+            err.details = error.details; // Ajouter les détails à l'erreur
+            throw err;
         }
 
         const data = await response.json();
