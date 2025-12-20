@@ -33,17 +33,11 @@ prepare:
 # Lance tous les services avec rebuild + seed automatique
 up:
 	$(DOCKER_COMPOSE) up --build -d
-	@echo "⏳ Attente du démarrage du backend..."
 	@until $(DOCKER_COMPOSE) exec -T backend node -e "process.exit(0)" 2>/dev/null; do \
 		echo "Backend pas encore prêt, attente..."; \
 		sleep 2; \
 	done
-	@echo "✓ Backend prêt"
 	@make seed
-	@echo ""
-	@echo "✅ Services lancés et base de données remplie!"
-	@echo "📊 4 utilisateurs de test créés (mot de passe: pwd123)"
-	@echo ""
 	$(DOCKER_COMPOSE) logs -f
 
 # Lance tous les services en arrière-plan
@@ -56,9 +50,7 @@ build:
 
 # Remplit la base de données avec des données de test
 seed:
-	@echo "🌱 Remplissage de la base de données..."
 	@$(DOCKER_COMPOSE) exec -T backend npm run fillbdd
-	@echo "✓ Base de données remplie avec succès"
 
 # Arrête tous les services
 down:
