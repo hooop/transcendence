@@ -9,7 +9,7 @@ export default defineConfig({
       usePolling: true // Nécessaire pour que le HMR fonctionne dans Docker
     },
     hmr: {
-      clientPort: 443, // Port HTTPS pour le HMR via nginx
+      clientPort: 9443, // Port HTTPS pour le HMR via nginx
       protocol: 'wss' // WebSocket sécurisé pour le HMR
     }
   }

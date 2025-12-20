@@ -32,7 +32,7 @@ services:
       JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-change-this}
       OAUTH42_CLIENT_ID: ${OAUTH42_CLIENT_ID}
       OAUTH42_CLIENT_SECRET: ${OAUTH42_CLIENT_SECRET}
-      OAUTH42_CALLBACK_URL: ${OAUTH42_CALLBACK_URL:-http://localhost:3000/api/auth/42/callback}
+      OAUTH42_CALLBACK_URL: ${OAUTH42_CALLBACK_URL:-http://localhost:9080/api/auth/42/callback}
       FRONTEND_URL: ${FRONTEND_URL:-https://localhost:9443}
       EMAIL_HOST: ${EMAIL_HOST:-smtp.gmail.com}
       EMAIL_PORT: ${EMAIL_PORT:-587}

@@ -110,7 +110,7 @@ async function oauth42Routes(fastify, options) {
       });
 
       // Rediriger vers le frontend avec le token
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+      const frontendUrl = process.env.FRONTEND_URL || 'https://localhost:9443';
       return reply.redirect(`${frontendUrl}/auth/callback?token=${jwtToken}&user=${encodeURIComponent(JSON.stringify({
         id: user.id,
         username: user.username,
@@ -134,7 +134,7 @@ async function oauth42Routes(fastify, options) {
       fastify.log.error(error);
 
       // Rediriger vers le frontend avec une erreur
-      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
+      const frontendUrl = process.env.FRONTEND_URL || 'https//localhost:9443';
       return reply.redirect(`${frontendUrl}/auth/error?message=${encodeURIComponent('Erreur lors de l\'authentification OAuth42')}`);
     }
   });
