@@ -110,7 +110,6 @@ async function oauth42Routes(fastify, options) {
       });
 
       // Rediriger vers le frontend avec le token
-      // Option 1: Redirection avec token en query param (pour dev)
       const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:8080';
       return reply.redirect(`${frontendUrl}/auth/callback?token=${jwtToken}&user=${encodeURIComponent(JSON.stringify({
         id: user.id,
@@ -119,7 +118,7 @@ async function oauth42Routes(fastify, options) {
         avatar_url: user.avatar_url,
       }))}`);
 
-      // Option 2 (alternative): Retourner JSON (pour API)
+      // Retourner JSON (pour API)
       // return {
       //   user: {
       //     id: user.id,

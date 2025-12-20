@@ -7,7 +7,7 @@ const dbPath = path.join(__dirname, '../../data/transcendence.db');
 const db = new Database(dbPath);
 
 async function fillDatabase() {
-  console.log('🌱 Remplissage de la base de données...');
+  console.log('Remplissage de la base de données...');
 
   // Hash du mot de passe commun
   const passwordHash = await bcrypt.hash('pwd123', 10);
@@ -297,9 +297,9 @@ async function fillDatabase() {
       status, game_mode, duration_seconds,
       player1_ranking_after, player2_ranking_after,
       started_at, ended_at, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, 'completed', ?, ?, ?, ?, 
-      datetime('now', '-' || ? || ' days', '-' || ? || ' seconds'), 
-      datetime('now', '-' || ? || ' days'), 
+    ) VALUES (?, ?, ?, ?, ?, ?, 'completed', ?, ?, ?, ?,
+      datetime('now', '-' || ? || ' days', '-' || ? || ' seconds'),
+      datetime('now', '-' || ? || ' days'),
       datetime('now', '-' || ? || ' days', '-' || ? || ' seconds'))
   `);
 
@@ -347,7 +347,7 @@ async function fillDatabase() {
 
   // Calculer les stats finales pour chaque utilisateur
   const stats = {};
-  
+
   for (const userId of Object.keys(rankingPoints)) {
     stats[userId] = {
       total_matches: 0,
@@ -365,7 +365,7 @@ async function fillDatabase() {
     stats[match.player1_id].total_matches++;
     stats[match.player1_id].total_points_scored += match.player1_score;
     stats[match.player1_id].total_points_conceded += match.player2_score;
-    
+
     if (match.winner_id === match.player1_id) {
       stats[match.player1_id].wins++;
     } else {
@@ -377,7 +377,7 @@ async function fillDatabase() {
       stats[match.player2_id].total_matches++;
       stats[match.player2_id].total_points_scored += match.player2_score;
       stats[match.player2_id].total_points_conceded += match.player1_score;
-      
+
       if (match.winner_id === match.player2_id) {
         stats[match.player2_id].wins++;
       } else {
@@ -396,7 +396,7 @@ async function fillDatabase() {
 
   for (const [userId, stat] of Object.entries(stats)) {
     const bestStreak = Math.min(stat.wins, 4);
-    
+
     insertStats.run(
       userId,
       stat.total_matches,
@@ -448,9 +448,9 @@ async function fillDatabase() {
     );
   }
 
-  console.log(`✓ ${friendships.length} relations d'amitié créées`);
+  console.log(` ${friendships.length} relations d'amitié créées`);
 
-  console.log('✅ Base de données remplie avec succès !');
+  console.log('Base de données remplie avec succès !');
   console.log('\nUtilisateurs créés :');
   console.log('  - Thomas (Tom) - thomas@superpong.fr - ' + rankingPoints['user-thomas-001'] + ' pts');
   console.log('  - Marie - marie@superpong.fr - ' + rankingPoints['user-marie-002'] + ' pts');
@@ -466,7 +466,7 @@ fillDatabase()
     process.exit(0);
   })
   .catch((error) => {
-    console.error('❌ Erreur lors du remplissage:', error);
+    console.error('Erreur lors du remplissage:', error);
     db.close();
     process.exit(1);
   });

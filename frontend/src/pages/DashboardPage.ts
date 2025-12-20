@@ -3,6 +3,7 @@ import { i18n } from '../services/i18n'
 import dashboardTemplate from '../templates/dashboard.html?raw'
 import Chart from 'chart.js/auto'
 import { escapeHtml, escapeHtmlAttr } from '../utils/security'
+import { ChatService } from '../services/ChatService'
 
 interface Match {
 	id: number;
@@ -295,6 +296,15 @@ export class DashboardPage
 	// configure la recherche et définit les fonctions globales (ajout/suppression ami, chat)
 	static setupEventListeners(): void
 	{
+		// Écouter les notifications WebSocket de demandes d'amis acceptées
+		const chatService = ChatService.getInstance();
+		chatService.onFriendshipAccepted((friendship) => {
+			console.log('Demande d\'ami acceptée:', friendship);
+			// Rafraîchir la liste d'amis et les demandes en attente
+			this.loadFriendsList();
+			this.loadPendingRequests();
+		});
+
 		// Écouter les changements de langue
 		window.addEventListener('languageChanged', () => {
 			this.translateDashboardLabels();

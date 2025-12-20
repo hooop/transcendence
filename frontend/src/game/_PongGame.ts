@@ -87,12 +87,12 @@ export class PongGame
 		{
 			this.ai = new AIPlayer(this.config, aiDifficulty)
 			this.speedIncreaseInterval = this.ai.getSpeedIncreaseInterval()
-			console.log(`🤖 AI initialized with difficulty: ${aiDifficulty}`)
-			console.log(`⚡ Ball will increase speed by 15% every ${this.speedIncreaseInterval / 1000}s`)
+			console.log(`AI initialized with difficulty: ${aiDifficulty}`)
+			console.log(`Ball will increase speed by 15% every ${this.speedIncreaseInterval / 1000}s`)
 		}
 
 		this.render()
-		console.log('🏓 Pong game initialized')
+		console.log('Pong game initialized')
 	}
 
 	private setupCanvas(): void
@@ -235,7 +235,7 @@ export class PongGame
 		this.countdownValue = 3
 		this.countdownStartTime = performance.now()
 
-		console.log('⏱️ Countdown started!')
+		console.log('Countdown started!')
 
 		// Démarrer la loop de countdown
 		this.countdownLoop(this.countdownStartTime)
@@ -330,7 +330,7 @@ export class PongGame
 			{
 				this.ball.increaseSpeed(15) // Augmente de 15%
 				this.lastSpeedIncrease = currentTime
-				console.log('⚡ Ball speed increased by 15%!')
+				console.log('Ball speed increased by 15%!')
 			}
 		}
 
@@ -393,7 +393,7 @@ export class PongGame
 			this.state.rightScore++
 			this.ball.reset()
 			/* this.state.isRunning = false */
-			console.log('🎯 Right player scores!')
+			console.log('Right player scores!')
 		}
 
 		// Point pour le joueur de gauche
@@ -402,7 +402,7 @@ export class PongGame
 			this.state.leftScore++
 			this.ball.reset()
 			/* this.state.isRunning = false */
-			console.log('🎯 Left player scores!')
+			console.log('Left player scores!')
 		}
 
 		// Vérifier la victoire
@@ -416,7 +416,7 @@ export class PongGame
 		{
 			this.state.winner = 'right'
 			this.state.isRunning = false
-			console.log('🏆 Right player wins!')
+			console.log('Right player wins!')
 		}
 	}
 
@@ -426,7 +426,7 @@ export class PongGame
 		this.ctx.fillStyle = '#000'
 		this.ctx.fillRect(0, 0, this.config.width, this.config.height)
 
-		// 🎯 LIGNE CENTRALE OPTIMISÉE
+		// LIGNE CENTRALE OPTIMISÉE
 		this.ctx.save() // Sauvegarder l'état du contexte
 
 		// Désactiver l'antialiasing pour les lignes
@@ -622,7 +622,7 @@ export class PongGame
 
 		this.gameLoop(this.lastTime)
 
-		console.log('🚀 Game started!')
+		console.log('Game started!')
 	}
 
 	destroy(): void
@@ -633,7 +633,7 @@ export class PongGame
 		document.removeEventListener('keydown', this.handleGameControls)
 		window.removeEventListener('resize', () => this.resizeCanvas())  // NOUVEAU
 
-		console.log('🧹 Game destroyed')
+		console.log('Game destroyed')
 	}
 
 	private handleGameControls = (e: KeyboardEvent): void =>
@@ -667,7 +667,7 @@ export class PongGame
 		{
 			cancelAnimationFrame(this.animationFrame)
 		}
-		console.log('⏹️ Game stopped')
+		console.log('Game stopped')
 	}
 
 	restart(): void
@@ -696,7 +696,7 @@ export class PongGame
 
 		this.render() // Afficher l'état initial
 
-		console.log('🔄 Game reset')
+		console.log('Game reset')
 	}
 
 	// Méthodes pour gérer l'IA
@@ -704,14 +704,14 @@ export class PongGame
 	{
 		this.isAIEnabled = true
 		this.ai = new AIPlayer(this.config, difficulty)
-		console.log(`🤖 AI enabled with difficulty: ${difficulty}`)
+		console.log(`AI enabled with difficulty: ${difficulty}`)
 	}
 
 	disableAI(): void
 	{
 		this.isAIEnabled = false
 		this.ai = undefined
-		console.log('🤖 AI disabled')
+		console.log('AI disabled')
 	}
 
 	setAIDifficulty(difficulty: AIDifficulty): void
@@ -719,7 +719,7 @@ export class PongGame
 		if (this.ai)
 		{
 			this.ai.setDifficulty(difficulty)
-			console.log(`🤖 AI difficulty set to: ${difficulty}`)
+			console.log(`AI difficulty set to: ${difficulty}`)
 		}
 	}
 

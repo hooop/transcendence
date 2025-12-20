@@ -1,3 +1,5 @@
+const chatClients = require('./chat').clients;
+
 async function friendshipsRoutes(fastify, options) {
 
   // GET /api/friendships - Liste de tous les amis de l'utilisateur connecté
@@ -260,6 +262,24 @@ return reply.status(201).send({
         fastify.db.prepare(
           'UPDATE friendships SET status = ? WHERE id = ?'
         ).run('accepted', id);
+
+        // Récupérer les informations de l'utilisateur qui a accepté
+        const accepter = fastify.db.prepare(
+          'SELECT id, username, display_name, avatar_url FROM users WHERE id = ?'
+        ).get(userId);
+
+        // Notifier l'utilisateur qui a envoyé la demande via WebSocket
+        const senderWs = chatClients.get(friendship.user_id);
+        if (senderWs && senderWs.readyState === 1) {
+          senderWs.send(JSON.stringify({
+            type: 'friendship_accepted',
+            friendship: {
+              id: friendship.id,
+              friend: accepter,
+              status: 'accepted',
+            },
+          }));
+        }
 
         return {
           message: 'Demande d\'ami acceptée',

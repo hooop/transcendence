@@ -31,7 +31,7 @@ export class TournamentManager {
             maxPlayers: config.maxPlayers
         }
 
-        console.log(`🏆 Tournament "${config.name}" created`)
+        console.log(`Tournament "${config.name}" created`)
     }
 
     private generateId(): string {
@@ -65,7 +65,7 @@ export class TournamentManager {
         }
 
         this.state.players.push(player)
-        console.log(`👤 Player "${alias}" joined the tournament`)
+        console.log(`Player "${alias}" joined the tournament`)
 
         return { success: true, message: 'Player added successfully', player }
     }
@@ -78,7 +78,7 @@ export class TournamentManager {
 
         const player = this.state.players[index]
         this.state.players.splice(index, 1)
-        console.log(`👤 Player "${player.alias}" left the tournament`)
+        console.log(`Player "${player.alias}" left the tournament`)
 
         return true
     }
@@ -107,7 +107,7 @@ export class TournamentManager {
         }
 
         this.state.players.push(player)
-        console.log(`🤖 AI "${alias}" joined the tournament`)
+        console.log(`AI "${alias}" joined the tournament`)
 
         return { success: true, message: 'AI added successfully', player }
     }
@@ -162,7 +162,7 @@ export class TournamentManager {
         this.generateMatches()
         this.state.status = 'ready'
 
-        console.log(`🚀 Tournament started with ${this.state.players.length} players`)
+        console.log(`Tournament started with ${this.state.players.length} players`)
         return true
     }
 
@@ -194,7 +194,7 @@ export class TournamentManager {
         // Si nombre impair de joueurs, le dernier passe automatiquement au tour suivant
         if (players.length % 2 === 1) {
             const bye = players[players.length - 1]
-            console.log(`👤 ${bye.alias} gets a bye to the next round`)
+            console.log(`${bye.alias} gets a bye to the next round`)
         }
     }
 
@@ -218,7 +218,7 @@ export class TournamentManager {
         this.state.currentMatch = match
         this.state.status = 'ongoing'
 
-        console.log(`🏓 Match started: ${match.player1.alias} vs ${match.player2.alias}`)
+        console.log(`Match started: ${match.player1.alias} vs ${match.player2.alias}`)
         return match
     }
 
@@ -233,7 +233,7 @@ export class TournamentManager {
         match.status = 'completed'
         this.state.currentMatch = null
 
-        console.log(`🏆 Match completed: ${winner.alias} wins ${score.player1}-${score.player2}`)
+        console.log(`Match completed: ${winner.alias} wins ${score.player1}-${score.player2}`)
 
         // Vérifier si le tournoi est terminé
         this.checkTournamentCompletion()
@@ -259,7 +259,7 @@ export class TournamentManager {
             if (winners.length === 1) {
                 this.state.winner = winners[0]
                 this.state.status = 'completed'
-                console.log(`🏆 Tournament completed! Winner: ${this.state.winner?.alias}`)
+                console.log(`Tournament completed! Winner: ${this.state.winner?.alias}`)
             } else if (winners.length >= 2) {
                 // Générer le prochain tour
                 this.generateNextRound()
@@ -285,7 +285,7 @@ export class TournamentManager {
             // Plus assez de joueurs, le tournoi est terminé
             this.state.winner = winners[0] || null
             this.state.status = 'completed'
-            console.log(`🏆 Tournament completed! Winner: ${this.state.winner?.alias}`)
+            console.log(`Tournament completed! Winner: ${this.state.winner?.alias}`)
             return
         }
 
@@ -308,7 +308,7 @@ export class TournamentManager {
         }
 
         this.state.status = 'ready'
-        console.log(`🔄 Round ${nextRound} generated with ${Math.floor(winners.length / 2)} matches`)
+        console.log(`Round ${nextRound} generated with ${Math.floor(winners.length / 2)} matches`)
     }
 
     // Getters
@@ -350,6 +350,6 @@ export class TournamentManager {
             this.currentGame = null
         }
 
-        console.log('🔄 Tournament reset')
+        console.log('Tournament reset')
     }
 }

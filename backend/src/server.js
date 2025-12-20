@@ -110,8 +110,8 @@ async function start() {
       host: config.host,
     });
 
-    console.log(`🚀 Serveur démarré sur http://${config.host}:${config.port}`);
-    console.log(`📊 Environnement: ${config.nodeEnv}`);
+    console.log(`Serveur démarré sur http://${config.host}:${config.port}`);
+    console.log(`Environnement: ${config.nodeEnv}`);
 
   } catch (error) {
     app.log.error(error);

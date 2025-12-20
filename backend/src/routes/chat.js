@@ -410,3 +410,4 @@ async function notifyFriendsOfStatus(fastify, userId, isOnline) {
 }
 
 module.exports = chatRoutes;
+module.exports.clients = clients;

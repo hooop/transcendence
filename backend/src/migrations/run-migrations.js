@@ -15,7 +15,7 @@ function runMigrations() {
   const db = new Database(dbPath);
 
   try {
-    console.log('✅ Connecté à la base de données SQLite');
+    console.log('Connecté à la base de données SQLite');
 
     // Activer les foreign keys
     db.pragma('foreign_keys = ON');
@@ -28,7 +28,7 @@ function runMigrations() {
         executed_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
-    console.log('✅ Table migrations initialisée');
+    console.log('Table migrations initialisée');
 
     // Récupérer les migrations déjà appliquées
     const appliedMigrations = db.prepare('SELECT filename FROM migrations').all();
@@ -43,31 +43,31 @@ function runMigrations() {
     for (const file of migrationFiles) {
       // Vérifier si la migration a déjà été appliquée
       if (appliedSet.has(file)) {
-        console.log(`⏭️  Migration ${file} déjà appliquée, skip`);
+        console.log(` Migration ${file} déjà appliquée, skip`);
         continue;
       }
 
-      console.log(`\n📄 Exécution de la migration: ${file}`);
+      console.log(`\nExécution de la migration: ${file}`);
       const filePath = path.join(migrationsDir, file);
       const sql = fs.readFileSync(filePath, 'utf8');
 
       try {
         db.exec(sql);
-        
+
         // Enregistrer la migration comme appliquée
         db.prepare('INSERT INTO migrations (filename) VALUES (?)').run(file);
-        
-        console.log(`✅ Migration ${file} exécutée avec succès`);
+
+        console.log(`Migration ${file} exécutée avec succès`);
       } catch (error) {
-        console.error(`❌ Erreur lors de l'exécution de ${file}:`, error.message);
+        console.error(`Erreur lors de l'exécution de ${file}:`, error.message);
         throw error;
       }
     }
 
-    console.log('\n🎉 Toutes les migrations ont été exécutées avec succès!');
+    console.log('\nToutes les migrations ont été exécutées avec succès!');
 
   } catch (error) {
-    console.error('❌ Erreur lors de l\'exécution des migrations:', error);
+    console.error('Erreur lors de l\'exécution des migrations:', error);
     process.exit(1);
   } finally {
     db.close();

@@ -1,6 +1,6 @@
 const fp = require('fastify-plugin');
 
-// Plugin pour ajouter le middleware d'authentification
+// Plugin pour le middleware d'authentification
 async function authenticatePlugin(fastify, options) {
   fastify.decorate('authenticate', async function(request, reply) {
     try {

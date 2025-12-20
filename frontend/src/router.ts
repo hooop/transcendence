@@ -713,9 +713,9 @@ private async renderTournament(): Promise<void>
 			return
 		}
 
-		console.log('🔍 initPongGame called')
-		console.log('🔍 Token exists?', !!ApiService.getToken())
-		console.log('🔍 About to call getMe()...')
+		console.log('initPongGame called')
+		console.log('Token exists?', !!ApiService.getToken())
+		console.log('About to call getMe()...')
 
 		if (this.currentGame) {
 			this.currentGame.destroy()
@@ -730,7 +730,7 @@ private async renderTournament(): Promise<void>
 			console.warn('User not authenticated, match will not be saved')
 		}
 
-		console.log('🔍 player1Id after getMe():', player1Id)
+		console.log('player1Id after getMe():', player1Id)
 
 		// Pour un match local, player2 n'a pas d'ID
 		const player2Id = undefined
@@ -745,15 +745,15 @@ private async renderTournament(): Promise<void>
 			true,
 			'', // player1Name
 			'', // player2Name
-			player1Id,  // 👈 NOUVEAU
-			player2Id,  // 👈 NOUVEAU
-			gameMode    // 👈 NOUVEAU
+			player1Id,
+			player2Id,
+			gameMode
 		)
 
 		setTimeout(() => {
 			canvas.focus()
 		}, 100)
-		console.log(`🎮 Pong game ready! ${isAI ? '(vs AI)' : '(vs Player)'}`)
+		console.log(`Pong game ready! ${isAI ? '(vs AI)' : '(vs Player)'}`)
 	}
 
 
@@ -1106,7 +1106,7 @@ private async initTournamentGame(match: any): Promise<void>
                 if (backBtn) {
                     backBtn.onclick = async () => {  // ← Ajouter async
 						this.isTournamentGameActive = false
-						
+
 						if (this.currentGame) {
 							this.currentGame.destroy()
 							this.currentGame = null
@@ -1123,7 +1123,7 @@ private async initTournamentGame(match: any): Promise<void>
     }, 100)
 
     canvas.focus()
-    console.log(`🎮 Tournament game ready! ${aiEnabled ? '(vs AI)' : '(vs Player)'}`)
+    console.log(`Tournament game ready! ${aiEnabled ? '(vs AI)' : '(vs Player)'}`)
 }
 
 
@@ -1131,7 +1131,7 @@ private async initTournamentGame(match: any): Promise<void>
 
 
 	private simulateAIMatch(match: any): void {
-		console.log('🤖 Simulating AI vs AI match...')
+		console.log('Simulating AI vs AI match...')
 
 		// Simuler un match entre deux IA
 		const difficulty1 = match.player1.aiDifficulty || 'medium'
@@ -1163,7 +1163,7 @@ private async initTournamentGame(match: any): Promise<void>
 			: { player1: loserScore, player2: winnerScore }
 
 		// Afficher le résultat dans la console
-		console.log(`🏆 ${winner.alias} wins ${score.player1}-${score.player2} against ${loser.alias}`)
+		console.log(`${winner.alias} wins ${score.player1}-${score.player2} against ${loser.alias}`)
 
 		// Enregistrer le résultat après un court délai
 		// Enregistrer le résultat après un court délai

@@ -26,10 +26,22 @@ export interface Conversation {
     unread_count: number;
 }
 
+export interface FriendshipAccepted {
+    id: number;
+    friend: {
+        id: string;
+        username: string;
+        display_name: string;
+        avatar_url?: string;
+    };
+    status: string;
+}
+
 type MessageHandler = (message: ChatMessage) => void;
 type TypingHandler = (userId: string, isTyping: boolean) => void;
 type StatusHandler = (userId: string, isOnline: boolean) => void;
 type ConnectedHandler = () => void;
+type FriendshipAcceptedHandler = (friendship: FriendshipAccepted) => void;
 
 export class ChatService {
     private static instance: ChatService;
@@ -38,6 +50,7 @@ export class ChatService {
     private typingHandlers: Set<TypingHandler> = new Set();
     private statusHandlers: Set<StatusHandler> = new Set();
     private connectedHandlers: Set<ConnectedHandler> = new Set();
+    private friendshipAcceptedHandlers: Set<FriendshipAcceptedHandler> = new Set();
     private reconnectInterval: number = 3000;
     private reconnectTimer: number | null = null;
     private isManualClose: boolean = false;
@@ -172,6 +185,10 @@ export class ChatService {
                 this.statusHandlers.forEach(handler => handler(data.user_id, data.is_online));
                 break;
 
+            case 'friendship_accepted':
+                this.friendshipAcceptedHandlers.forEach(handler => handler(data.friendship));
+                break;
+
             case 'error':
                 console.error('Erreur du serveur:', data.message);
                 break;
@@ -197,6 +214,11 @@ export class ChatService {
     onConnected(handler: ConnectedHandler): () => void {
         this.connectedHandlers.add(handler);
         return () => this.connectedHandlers.delete(handler);
+    }
+
+    onFriendshipAccepted(handler: FriendshipAcceptedHandler): () => void {
+        this.friendshipAcceptedHandlers.add(handler);
+        return () => this.friendshipAcceptedHandlers.delete(handler);
     }
 
     // API HTTP pour récupérer les conversations et l'historique
