@@ -310,6 +310,17 @@ export class ApiService {
         }
     }
 
+    static async cancelFriendRequest(friendshipId: string): Promise<void> {
+        const response = await fetch(`${API_URL}/api/friendships/${friendshipId}`, {
+            method: 'PATCH',
+            headers: this.getHeaders(),
+            body: JSON.stringify({ action: 'cancel' }),
+        });
+        if (!response.ok) {
+            throw new Error('Failed to cancel friend request');
+        }
+    }
+
     static async removeFriend(friendshipId: string): Promise<void> {
     const response = await fetch(`${API_URL}/api/friendships/${friendshipId}`, {
         method: 'DELETE',

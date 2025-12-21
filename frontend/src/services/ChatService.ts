@@ -44,6 +44,8 @@ type ConnectedHandler = () => void;
 type FriendshipAcceptedHandler = (friendship: FriendshipAccepted) => void;
 type FriendshipRemovedHandler = (data: { friendship_id: number; removed_by: string }) => void;
 type FriendRequestReceivedHandler = (request: any) => void;
+type FriendRequestCancelledHandler = (data: { friendship_id: number; cancelled_by: string }) => void;
+type FriendRequestRejectedHandler = (data: { friendship_id: number; rejected_by: string }) => void;
 
 export class ChatService {
     private static instance: ChatService;
@@ -55,6 +57,8 @@ export class ChatService {
     private friendshipAcceptedHandlers: Set<FriendshipAcceptedHandler> = new Set();
     private friendshipRemovedHandlers: Set<FriendshipRemovedHandler> = new Set();
     private friendRequestReceivedHandlers: Set<FriendRequestReceivedHandler> = new Set();
+    private friendRequestCancelledHandlers: Set<FriendRequestCancelledHandler> = new Set();
+    private friendRequestRejectedHandlers: Set<FriendRequestRejectedHandler> = new Set();
     private reconnectInterval: number = 3000;
     private reconnectTimer: number | null = null;
     private isManualClose: boolean = false;
@@ -201,6 +205,14 @@ export class ChatService {
                 this.friendRequestReceivedHandlers.forEach(handler => handler(data.request));
                 break;
 
+            case 'friendship_request_cancelled':
+                this.friendRequestCancelledHandlers.forEach(handler => handler(data));
+                break;
+
+            case 'friendship_request_rejected':
+                this.friendRequestRejectedHandlers.forEach(handler => handler(data));
+                break;
+
             case 'error':
                 console.error('Erreur du serveur:', data.message);
                 break;
@@ -241,6 +253,16 @@ export class ChatService {
     onFriendRequestReceived(handler: FriendRequestReceivedHandler): () => void {
         this.friendRequestReceivedHandlers.add(handler);
         return () => this.friendRequestReceivedHandlers.delete(handler);
+    }
+
+    onFriendRequestCancelled(handler: FriendRequestCancelledHandler): () => void {
+        this.friendRequestCancelledHandlers.add(handler);
+        return () => this.friendRequestCancelledHandlers.delete(handler);
+    }
+
+    onFriendRequestRejected(handler: FriendRequestRejectedHandler): () => void {
+        this.friendRequestRejectedHandlers.add(handler);
+        return () => this.friendRequestRejectedHandlers.delete(handler);
     }
 
     // API HTTP pour récupérer les conversations et l'historique

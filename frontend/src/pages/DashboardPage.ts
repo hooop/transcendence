@@ -237,26 +237,33 @@ export class DashboardPage
 
 		const performancesLabel = document.getElementById('dashboard-label-performances');
 		if (performancesLabel) {
-			performancesLabel.textContent = i18n.t('dashboard.performances', 'PERFORMANCES');
+			performancesLabel.textContent = i18n.t('dashboard.performances', 'Performances');
 		}
 
 		const friendsLabel = document.getElementById('dashboard-label-friends');
 		if (friendsLabel) {
 			const friendsCount = friendsLabel.querySelector('.friends-count');
-			const friendsText = i18n.t('dashboard.friends', 'AMIS');
+			const friendsText = i18n.t('dashboard.friends', 'Amis');
 			friendsLabel.innerHTML = `${friendsText} (<span class="friends-count">${friendsCount?.textContent || '0'}</span> )`;
 		}
 
 		const pendingLabel = document.getElementById('dashboard-label-pending');
 		if (pendingLabel) {
 			const pendingCount = pendingLabel.querySelector('.pending-count');
-			const pendingText = i18n.t('dashboard.pending', 'EN ATTENTE');
+			const pendingText = i18n.t('dashboard.pending', 'En attente');
 			pendingLabel.innerHTML = `${pendingText} (<span class="pending-count">${pendingCount?.textContent || '0'}</span> )`;
+		}
+
+		 const sentLabel = document.getElementById('dashboard-label-sent');
+		if (sentLabel) {
+			const sentCount = sentLabel.querySelector('.sent-count');
+			const sentText = i18n.t('dashboard.sent', 'Envoyées');
+			sentLabel.innerHTML = `${sentText} (<span class="sent-count">${sentCount?.textContent || '0'}</span> )`;
 		}
 
 		const historyLabel = document.getElementById('dashboard-label-history');
 		if (historyLabel) {
-			historyLabel.textContent = i18n.t('dashboard.history', 'HISTORIQUE');
+			historyLabel.textContent = i18n.t('dashboard.history', 'Historique');
 		}
 
 		const searchInput = document.getElementById('dashboard-search-users') as HTMLInputElement;
@@ -303,6 +310,7 @@ export class DashboardPage
 			// Rafraîchir la liste d'amis et les demandes en attente
 			this.loadFriendsList();
 			this.loadPendingRequests();
+			this.loadSentRequests();
 		});
 
 		chatService.onFriendshipRemoved((data) => {
@@ -318,6 +326,18 @@ export class DashboardPage
 			this.loadPendingRequests();
 		});
 
+		// Écouter les annulations de demandes d'amis
+		chatService.onFriendRequestCancelled((data) => {
+			console.log('Demande d\'ami annulée:', data);
+			this.loadPendingRequests();
+		});
+
+		// Écouter les refus de demandes d'amis
+		chatService.onFriendRequestRejected((data) => {
+			console.log('Demande d\'ami refusée:', data);
+			this.loadSentRequests();
+		});
+
 		// Écouter les changements de langue
 		window.addEventListener('languageChanged', () => {
 			this.translateDashboardLabels();
@@ -331,6 +351,7 @@ export class DashboardPage
 		this.loadTop3Ranking();
 		this.loadFriendsList();
 		this.loadPendingRequests();
+		this.loadSentRequests();
 		this.loadMatchHistory();
 		this.loadRankingChart();
 
@@ -373,6 +394,7 @@ export class DashboardPage
 				alert(i18n.t('dashboard.friendRequestSent', 'Demande d\'ami envoyée !'));
 				// Rafraîchir la liste d'amis
 				await this.loadFriendsList();
+				await this.loadSentRequests();
 				// Fermer les résultats de recherche
 				const searchResults = document.getElementById('dashboard-search-results');
 				if (searchResults) {
@@ -413,6 +435,17 @@ export class DashboardPage
 				await this.loadPendingRequests();
 			} catch (error: any) {
 				alert(error.message || i18n.t('dashboard.error', 'Erreur'));
+			}
+		};
+
+		(window as any).cancelFriendRequest = async (friendshipId: string) => {
+			if (confirm(i18n.t('dashboard.cancelRequestConfirm', 'Annuler cette demande ?'))) {
+				try {
+					await ApiService.cancelFriendRequest(friendshipId);
+					await this.loadSentRequests();
+				} catch (error: any) {
+					alert(error.message || i18n.t('dashboard.error', 'Erreur'));
+				}
 			}
 		};
 
@@ -476,6 +509,48 @@ export class DashboardPage
 			container.innerHTML = `<p class="error-state">${i18n.t('dashboard.loadingError', 'Erreur de chargement')}</p>`;
 		}
 	}
+
+	private static async loadSentRequests(): Promise<void>
+	{
+		const container = document.getElementById('sent-requests-container');
+		if (!container) return;
+
+		try {
+			const pendingData = await ApiService.getPendingRequests();
+			
+			// Mettre à jour le badge du compte
+			const countBadge = document.querySelector('.sent-count');
+			if (countBadge) {
+				countBadge.textContent = pendingData.sent.length.toString();
+			}
+
+			if (pendingData.sent.length === 0) {
+				container.innerHTML = `<p class="empty-state">${i18n.t('dashboard.noSentRequests', 'Aucune demande envoyée')}</p>`;
+				return;
+			}
+
+			container.innerHTML = pendingData.sent.map((request: FriendRequest) => `
+				<div class="friend-item">
+					<div class="friend-info">
+						<div class="avatar-wrapper">
+							${this.getAvatarHTML(request)}
+							${request.is_online ? '<span class="online-indicator"></span>' : ''}
+						</div>
+						<div class="friend-details">
+							<div class="friend-name">${escapeHtml(request.display_name)}</div>
+						</div>
+					</div>
+					<div class="friend-actions">
+						<button class="btn-remove-friend" onclick="window.cancelFriendRequest('${escapeHtmlAttr(request.friendship_id)}')">${i18n.t('dashboard.cancel', 'Annuler')}</button>
+					</div>
+				</div>
+			`).join('');
+
+		} catch (error) {
+			container.innerHTML = `<p class="error-state">${i18n.t('dashboard.loadingError', 'Erreur de chargement')}</p>`;
+		}
+	}
+
 
 
 	// Récupère le top 3 du classement via l'API et appelle injectTop3Data pour l'affichage

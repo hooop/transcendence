@@ -76,7 +76,7 @@
 		<!-- PERFORMANCES -->
 		<div class="card">
 			<div class="stat-item">
-				<div class="stat-label-perf" id="dashboard-label-performances">PERFORMANCES</div>
+				<div class="stat-label-perf" id="dashboard-label-performances">Performances</div>
 				<div class="chart-container">
 					<canvas id="ranking-chart"></canvas>
 				</div>
@@ -87,7 +87,7 @@
 		<div class="card">
 
 			<div class="card-header">
-				<div class="stat-label-ami" id="dashboard-label-friends">AMIS (
+				<div class="stat-label-ami" id="dashboard-label-friends">Amis (
 					<span class="friends-count">{{FRIENDS_COUNT}}</span> )
 				</div>
 			</div>
@@ -113,11 +113,22 @@
 
 				<!-- Section demandes en attente -->
 				<div class="pending-section">
-					<div class="stat-label-pending" id="dashboard-label-pending">EN ATTENTE (
+					<div class="stat-label-pending" id="dashboard-label-pending">En attente (
 						<span class="pending-count">{{PENDING_COUNT}}</span> )
 					</div>
 
 					<div id="pending-requests-container">
+						<!-- Rempli par JS -->
+					</div>
+				</div>
+
+				<!-- Section demandes envoyées -->
+				<div class="pending-section">
+					<div class="stat-label-sent" id="dashboard-label-sent">Envoyées (
+						<span class="sent-count">0</span> )
+					</div>
+
+					<div id="sent-requests-container">
 						<!-- Rempli par JS -->
 					</div>
 				</div>

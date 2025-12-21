@@ -245,9 +245,9 @@ async function friendshipsRoutes(fastify, options) {
     const userId = request.user.id;
 
     // Validation
-    if (!action || !['accept', 'reject', 'block'].includes(action)) {
+    if (!action || !['accept', 'reject', 'block', 'cancel'].includes(action)) {
       return reply.status(400).send({
-        error: 'Action invalide. Utilisez: accept, reject ou block',
+        error: 'Action invalide. Utilisez: accept, reject, block ou cancel',
       });
     }
 
@@ -328,9 +328,53 @@ async function friendshipsRoutes(fastify, options) {
           'DELETE FROM friendships WHERE id = ?'
         ).run(id);
 
+         // Notifier l'expéditeur via WebSocket
+        const senderWs = chatClients.get(friendship.user_id);
+        if (senderWs && senderWs.readyState === 1) {
+            senderWs.send(JSON.stringify({
+                type: 'friendship_request_rejected',
+                friendship_id: id,
+                rejected_by: userId
+            }));
+        }
+
         return {
           message: 'Demande d\'ami refusée',
         };
+
+        } else if (action === 'cancel') {
+      // Seul l'expéditeur peut annuler sa propre demande
+      if (friendship.user_id !== userId) {
+          return reply.status(403).send({
+              error: 'Vous ne pouvez annuler que vos propres demandes',
+          });
+      }
+
+      if (friendship.status !== 'pending') {
+          return reply.status(400).send({
+              error: 'Cette demande n\'est pas en attente',
+          });
+      }
+
+      // Supprimer la demande
+      fastify.db.prepare(
+          'DELETE FROM friendships WHERE id = ?'
+      ).run(id);
+
+      // Notifier le destinataire via WebSocket
+      const recipientWs = chatClients.get(friendship.friend_id);
+      if (recipientWs && recipientWs.readyState === 1) {
+          recipientWs.send(JSON.stringify({
+              type: 'friendship_request_cancelled',
+              friendship_id: id,
+              cancelled_by: userId
+          }));
+      }
+
+      return {
+          message: 'Demande d\'ami annulée',
+      };
+
 
       } else if (action === 'block') {
         // Vérifier que l'utilisateur est impliqué dans cette relation
