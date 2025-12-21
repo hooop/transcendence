@@ -376,6 +376,26 @@ return reply.status(201).send({
         'DELETE FROM friendships WHERE id = ?'
       ).run(id);
 
+      // Déterminer qui est l'autre personne
+      let otherUserId;
+      if (friendship.user_id === userId) {
+        otherUserId = friendship.friend_id;
+      } else {
+        otherUserId = friendship.user_id;
+      }
+
+      // Récupérer sa connexion WebSocket
+      const otherUserWs = chatClients.get(otherUserId);
+
+      // Si connecté, le notifier
+      if (otherUserWs && otherUserWs.readyState === 1) {
+        otherUserWs.send(JSON.stringify({
+          type: 'friendship_removed',
+          friendship_id: id,
+          removed_by: userId
+        }));
+      }
+
       return {
         message: 'Ami retiré avec succès',
       };

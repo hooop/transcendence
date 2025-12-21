@@ -305,6 +305,12 @@ export class DashboardPage
 			this.loadPendingRequests();
 		});
 
+		chatService.onFriendshipRemoved((data) => {
+			console.log('Ami supprimé:', data);
+			// Rafraîchir la liste d'amis
+			this.loadFriendsList();
+		});
+
 		// Écouter les changements de langue
 		window.addEventListener('languageChanged', () => {
 			this.translateDashboardLabels();
