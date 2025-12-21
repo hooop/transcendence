@@ -33,5 +33,8 @@ Thumbs.db
 uploads/
 backend/uploads/
 
+# Fichier Mac manu
+.DS_Store
+
 # Docker volumes data (ne pas versionner les données)
 # Les volumes seront recréés par Docker
