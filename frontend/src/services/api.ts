@@ -34,6 +34,7 @@ export interface FriendRequest {
     id: string;
     username: string;
     display_name: string;
+    is_online: boolean;
     avatar_url?: string;
 }
 

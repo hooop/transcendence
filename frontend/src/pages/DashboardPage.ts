@@ -1,4 +1,4 @@
-import {ApiService} from '../services/api'
+import { ApiService, type FriendRequest } from '../services/api'
 import { i18n } from '../services/i18n'
 import dashboardTemplate from '../templates/dashboard.html?raw'
 import Chart from 'chart.js/auto'
@@ -311,6 +311,13 @@ export class DashboardPage
 			this.loadFriendsList();
 		});
 
+		// Écouter les nouvelles demandes d'amis reçues
+		chatService.onFriendRequestReceived((request) => {
+			console.log('Nouvelle demande d\'ami reçue:', request);
+			// Rafraîchir la liste des demandes en attente
+			this.loadPendingRequests();
+		});
+
 		// Écouter les changements de langue
 		window.addEventListener('languageChanged', () => {
 			this.translateDashboardLabels();
@@ -447,7 +454,10 @@ export class DashboardPage
 			container.innerHTML = pendingData.received.map(request => `
 				<div class="friend-item">
 					<div class="friend-info">
-						${this.getAvatarHTML(request)}
+						<div class="avatar-wrapper">
+							${this.getAvatarHTML(request)}
+							${request.is_online ? '<span class="online-indicator"></span>' : ''}
+						</div>
 						<div class="friend-details">
 							<div class="friend-name">${escapeHtml(request.display_name)}</div>
 						</div>

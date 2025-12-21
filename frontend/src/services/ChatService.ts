@@ -43,6 +43,7 @@ type StatusHandler = (userId: string, isOnline: boolean) => void;
 type ConnectedHandler = () => void;
 type FriendshipAcceptedHandler = (friendship: FriendshipAccepted) => void;
 type FriendshipRemovedHandler = (data: { friendship_id: number; removed_by: string }) => void;
+type FriendRequestReceivedHandler = (request: any) => void;
 
 export class ChatService {
     private static instance: ChatService;
@@ -53,6 +54,7 @@ export class ChatService {
     private connectedHandlers: Set<ConnectedHandler> = new Set();
     private friendshipAcceptedHandlers: Set<FriendshipAcceptedHandler> = new Set();
     private friendshipRemovedHandlers: Set<FriendshipRemovedHandler> = new Set();
+    private friendRequestReceivedHandlers: Set<FriendRequestReceivedHandler> = new Set();
     private reconnectInterval: number = 3000;
     private reconnectTimer: number | null = null;
     private isManualClose: boolean = false;
@@ -194,6 +196,10 @@ export class ChatService {
             case 'friendship_removed':
                 this.friendshipRemovedHandlers.forEach(handler => handler(data));
                 break;
+            
+            case 'friendship_request_received':
+                this.friendRequestReceivedHandlers.forEach(handler => handler(data.request));
+                break;
 
             case 'error':
                 console.error('Erreur du serveur:', data.message);
@@ -230,6 +236,11 @@ export class ChatService {
     onFriendshipRemoved(handler: FriendshipRemovedHandler): () => void {
         this.friendshipRemovedHandlers.add(handler);
         return () => this.friendshipRemovedHandlers.delete(handler);
+    }
+
+    onFriendRequestReceived(handler: FriendRequestReceivedHandler): () => void {
+        this.friendRequestReceivedHandlers.add(handler);
+        return () => this.friendRequestReceivedHandlers.delete(handler);
     }
 
     // API HTTP pour récupérer les conversations et l'historique

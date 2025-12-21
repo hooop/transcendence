@@ -11,25 +11,25 @@ async function friendshipsRoutes(fastify, options) {
       const userId = request.user.id;
 
       // Récupérer tous les amis acceptés (dans les deux sens)
-	const result = fastify.db.prepare(
-	`SELECT
-		f.id as friendship_id,
-		f.created_at as friends_since,
-		u.id,
-		u.username,
-		u.display_name,
-		u.avatar_url,
-		u.is_online,
-		u.last_seen
-	FROM friendships f
-	JOIN users u ON (
-		(f.user_id = ? AND u.id = f.friend_id)
-		OR (f.friend_id = ? AND u.id = f.user_id)
-	)
-	WHERE (f.user_id = ? OR f.friend_id = ?)
-	AND f.status = 'accepted'
-	ORDER BY u.is_online DESC, u.username ASC`
-	).all(userId, userId, userId, userId);
+      const result = fastify.db.prepare(
+      `SELECT
+        f.id as friendship_id,
+        f.created_at as friends_since,
+        u.id,
+        u.username,
+        u.display_name,
+        u.avatar_url,
+        u.is_online,
+        u.last_seen
+      FROM friendships f
+      JOIN users u ON (
+        (f.user_id = ? AND u.id = f.friend_id)
+        OR (f.friend_id = ? AND u.id = f.user_id)
+      )
+      WHERE (f.user_id = ? OR f.friend_id = ?)
+      AND f.status = 'accepted'
+      ORDER BY u.is_online DESC, u.username ASC`
+      ).all(userId, userId, userId, userId);
 
       return {
         friends: result,
@@ -58,7 +58,8 @@ async function friendshipsRoutes(fastify, options) {
           u.id,
           u.username,
           u.display_name,
-          u.avatar_url
+          u.avatar_url,
+          u.is_online
          FROM friendships f
          JOIN users u ON u.id = f.user_id
          WHERE f.friend_id = ?
@@ -74,7 +75,8 @@ async function friendshipsRoutes(fastify, options) {
           u.id,
           u.username,
           u.display_name,
-          u.avatar_url
+          u.avatar_url,
+          u.is_online
          FROM friendships f
          JOIN users u ON u.id = f.friend_id
          WHERE f.user_id = ?
@@ -195,16 +197,34 @@ async function friendshipsRoutes(fastify, options) {
 		console.log('insertResult:', insertResult);
 		console.log('lastInsertRowid:', insertResult.lastInsertRowid);
 
-// Retourner la demande créée
-return reply.status(201).send({
-  message: 'Demande d\'ami envoyée',
-  friendship: {
-    id: Number(insertResult.lastInsertRowid),
-    friend: userCheck,
-    status: 'pending',
-    created_at: new Date().toISOString(),
-  },
-});
+     // Notifier le destinataire via WebSocket
+    const recipientWs = chatClients.get(friend_id);
+    if (recipientWs && recipientWs.readyState === 1) {
+      recipientWs.send(JSON.stringify({
+        type: 'friendship_request_received',
+        request: {
+          id: Number(insertResult.lastInsertRowid),
+          sender: {
+            id: request.user.id,
+            username: request.user.username,
+            display_name: request.user.display_name,
+            avatar_url: request.user.avatar_url
+          },
+          created_at: new Date().toISOString()
+        }
+      }));
+    }
+
+    // Retourner la demande créée
+    return reply.status(201).send({
+      message: 'Demande d\'ami envoyée',
+      friendship: {
+        id: Number(insertResult.lastInsertRowid),
+        friend: userCheck,
+        status: 'pending',
+        created_at: new Date().toISOString(),
+      },
+    });
 
     }
 	catch (error)
