@@ -1,7 +1,7 @@
 .PHONY: help prepare up build down down-v clean manu up-d nuke seed
 
 # Variables
-DOCKER_COMPOSE = sudo docker-compose
+DOCKER_COMPOSE = docker-compose
 SERVICES_CORE = backend frontend
 SERVICES_MONITORING = prometheus grafana node-exporter elasticsearch logstash kibana elasticsearch-setup
 
@@ -30,7 +30,6 @@ prepare:
 	@echo "✓ Environnement prêt pour le démarrage"
 
 # Lance tous les services avec rebuild + seed automatique
-# Lance tous les services avec rebuild + seed automatique
 up:
 	$(DOCKER_COMPOSE) up --build -d
 	@until $(DOCKER_COMPOSE) exec -T backend node -e "process.exit(0)" 2>/dev/null; do \
@@ -50,7 +49,13 @@ build:
 
 # Remplit la base de données avec des données de test
 seed:
-	@$(DOCKER_COMPOSE) exec -T backend npm run fillbdd
+	@echo "Attente du démarrage du backend..."
+	@while ! docker exec ft_transcendence_backend node -e "const http = require('http'); http.get('http://localhost:3000/health', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on('error', () => process.exit(1))" 2>/dev/null; do \
+		echo "Backend pas encore prêt, attente..."; \
+		sleep 2; \
+	done
+	@echo "Backend prêt, lancement du seed..."
+	docker-compose exec backend npm run fillbdd
 
 # Arrête tous les services
 down:
