@@ -48,7 +48,7 @@ export class DashboardPage
 			const losses = stats.losses || 0;
 			const winPercent = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
 			const lossPercent = totalMatches > 0 ? Math.round((losses / totalMatches) * 100) : 0;
-			
+
 
 			// Remplacer les placeholders
 			let html = dashboardTemplate;
@@ -61,7 +61,7 @@ export class DashboardPage
 			html = html.replace('{{LOSS_PERCENT}}', lossPercent.toString());
 			html = html.replace('{{FRIENDS_COUNT}}', friendsData.total.toString());
 			html = html.replace('{{PENDING_COUNT}}', pendingData.received.length.toString());
-		
+
 
 			return html;
 
@@ -90,7 +90,7 @@ export class DashboardPage
 			}
 
 			container.innerHTML = friendsData.friends.map(friend => `
-				<div class="friend-item">
+				<div class="friend-item" data-user-id="${friend.id}">
 					<div class="friend-info">
 						<div class="avatar-wrapper">
 							${this.getAvatarHTML(friend)}
@@ -305,6 +305,7 @@ export class DashboardPage
 	{
 		// Écouter les notifications WebSocket de demandes d'amis acceptées
 		const chatService = ChatService.getInstance();
+
 		chatService.onFriendshipAccepted((friendship) => {
 			console.log('Demande d\'ami acceptée:', friendship);
 			// Rafraîchir la liste d'amis et les demandes en attente
@@ -338,6 +339,25 @@ export class DashboardPage
 			this.loadSentRequests();
 		});
 
+		// Écouter les changements de statut (connexion/déconnexion)
+		chatService.onStatusChange((userId, isOnline) => {
+			console.log('[DashboardPage] Status changed:', userId, isOnline);
+
+			// Mettre à jour les pastilles dans toutes les listes
+			const selectors = [
+				`#friends-list-container .friend-item[data-user-id="${userId}"] .online-indicator`,
+				`#pending-requests-container .friend-item[data-user-id="${userId}"] .online-indicator`,
+				`#sent-requests-container .friend-item[data-user-id="${userId}"] .online-indicator`
+			];
+
+			selectors.forEach(selector => {
+				const indicator = document.querySelector(selector) as HTMLElement;
+				if (indicator) {
+					indicator.style.display = isOnline ? 'block' : 'none';
+				}
+			});
+		});
+
 		// Écouter les changements de langue
 		window.addEventListener('languageChanged', () => {
 			this.translateDashboardLabels();
@@ -360,7 +380,7 @@ export class DashboardPage
 			const totalMatches = stats.total_matches || 0;
 			const wins = stats.wins || 0;
 			const winPercent = totalMatches > 0 ? Math.round((wins / totalMatches) * 100) : 0;
-			
+
 			DashboardPage.updateDonutChart(winPercent);
 		});
 
@@ -485,7 +505,7 @@ export class DashboardPage
 			}
 
 			container.innerHTML = pendingData.received.map(request => `
-				<div class="friend-item">
+				<div class="friend-item" data-user-id="${request.id}">
 					<div class="friend-info">
 						<div class="avatar-wrapper">
 							${this.getAvatarHTML(request)}
@@ -517,7 +537,7 @@ export class DashboardPage
 
 		try {
 			const pendingData = await ApiService.getPendingRequests();
-			
+
 			// Mettre à jour le badge du compte
 			const countBadge = document.querySelector('.sent-count');
 			if (countBadge) {
@@ -530,7 +550,7 @@ export class DashboardPage
 			}
 
 			container.innerHTML = pendingData.sent.map((request: FriendRequest) => `
-				<div class="friend-item">
+				<div class="friend-item" data-user-id="${request.id}">
 					<div class="friend-info">
 						<div class="avatar-wrapper">
 							${this.getAvatarHTML(request)}
@@ -675,13 +695,13 @@ export class DashboardPage
 			});
 
 			/* rankings.unshift(1000); */
-			
+
 			console.log('[RankingChart] Rankings extraits:', rankings);
 			console.log('[RankingChart] User ID:', user.id);
 
 			const labels = rankings.map((_, index) => `M${index}`);
 
-			
+
 			// Récupérer le contexte pour le dégradé
 			const ctx = canvas.getContext('2d');
 

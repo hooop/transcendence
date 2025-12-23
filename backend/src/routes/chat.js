@@ -380,7 +380,8 @@ function handleTyping(senderId, payload) {
 
 // Notifier les amis du changement de statut
 async function notifyFriendsOfStatus(fastify, userId, isOnline) {
-  try {
+	console.log(`[notifyFriendsOfStatus] appelée pour userId=${userId}, isOnline=${isOnline}`);
+	try {
     // Récupérer la liste des amis
     const friends = fastify.db.prepare(
       `SELECT
@@ -390,18 +391,22 @@ async function notifyFriendsOfStatus(fastify, userId, isOnline) {
         END as friend_id
        FROM friendships
        WHERE (user_id = ? OR friend_id = ?)
-       AND status = 'accepted'`
+       AND status IN ('accepted', 'pending')`
     ).all(userId, userId, userId);
+
+	console.log(`[notifyFriendsOfStatus] Amis trouvés:`, friends);
 
     // Notifier chaque ami connecté
     for (const row of friends) {
       const friendWs = clients.get(row.friend_id);
+	  console.log(`[notifyFriendsOfStatus] Friend ${row.friend_id}, WS connecté:`, !!friendWs);
       if (friendWs && friendWs.readyState === 1) {
         friendWs.send(JSON.stringify({
           type: 'friend_status',
           user_id: userId,
           is_online: isOnline,
         }));
+		console.log(`[notifyFriendsOfStatus] Notification envoyée à ${row.friend_id}`);
       }
     }
   } catch (error) {

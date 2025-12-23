@@ -411,7 +411,8 @@ private handleRoute(): void {
 			// Charger les infos utilisateur
 			ApiService.getMe().then(user => {
 				const avatarEl = document.getElementById('header-user-avatar');
-				const nameEl = document.getElementById('header-user-name');
+				const displayNameEl = document.getElementById('header-user-display-name');
+				const usernameEl = document.getElementById('header-user-username');
 
 				if (avatarEl) {
 					if (user.avatar_url) {
@@ -421,8 +422,11 @@ private handleRoute(): void {
 					}
 				}
 
-				if (nameEl) {
-					nameEl.textContent = user.display_name || user.username;
+				if (displayNameEl) {
+					displayNameEl.textContent = user.display_name || user.username;
+				}
+				if (usernameEl) {
+					usernameEl.textContent = `@${user.username}`;
 				}
 			}).catch(() => {
 				// En cas d'erreur, afficher les boutons de connexion
@@ -435,11 +439,16 @@ private handleRoute(): void {
 			window.addEventListener('userProfileUpdated', (e: Event) => {
 				const customEvent = e as CustomEvent;
 				const updatedUser = customEvent.detail.user;
+				const displayNameEl = document.getElementById('header-user-display-name');
+				const usernameEl = document.getElementById('header-user-username');
 
 				// Mettre à jour le nom dans le header
-				const nameEl = document.getElementById('header-user-name');
-				if (nameEl) {
-					nameEl.textContent = updatedUser.display_name || updatedUser.username;
+
+				if (displayNameEl) {
+					displayNameEl.textContent = updatedUser.display_name || updatedUser.username;
+				}
+				if (usernameEl) {
+					usernameEl.textContent = `@${updatedUser.username}`;
 				}
 
 				// Mettre à jour l'avatar

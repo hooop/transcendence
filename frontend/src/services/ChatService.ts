@@ -190,6 +190,7 @@ export class ChatService {
                 break;
 
             case 'friend_status':
+				console.log('[ChatService] friend_status reçu:', data);
                 this.statusHandlers.forEach(handler => handler(data.user_id, data.is_online));
                 break;
 
@@ -200,7 +201,7 @@ export class ChatService {
             case 'friendship_removed':
                 this.friendshipRemovedHandlers.forEach(handler => handler(data));
                 break;
-            
+
             case 'friendship_request_received':
                 this.friendRequestReceivedHandlers.forEach(handler => handler(data.request));
                 break;
