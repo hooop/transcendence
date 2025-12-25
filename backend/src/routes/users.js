@@ -1,3 +1,6 @@
+const { notifyFriendsOfProfileUpdate } = require('./chat');
+
+
 async function usersRoutes(fastify, options)
 {
 	// GET /api/users/ranking/top3 - Top 3 des joueurs
@@ -188,6 +191,9 @@ async function usersRoutes(fastify, options)
 		const user = fastify.db.prepare(
 		'SELECT id, username, email, display_name, avatar_url FROM users WHERE id = ?'
 		).get(id);
+
+		// Notifier les amis du changement de profil
+		await notifyFriendsOfProfileUpdate(fastify, id);
 
 		return {
 		message: 'Profil mis à jour avec succès',

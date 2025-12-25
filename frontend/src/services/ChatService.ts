@@ -46,6 +46,7 @@ type FriendshipRemovedHandler = (data: { friendship_id: number; removed_by: stri
 type FriendRequestReceivedHandler = (request: any) => void;
 type FriendRequestCancelledHandler = (data: { friendship_id: number; cancelled_by: string }) => void;
 type FriendRequestRejectedHandler = (data: { friendship_id: number; rejected_by: string }) => void;
+type UserProfileUpdatedHandler = (user: { id: string; username: string; display_name: string; avatar_url?: string }) => void;
 
 export class ChatService {
     private static instance: ChatService;
@@ -59,7 +60,9 @@ export class ChatService {
     private friendRequestReceivedHandlers: Set<FriendRequestReceivedHandler> = new Set();
     private friendRequestCancelledHandlers: Set<FriendRequestCancelledHandler> = new Set();
     private friendRequestRejectedHandlers: Set<FriendRequestRejectedHandler> = new Set();
-    private reconnectInterval: number = 3000;
+    private userProfileUpdatedHandlers: Set<UserProfileUpdatedHandler> = new Set();
+
+	private reconnectInterval: number = 3000;
     private reconnectTimer: number | null = null;
     private isManualClose: boolean = false;
 
@@ -214,6 +217,11 @@ export class ChatService {
                 this.friendRequestRejectedHandlers.forEach(handler => handler(data));
                 break;
 
+			case 'user_profile_updated':
+				console.log('[ChatService] user_profile_updated reçu:', data);
+				this.userProfileUpdatedHandlers.forEach(handler => handler(data.user));
+				break;
+
             case 'error':
                 console.error('Erreur du serveur:', data.message);
                 break;
@@ -265,6 +273,11 @@ export class ChatService {
         this.friendRequestRejectedHandlers.add(handler);
         return () => this.friendRequestRejectedHandlers.delete(handler);
     }
+
+	onUserProfileUpdated(handler: UserProfileUpdatedHandler): () => void {
+		this.userProfileUpdatedHandlers.add(handler);
+		return () => this.userProfileUpdatedHandlers.delete(handler);
+}
 
     // API HTTP pour récupérer les conversations et l'historique
     static async getConversations(): Promise<{ conversations: Conversation[]; total: number }> {

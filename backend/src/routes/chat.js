@@ -414,5 +414,55 @@ async function notifyFriendsOfStatus(fastify, userId, isOnline) {
   }
 }
 
+
+// Notifier les amis du changement de profil
+async function notifyFriendsOfProfileUpdate(fastify, userId) {
+  console.log(`[notifyFriendsOfProfileUpdate] appelée pour userId=${userId}`);
+  try {
+    // Récupérer les infos mises à jour de l'utilisateur
+    const user = fastify.db.prepare(
+      'SELECT id, username, display_name, avatar_url FROM users WHERE id = ?'
+    ).get(userId);
+
+    if (!user) {
+      console.log(`[notifyFriendsOfProfileUpdate] Utilisateur ${userId} non trouvé`);
+      return;
+    }
+
+    console.log(`[notifyFriendsOfProfileUpdate] Infos utilisateur:`, user);
+
+    // Récupérer la liste des amis (acceptés et pendingg)
+    const friends = fastify.db.prepare(
+      `SELECT
+        CASE
+          WHEN user_id = ? THEN friend_id
+          ELSE user_id
+        END as friend_id
+       FROM friendships
+       WHERE (user_id = ? OR friend_id = ?)
+       AND status IN ('accepted', 'pending')`
+    ).all(userId, userId, userId);
+
+    console.log(`[notifyFriendsOfProfileUpdate] Amis trouvés:`, friends);
+
+    // Notifier chaque ami connecté
+    for (const row of friends) {
+      const friendWs = clients.get(row.friend_id);
+      console.log(`[notifyFriendsOfProfileUpdate] Friend ${row.friend_id}, WS connecté:`, !!friendWs);
+      if (friendWs && friendWs.readyState === 1) {
+        friendWs.send(JSON.stringify({
+          type: 'user_profile_updated',
+          user: user,
+        }));
+        console.log(`[notifyFriendsOfProfileUpdate] Notification envoyée à ${row.friend_id}`);
+      }
+    }
+  } catch (error) {
+    fastify.log.error(error);
+  }
+}
+
+
 module.exports = chatRoutes;
 module.exports.clients = clients;
+module.exports.notifyFriendsOfProfileUpdate = notifyFriendsOfProfileUpdate;

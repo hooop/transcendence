@@ -1,4 +1,5 @@
 import { ApiService, type FriendRequest } from '../services/api'
+
 import { i18n } from '../services/i18n'
 import dashboardTemplate from '../templates/dashboard.html?raw'
 import Chart from 'chart.js/auto'
@@ -294,8 +295,8 @@ export class DashboardPage
 			const lossesLabel = i18n.t('dashboard.losses', 'défaites');
 
 			// Les éléments contiennent déjà le nombre, on doit extraire juste le nombre
-			winsLossesElements[0].textContent = winsLossesElements[0].textContent.split(' ')[0] + ' ' + winsLabel;
-			winsLossesElements[1].textContent = winsLossesElements[1].textContent.split(' ')[0] + ' ' + lossesLabel;
+			winsLossesElements[0].textContent = (winsLossesElements[0].textContent || '0').split(' ')[0] + ' ' + winsLabel;
+			winsLossesElements[1].textContent = (winsLossesElements[1].textContent || '0').split(' ')[0] + ' ' + lossesLabel;
 		}
 	}
 
@@ -352,10 +353,19 @@ export class DashboardPage
 
 			selectors.forEach(selector => {
 				const indicator = document.querySelector(selector) as HTMLElement;
+				console.log('[DashboardPage] Selector:', selector, 'Found:', !!indicator);
 				if (indicator) {
 					indicator.style.display = isOnline ? 'block' : 'none';
 				}
 			});
+		});
+
+		// Écouter les changements de profil utilisateur
+		chatService.onUserProfileUpdated((user) => {
+			console.log('[DashboardPage] user_profile_updated reçu:', user);
+			this.updateUserProfileInLists(user);
+			this.loadTop3Ranking(); // Rafraîchir le top 3
+			this.loadMatchHistory(); // Rafraîchir l'historique des matchs
 		});
 
 		// Écouter les changements de langue
@@ -484,6 +494,47 @@ export class DashboardPage
 
 	}
 
+	// Met à jour les infos utilisateur dans toutes les listes (amis, demandes, etc.)
+	private static updateUserProfileInLists(user: { id: string; username: string; display_name: string; avatar_url?: string }): void
+	{
+		console.log('[DashboardPage] Mise à jour du profil dans les listes pour:', user);
+
+		// Sélectionner tous les éléments qui affichent cet utilisateur
+		const friendItems = document.querySelectorAll(`.friend-item[data-user-id="${user.id}"]`);
+
+		friendItems.forEach(item => {
+			// Mettre à jour le nom d'affichage
+			const nameElement = item.querySelector('.friend-name');
+			if (nameElement) {
+				nameElement.textContent = user.display_name || user.username;
+			}
+
+			// Mettre à jour l'avatar
+			const avatarWrapper = item.querySelector('.avatar-wrapper');
+			if (avatarWrapper) {
+				const avatarHTML = user.avatar_url
+					? `<img src="${user.avatar_url}" alt="${user.username}" class="friend-avatar">`
+					: `<div class="friend-avatar avatar-initial">${user.username.charAt(0).toUpperCase()}</div>`;
+
+				// Conserver l'indicateur online s'il existe
+				const onlineIndicator = avatarWrapper.querySelector('.online-indicator');
+				avatarWrapper.innerHTML = avatarHTML;
+				if (onlineIndicator) {
+					avatarWrapper.appendChild(onlineIndicator);
+				}
+			}
+
+			// Mettre à jour les boutons avec les nouvelles valeurs
+			const chatButton = item.querySelector('.btn-chat') as HTMLButtonElement;
+			if (chatButton) {
+				const isOnline = chatButton.getAttribute('onclick')?.includes('true') || false;
+				chatButton.setAttribute('onclick',
+					`window.openChatWithFriend('${user.id}', '${user.username}', '${user.display_name || user.username}', '${user.avatar_url || ''}', ${isOnline})`
+				);
+			}
+		});
+	}
+
 	// Récupère les demandes d'ami en attente et génère le HTML avec boutons accepter / refuser
 	private static async loadPendingRequests(): Promise<void>
 	{
@@ -509,7 +560,7 @@ export class DashboardPage
 					<div class="friend-info">
 						<div class="avatar-wrapper">
 							${this.getAvatarHTML(request)}
-							${request.is_online ? '<span class="online-indicator"></span>' : ''}
+							<span class="online-indicator" style="display: ${request.is_online ? 'block' : 'none'}"></span>
 						</div>
 						<div class="friend-details">
 							<div class="friend-name">${escapeHtml(request.display_name)}</div>
@@ -554,7 +605,7 @@ export class DashboardPage
 					<div class="friend-info">
 						<div class="avatar-wrapper">
 							${this.getAvatarHTML(request)}
-							${request.is_online ? '<span class="online-indicator"></span>' : ''}
+							<span class="online-indicator" style="display: ${request.is_online ? 'block' : 'none'}"></span>
 						</div>
 						<div class="friend-details">
 							<div class="friend-name">${escapeHtml(request.display_name)}</div>
@@ -705,6 +756,11 @@ export class DashboardPage
 			// Récupérer le contexte pour le dégradé
 			const ctx = canvas.getContext('2d');
 
+			if (!ctx) {
+				console.error('Impossible de récupérer le contexte 2D du canvas');
+				return;
+			}
+
 			// Dégradé vertical (du haut vers le bas)
 			const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
 
@@ -748,7 +804,7 @@ export class DashboardPage
 						displayColors: false,
 						callbacks: {
 							title: () => 'Ranking',
-							label: (context) => `${context.parsed.y} pts`
+							label: (context: any) => `${context.parsed.y} pts`
 						}
 					}
 				},
