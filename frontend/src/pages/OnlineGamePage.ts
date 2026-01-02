@@ -29,6 +29,7 @@ export class OnlineGamePage {
     private isHost: boolean = false;
     private isReady: boolean = false;
     private opponentReady: boolean = false;
+    private matchSaved: boolean = false;
 
     constructor(container: HTMLElement) {
         this.container = container;
@@ -222,7 +223,8 @@ export class OnlineGamePage {
         const currentUser = JSON.parse(userStr);
 
         this.isHost = room.creator.id === currentUser.id;
-        const opponent = this.isHost ? room.opponent : room.creator;
+        const hostPlayer = room.creator;
+        const guestPlayer = room.opponent;
 
         return `
             <div class="waiting-room">
@@ -235,7 +237,7 @@ export class OnlineGamePage {
                 <div class="room-details">
                     <div class="detail-item">
                         <i class="fas fa-trophy"></i>
-                        <span>${i18n.t('online.firstToPoints', `Premier à ${room.maxScore} points`)}</span>
+                        <span>Premier à ${room.maxScore} points</span>
                     </div>
                     ${room.hasPassword ? `
                         <div class="detail-item">
@@ -247,7 +249,7 @@ export class OnlineGamePage {
                 <div class="players-status">
                     <div class="player-card ${this.isHost ? 'current-user' : ''}">
                         <i class="fas fa-user"></i>
-                        <h3>${room.creator.username}</h3>
+                        <h3>${hostPlayer.username}</h3>
                         <span class="player-role">${i18n.t('online.host', 'Hôte')}</span>
                         <div class="ready-indicator ${this.isHost && this.isReady ? 'ready' : ''}">
                             ${this.isHost && this.isReady ? `<i class="fas fa-check"></i> ${i18n.t('online.ready', 'Prêt')}` : `<i class="fas fa-clock"></i> ${i18n.t('online.notReady', 'Non prêt')}`}
@@ -255,9 +257,9 @@ export class OnlineGamePage {
                     </div>
                     <div class="vs-divider">VS</div>
                     <div class="player-card ${!this.isHost ? 'current-user' : ''}">
-                        ${opponent ? `
+                        ${guestPlayer ? `
                             <i class="fas fa-user"></i>
-                            <h3>${opponent.username}</h3>
+                            <h3>${guestPlayer.username}</h3>
                             <span class="player-role">${i18n.t('online.guest', 'Invité')}</span>
                             <div class="ready-indicator ${!this.isHost && this.isReady ? 'ready' : ''}">
                                 ${!this.isHost && this.isReady ? `<i class="fas fa-check"></i> ${i18n.t('online.ready', 'Prêt')}` : `<i class="fas fa-clock"></i> ${i18n.t('online.notReady', 'Non prêt')}`}
@@ -272,17 +274,17 @@ export class OnlineGamePage {
                     </div>
                 </div>
                 <div class="waiting-room-actions">
-                    <button id="ready-btn" class="btn btn-primary ${this.isReady ? 'ready' : ''}" ${!opponent ? 'disabled' : ''}>
+                    <button id="ready-btn" class="btn btn-primary ${this.isReady ? 'ready' : ''}" ${!guestPlayer ? 'disabled' : ''}>
                         ${this.isReady ? `<i class="fas fa-check"></i> ${i18n.t('online.ready', 'Prêt')}!` : `<i class="fas fa-hand-paper"></i> ${i18n.t('online.ready', 'Prêt')}`}
                     </button>
                 </div>
-                ${opponent && !this.isReady ? `
+                ${guestPlayer && !this.isReady ? `
                     <div class="info-message">
                         <i class="fas fa-info-circle"></i>
                         ${i18n.t('online.readyMessage', 'Cliquez sur "Prêt" lorsque vous êtes prêt à commencer le jeu')}
                     </div>
                 ` : ''}
-                ${opponent && this.isReady && !this.opponentReady ? `
+                ${guestPlayer && this.isReady && !this.opponentReady ? `
                     <div class="info-message">
                         <i class="fas fa-hourglass-half"></i>
                         ${i18n.t('online.waitingForOpponentReady', 'En attente que l\'adversaire soit prêt...')}
@@ -316,7 +318,7 @@ export class OnlineGamePage {
                         ${isWinner ? i18n.t('online.victory', 'Victoire !') : i18n.t('online.defeat', 'Défaite')}
                     </h1>
                     <h2 class="winner-announcement">
-                        ${i18n.t('online.wins', `${winner} gagne !`)}
+                        ${winner} gagne !
                     </h2>
                     <div class="final-score">
                         <h3>${i18n.t('online.finalScore', 'Score final')}</h3>
@@ -342,7 +344,7 @@ export class OnlineGamePage {
         `;
     }
 
-    private setupEventListeners(): void {
+    private setupRoomBrowserListeners(): void {
         // Create Room Button
         const createRoomBtn = document.getElementById('create-room-btn');
         if (createRoomBtn) {
@@ -354,6 +356,10 @@ export class OnlineGamePage {
         if (refreshBtn) {
             refreshBtn.addEventListener('click', () => this.loadRooms());
         }
+    }
+
+    private setupEventListeners(): void {
+        this.setupRoomBrowserListeners();
 
         // Create Room Modal
         this.setupCreateRoomModal();
@@ -644,6 +650,9 @@ export class OnlineGamePage {
     }
 
     private showWaitingRoom(room: Room): void {
+        // Reset match saved flag when entering a new room
+        this.matchSaved = false;
+
         const content = document.getElementById('online-game-content');
         if (content) {
             content.innerHTML = this.renderWaitingRoom(room);
@@ -708,10 +717,10 @@ export class OnlineGamePage {
         if (readyBtn) {
             if (this.isReady) {
                 readyBtn.classList.add('ready');
-                readyBtn.innerHTML = '<i class="fas fa-check"></i> Ready!';
+                readyBtn.innerHTML = `<i class="fas fa-check"></i> ${i18n.t('online.ready', 'Prêt')}!`;
             } else {
                 readyBtn.classList.remove('ready');
-                readyBtn.innerHTML = '<i class="fas fa-hand-paper"></i> Ready';
+                readyBtn.innerHTML = `<i class="fas fa-hand-paper"></i> ${i18n.t('online.ready', 'Prêt')}`;
             }
         }
 
@@ -726,38 +735,38 @@ export class OnlineGamePage {
             if (hostReadyIndicator) {
                 if (this.isReady) {
                     hostReadyIndicator.classList.add('ready');
-                    hostReadyIndicator.innerHTML = '<i class="fas fa-check"></i> Ready';
+                    hostReadyIndicator.innerHTML = `<i class="fas fa-check"></i> ${i18n.t('online.ready', 'Prêt')}`;
                 } else {
                     hostReadyIndicator.classList.remove('ready');
-                    hostReadyIndicator.innerHTML = '<i class="fas fa-clock"></i> Not Ready';
+                    hostReadyIndicator.innerHTML = `<i class="fas fa-clock"></i> ${i18n.t('online.notReady', 'Non prêt')}`;
                 }
             }
             if (guestReadyIndicator) {
                 if (this.opponentReady) {
                     guestReadyIndicator.classList.add('ready');
-                    guestReadyIndicator.innerHTML = '<i class="fas fa-check"></i> Ready';
+                    guestReadyIndicator.innerHTML = `<i class="fas fa-check"></i> ${i18n.t('online.ready', 'Prêt')}`;
                 } else {
                     guestReadyIndicator.classList.remove('ready');
-                    guestReadyIndicator.innerHTML = '<i class="fas fa-clock"></i> Not Ready';
+                    guestReadyIndicator.innerHTML = `<i class="fas fa-clock"></i> ${i18n.t('online.notReady', 'Non prêt')}`;
                 }
             }
         } else {
             if (guestReadyIndicator) {
                 if (this.isReady) {
                     guestReadyIndicator.classList.add('ready');
-                    guestReadyIndicator.innerHTML = '<i class="fas fa-check"></i> Ready';
+                    guestReadyIndicator.innerHTML = `<i class="fas fa-check"></i> ${i18n.t('online.ready', 'Prêt')}`;
                 } else {
                     guestReadyIndicator.classList.remove('ready');
-                    guestReadyIndicator.innerHTML = '<i class="fas fa-clock"></i> Not Ready';
+                    guestReadyIndicator.innerHTML = `<i class="fas fa-clock"></i> ${i18n.t('online.notReady', 'Non prêt')}`;
                 }
             }
             if (hostReadyIndicator) {
                 if (this.opponentReady) {
                     hostReadyIndicator.classList.add('ready');
-                    hostReadyIndicator.innerHTML = '<i class="fas fa-check"></i> Ready';
+                    hostReadyIndicator.innerHTML = `<i class="fas fa-check"></i> ${i18n.t('online.ready', 'Prêt')}`;
                 } else {
                     hostReadyIndicator.classList.remove('ready');
-                    hostReadyIndicator.innerHTML = '<i class="fas fa-clock"></i> Not Ready';
+                    hostReadyIndicator.innerHTML = `<i class="fas fa-clock"></i> ${i18n.t('online.notReady', 'Non prêt')}`;
                 }
             }
         }
@@ -766,6 +775,9 @@ export class OnlineGamePage {
     private startGame(room: Room): void {
         // Enable fullscreen game mode
         document.body.classList.add('fullscreen-game');
+
+        // Reset match saved flag for new game
+        this.matchSaved = false;
 
         const content = document.getElementById('online-game-content');
         if (content) {
@@ -778,7 +790,7 @@ export class OnlineGamePage {
 
                 // Setup game end handler
                 this.onlinePongGame.onGameEnd = (_winner, _winnerId, winnerUsername, finalScore) => {
-                    this.endGame(winnerUsername, finalScore);
+                    this.endGame(_winner, _winnerId, winnerUsername, finalScore);
                 };
 
                 this.onlinePongGame.onOpponentLeft = () => {
@@ -788,9 +800,34 @@ export class OnlineGamePage {
         }
     }
 
-    private async endGame(winner: string, finalScore: { left: number; right: number }): Promise<void> {
+    private async endGame(winnerSide: string, winnerId: string, winnerUsername: string, finalScore: { left: number; right: number }): Promise<void> {
         // Disable fullscreen game mode
         document.body.classList.remove('fullscreen-game');
+
+        // Save the match to history (only the host saves to avoid duplicates)
+        if (this.currentRoom && this.currentRoomId && !this.matchSaved && this.isHost) {
+            try {
+                const player1Id = this.currentRoom.creator.id;
+                const player2Id = this.currentRoom.opponent?.id;
+
+                if (player2Id) {
+                    this.matchSaved = true; // Prevent double save
+                    await ApiService.saveMatch({
+                        roomId: this.currentRoomId,
+                        winnerId: winnerId,
+                        player1Id: player1Id,
+                        player2Id: player2Id,
+                        player1Score: finalScore.left,
+                        player2Score: finalScore.right,
+                        duration: 0 // TODO: track actual duration if needed
+                    });
+                    console.log('Match saved successfully');
+                }
+            } catch (error) {
+                console.error('Failed to save match:', error);
+                this.matchSaved = false; // Reset on error to allow retry
+            }
+        }
 
         // Stop the game
         if (this.onlinePongGame) {
@@ -801,7 +838,7 @@ export class OnlineGamePage {
         // Show end screen
         const content = document.getElementById('online-game-content');
         if (content) {
-            content.innerHTML = this.renderGameEndScreen(winner, finalScore);
+            content.innerHTML = this.renderGameEndScreen(winnerUsername, finalScore);
 
             const backBtn = document.getElementById('back-to-rooms-btn');
             if (backBtn) {
@@ -832,6 +869,9 @@ export class OnlineGamePage {
         if (content) {
             content.innerHTML = this.renderRoomBrowser();
         }
+
+        // Re-attach event listeners for the room browser
+        this.setupRoomBrowserListeners();
 
         await this.loadRooms();
         this.startRoomRefresh();

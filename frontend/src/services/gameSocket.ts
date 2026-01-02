@@ -88,6 +88,10 @@ export class GameSocketService {
                 break;
 
             case 'GAME_START':
+                // Update game state with initial state from server
+                if (this.onGameState && message.gameState) {
+                    this.onGameState(message.gameState);
+                }
                 if (this.onGameStart) {
                     this.onGameStart();
                 }

@@ -80,14 +80,26 @@ class GameRoom {
   // Démarrer le jeu
   startGame() {
     this.status = 'playing';
+
+    // Réinitialiser les scores
+    this.gameState.leftScore = 0;
+    this.gameState.rightScore = 0;
+    this.gameState.winner = null;
+
+    console.log('[GameRoom] Starting game, scores reset to:', this.gameState.leftScore, this.gameState.rightScore);
+
     this.resetBall();
+
+    // Réinitialiser le timestamp pour éviter un deltaTime énorme au premier frame
+    this.lastUpdate = Date.now();
+
+    // Envoyer l'état initial avant de démarrer la boucle
+    this.broadcast({ type: 'GAME_START', gameState: this.gameState });
 
     // Boucle de jeu à 60 FPS
     this.gameInterval = setInterval(() => {
       this.updateGame();
     }, 1000 / 60);
-
-    this.broadcast({ type: 'GAME_START', gameState: this.gameState });
   }
 
   // Arrêter le jeu
@@ -117,6 +129,12 @@ class GameRoom {
   updateGame() {
     const now = Date.now();
     const deltaTime = (now - this.lastUpdate) / 1000;
+
+    // Debug: log deltaTime for first few frames
+    if (deltaTime > 0.5) {
+      console.log('[GameRoom] WARNING: Large deltaTime detected:', deltaTime, 'seconds');
+    }
+
     this.lastUpdate = now;
 
     // Déplacer la balle
@@ -157,10 +175,12 @@ class GameRoom {
     // Points marqués
     if (this.gameState.ball.x <= 0) {
       this.gameState.rightScore++;
+      console.log('[GameRoom] Point scored! Right player scores. New score:', this.gameState.leftScore, '-', this.gameState.rightScore);
       this.checkWinner();
       if (this.status === 'playing') this.resetBall();
     } else if (this.gameState.ball.x >= this.config.width) {
       this.gameState.leftScore++;
+      console.log('[GameRoom] Point scored! Left player scores. New score:', this.gameState.leftScore, '-', this.gameState.rightScore);
       this.checkWinner();
       if (this.status === 'playing') this.resetBall();
     }
@@ -231,6 +251,7 @@ class GameRoom {
       roomName: this.roomName,
       isPrivate: this.isPrivate,
       hasPassword: !!this.password,
+      maxScore: this.maxScore,
       status: this.status,
       playerCount: this.opponent ? 2 : 1,
       maxPlayers: 2,
