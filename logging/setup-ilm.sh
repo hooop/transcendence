@@ -16,21 +16,21 @@ echo "🔍 Attente de la disponibilité d'Elasticsearch sur $ELASTICSEARCH_HOST.
 # Attendre qu'Elasticsearch soit prêt
 for i in $(seq 1 $MAX_RETRIES); do
   if curl -s -u "$ELASTIC_USER:$ELASTIC_PASSWORD" "$ELASTICSEARCH_HOST" > /dev/null 2>&1; then
-    echo "✅ Elasticsearch est disponible!"
+    echo "Elasticsearch est disponible!"
     break
   fi
 
   if [ $i -eq $MAX_RETRIES ]; then
-    echo "❌ Timeout: Elasticsearch n'est pas disponible après $MAX_RETRIES tentatives"
+    echo "Timeout: Elasticsearch n'est pas disponible après $MAX_RETRIES tentatives"
     exit 1
   fi
 
-  echo "⏳ Tentative $i/$MAX_RETRIES - Elasticsearch n'est pas encore prêt, nouvelle tentative dans ${RETRY_INTERVAL}s..."
+  echo "Tentative $i/$MAX_RETRIES - Elasticsearch n'est pas encore prêt, nouvelle tentative dans ${RETRY_INTERVAL}s..."
   sleep $RETRY_INTERVAL
 done
 
 echo ""
-echo "📋 Configuration de la politique ILM 'transcendence-logs-policy'..."
+echo "Configuration de la politique ILM 'transcendence-logs-policy'..."
 
 # Créer la politique ILM
 RESPONSE=$(curl -s -w "\n%{http_code}" -u "$ELASTIC_USER:$ELASTIC_PASSWORD" -X PUT "$ELASTICSEARCH_HOST/_ilm/policy/transcendence-logs-policy" \
@@ -41,14 +41,14 @@ HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
 BODY=$(echo "$RESPONSE" | head -n-1)
 
 if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 201 ]; then
-  echo "✅ Politique ILM créée avec succès"
+  echo "Politique ILM créée avec succès"
 else
-  echo "⚠️  Erreur lors de la création de la politique ILM (HTTP $HTTP_CODE)"
+  echo "Erreur lors de la création de la politique ILM (HTTP $HTTP_CODE)"
   echo "$BODY"
 fi
 
 echo ""
-echo "📝 Configuration du template d'index 'transcendence-logs-template'..."
+echo "Configuration du template d'index 'transcendence-logs-template'..."
 
 # Créer le template d'index
 RESPONSE=$(curl -s -w "\n%{http_code}" -u "$ELASTIC_USER:$ELASTIC_PASSWORD" -X PUT "$ELASTICSEARCH_HOST/_index_template/transcendence-logs-template" \
@@ -59,35 +59,35 @@ HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
 BODY=$(echo "$RESPONSE" | head -n-1)
 
 if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 201 ]; then
-  echo "✅ Template d'index créé avec succès"
+  echo "Template d'index créé avec succès"
 else
-  echo "⚠️  Erreur lors de la création du template d'index (HTTP $HTTP_CODE)"
+  echo "Erreur lors de la création du template d'index (HTTP $HTTP_CODE)"
   echo "$BODY"
 fi
 
 echo ""
-echo "🔄 Vérification de la configuration ILM..."
+echo "Vérification de la configuration ILM..."
 
 # Vérifier que la politique existe
 curl -s -u "$ELASTIC_USER:$ELASTIC_PASSWORD" "$ELASTICSEARCH_HOST/_ilm/policy/transcendence-logs-policy" | grep -q "transcendence-logs-policy"
 if [ $? -eq 0 ]; then
-  echo "✅ Politique ILM vérifiée"
+  echo "Politique ILM vérifiée"
 else
-  echo "❌ La politique ILM n'a pas pu être vérifiée"
+  echo "La politique ILM n'a pas pu être vérifiée"
   exit 1
 fi
 
 # Vérifier que le template existe
 curl -s -u "$ELASTIC_USER:$ELASTIC_PASSWORD" "$ELASTICSEARCH_HOST/_index_template/transcendence-logs-template" | grep -q "transcendence-logs-template"
 if [ $? -eq 0 ]; then
-  echo "✅ Template d'index vérifié"
+  echo "Template d'index vérifié"
 else
-  echo "❌ Le template d'index n'a pas pu être vérifié"
+  echo "Le template d'index n'a pas pu être vérifié"
   exit 1
 fi
 
 echo ""
-echo "👤 Création de l'utilisateur Kibana..."
+echo "Création de l'utilisateur Kibana..."
 
 # Créer l'utilisateur kibana_user pour Kibana (au lieu d'utiliser le superuser elastic)
 # Utiliser curl pour appeler l'API Elasticsearch directement
@@ -99,18 +99,18 @@ HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
 BODY=$(echo "$RESPONSE" | head -n-1)
 
 if [ "$HTTP_CODE" -eq 200 ] || [ "$HTTP_CODE" -eq 201 ]; then
-  echo "✅ Utilisateur kibana_user créé avec succès"
+  echo "Utilisateur kibana_user créé avec succès"
 elif echo "$BODY" | grep -q "user already exists"; then
-  echo "ℹ️  Utilisateur kibana_user existe déjà"
+  echo "Utilisateur kibana_user existe déjà"
 else
-  echo "⚠️  Erreur lors de la création de l'utilisateur (HTTP $HTTP_CODE)"
+  echo "Erreur lors de la création de l'utilisateur (HTTP $HTTP_CODE)"
   echo "$BODY"
 fi
 
 echo ""
-echo "🎉 Configuration ILM terminée avec succès!"
+echo "Configuration ILM terminée avec succès!"
 echo ""
-echo "📊 Résumé de la politique:"
+echo "Résumé de la politique:"
 echo "  - Hot phase: Rollover après 7 jours ou 10GB"
 echo "  - Warm phase: Optimisation après 7 jours (forcemerge + shrink)"
 echo "  - Delete phase: Suppression après 90 jours"
