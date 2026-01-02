@@ -138,6 +138,12 @@ services:
       - ./elasticsearch-certs:/usr/share/elasticsearch/config/certs:ro
     networks:
       - transcendence_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s -u elastic:${ELASTIC_PASSWORD:-transcendence_elk_2024} http://localhost:9200/_cluster/health | grep -q '\"status\":\"green\"\\|\"status\":\"yellow\"'"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
 
   # # Logstash pour traitement des logs
   logstash:
@@ -149,9 +155,16 @@ services:
     ports:
       - "5000:5000"
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     networks:
       - transcendence_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9600/_node/stats || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 45s
 
   # # Kibana pour visualisation des logs
   kibana:
@@ -167,9 +180,16 @@ services:
       - XPACK_SECURITY_ENABLED=true
       - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=${XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY:-transcendence_kibana_encryption_key_min_32_chars_2024}
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     networks:
       - transcendence_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:5601/api/status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
   # # Setup ILM - Initialisation de la politique de rétention des logs
   elasticsearch-setup:
@@ -185,7 +205,8 @@ services:
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-transcendence_elk_2024}
     command: sh -c "apk add --no-cache curl bash && /setup/setup-ilm.sh"
     depends_on:
-      - elasticsearch
+      elasticsearch:
+        condition: service_healthy
     networks:
       - transcendence_network
     restart: "no"
