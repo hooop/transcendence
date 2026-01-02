@@ -60,12 +60,14 @@ async function uploadRoutes(fastify, options) {
       await pipeline(data.file, writeStream);
 
       // URL de l'avatar
-      const avatarUrl = `http://localhost:3000/uploads/avatars/${filename}`;
+      const avatarUrl = `/uploads/avatars/${filename}`;
 
       // Mettre à jour l'utilisateur dans la base de données
       fastify.db.prepare(
         'UPDATE users SET avatar_url = ? WHERE id = ?'
       ).run(avatarUrl, userId);
+
+      console.log('Avatar URL saved in DB:', avatarUrl);
 
       // Récupérer l'utilisateur mis à jour
       const user = fastify.db.prepare(

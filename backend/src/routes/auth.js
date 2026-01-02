@@ -255,6 +255,8 @@ fastify.post('/login', async (request, reply) => {
          WHERE u.id = ?`
       ).get(request.user.id);
 
+      console.log('User retrieved from /api/auth/me:', user.avatar_url);
+      
       if (!user) {
         return reply.status(404).send({ error: 'Utilisateur non trouvé' });
       }

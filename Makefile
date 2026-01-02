@@ -1,7 +1,7 @@
 .PHONY: help prepare up build down down-v clean manu up-d nuke seed
 
 # Variables
-DOCKER_COMPOSE = docker-compose
+DOCKER_COMPOSE = docker compose
 SERVICES_CORE = backend frontend
 SERVICES_MONITORING = prometheus grafana node-exporter elasticsearch logstash kibana elasticsearch-setup
 
@@ -55,7 +55,7 @@ seed:
 		sleep 2; \
 	done
 	@echo "Backend prêt, lancement du seed..."
-	docker-compose exec backend npm run fillbdd
+	docker compose exec backend npm run fillbdd
 
 # Arrête tous les services
 down:
