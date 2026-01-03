@@ -288,6 +288,11 @@ async function friendshipsRoutes(fastify, options) {
           'SELECT id, username, display_name, avatar_url FROM users WHERE id = ?'
         ).get(userId);
 
+        // Récupérer les informations de l'utilisateur qui a envoyé la demande
+        const sender = fastify.db.prepare(
+          'SELECT id, username, display_name, avatar_url FROM users WHERE id = ?'
+        ).get(friendship.user_id);
+
         // Notifier l'utilisateur qui a envoyé la demande via WebSocket
         const senderWs = chatClients.get(friendship.user_id);
         if (senderWs && senderWs.readyState === 1) {
@@ -296,6 +301,19 @@ async function friendshipsRoutes(fastify, options) {
             friendship: {
               id: friendship.id,
               friend: accepter,
+              status: 'accepted',
+            },
+          }));
+        }
+
+        // Notifier AUSSI l'utilisateur qui a accepté la demande via WebSocket
+        const accepterWs = chatClients.get(userId);
+        if (accepterWs && accepterWs.readyState === 1) {
+          accepterWs.send(JSON.stringify({
+            type: 'friendship_accepted',
+            friendship: {
+              id: friendship.id,
+              friend: sender,
               status: 'accepted',
             },
           }));
@@ -454,6 +472,16 @@ async function friendshipsRoutes(fastify, options) {
       // Si connecté, le notifier
       if (otherUserWs && otherUserWs.readyState === 1) {
         otherUserWs.send(JSON.stringify({
+          type: 'friendship_removed',
+          friendship_id: id,
+          removed_by: userId
+        }));
+      }
+
+      // Notifier AUSSI l'utilisateur qui a supprimé l'ami via WebSocket
+      const currentUserWs = chatClients.get(userId);
+      if (currentUserWs && currentUserWs.readyState === 1) {
+        currentUserWs.send(JSON.stringify({
           type: 'friendship_removed',
           friendship_id: id,
           removed_by: userId
