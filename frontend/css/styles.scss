@@ -3968,14 +3968,14 @@ background-size: cover;          /* équivalent à object-fit: cover */
 		}
 
 		&#win-circle {
-			// Cercle de victoires
-			fill: none;
-			stroke: url(#winGradient);
-			stroke-width: 20;
-			stroke-linecap: round;
-			transform: rotate(-90deg);
-			transform-origin: center;
-		}
+            fill: none;
+            stroke: url(#winGradient);
+            stroke-width: 20;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: center;
+            opacity: 0;  // Caché par défaut
+        }
 	}
 
 	text {
@@ -4279,4 +4279,8 @@ background-size: cover;          /* équivalent à object-fit: cover */
 .user-username {
     font-size: 12px;
     color: #929292;
+}
+
+#win-circle {
+    transition: stroke-dashoffset 1s ease-out;
 }

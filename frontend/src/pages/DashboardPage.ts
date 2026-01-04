@@ -701,18 +701,32 @@ export class DashboardPage
 		}
 	}
 
-	private static updateDonutChart(winPercent: number): void
-	{
-		const winCircle = document.getElementById('win-circle');
-		if (!winCircle) return;
-
-		const radius = 50;
-		const circumference = 2 * Math.PI * radius;
-		const offset = circumference - (winPercent / 100) * circumference;
-
-		winCircle.setAttribute('stroke-dasharray', circumference.toString());
-		winCircle.setAttribute('stroke-dashoffset', offset.toString());
-	}
+private static updateDonutChart(winPercent: number): void
+{
+    const winCircle = document.getElementById('win-circle');
+    if (!winCircle) return;
+    
+    const radius = 50;
+    const circumference = 2 * Math.PI * radius;
+    const offset = circumference - (winPercent / 100) * circumference;
+    
+    winCircle.style.transition = 'none';
+    
+    winCircle.setAttribute('stroke-dasharray', circumference.toString());
+    winCircle.setAttribute('stroke-dashoffset', circumference.toString());
+    
+    void winCircle.offsetHeight;
+    
+    requestAnimationFrame(() => {
+        winCircle.style.transition = 'stroke-dashoffset 0.5s ease-out, opacity 0.2s ease-out';
+        winCircle.style.opacity = '1';
+        winCircle.setAttribute('stroke-dashoffset', offset.toString());
+        
+        setTimeout(() => {
+            winCircle.style.transition = 'none';
+        }, 500);
+    });
+}
 
 
 	private static async loadRankingChart(): Promise<void>
