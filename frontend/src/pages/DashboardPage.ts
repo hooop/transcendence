@@ -85,6 +85,11 @@ export class DashboardPage
 		try {
 			const friendsData = await ApiService.getFriends();
 
+			// Mettre à jour le compteur d'amis
+			const countElement = document.querySelector('.friends-count');
+			if (countElement) countElement.textContent = `${friendsData.friends.length}`;
+        
+
 			if (friendsData.friends.length === 0) {
 				container.innerHTML = `<p class="empty-state">${i18n.t('dashboard.noFriends', 'Aucun ami pour le moment')}</p>`;
 				return;
