@@ -31,6 +31,7 @@ prepare:
 
 # Lance tous les services avec rebuild + seed automatique
 up:
+	@npm install
 	$(DOCKER_COMPOSE) up --build -d
 	@until $(DOCKER_COMPOSE) exec -T backend node -e "process.exit(0)" 2>/dev/null; do \
 		echo "Backend pas encore prêt, attente..."; \
