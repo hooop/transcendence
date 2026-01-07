@@ -9,11 +9,11 @@ help:
 	@echo "Commandes disponibles:"
 	@echo "  make prepare   - Prépare l'environnement (place le .env à la racine)"
 	@echo "  make up        - Lance tous les services avec rebuild + seed BDD automatique"
-	@echo "  make up-d      - Lance tous les services en arrière-plan (sudo docker-compose up -d)"
+	@echo "  make up-d      - Lance tous les services en arrière-plan  docker-compose up -d)"
 	@echo "  make build     - Build tous les services sans les lancer"
 	@echo "  make seed      - Remplit la base de données avec les données de test"
-	@echo "  make down      - Arrête tous les services (sudo docker-compose down)"
-	@echo "  make down-v    - Arrête tous les services et supprime les volumes (sudo docker-compose down -v)"
+	@echo "  make down      - Arrête tous les services  docker-compose down)"
+	@echo "  make down-v    - Arrête tous les services et supprime les volumes  docker-compose down -v)"
 	@echo "  make clean     - Alias pour down-v"
 	@echo "  make manu      - Build uniquement frontend et backend (sans monitoring)"
 	@echo "  make nuke      - RESET COMPLET: arrête tout, supprime volumes/réseaux/images et prune le système"
@@ -80,17 +80,17 @@ nuke:
 	@echo "Stopping all containers..."
 	-$(DOCKER_COMPOSE) down -v --remove-orphans
 	@echo "Removing all project containers..."
-	-sudo docker ps -a --filter "name=ft_transcendence" -q | xargs -r sudo docker rm -f
+	docker ps -a --filter "name=ft_transcendence" -q | xargs -r docker rm -f
 	@echo "Removing all project images..."
-	-sudo docker images --filter "reference=transcendence*" -q | xargs -r sudo docker rmi -f
+	docker images --filter "reference=transcendence*" -q | xargs -r docker rmi -f
 	@echo "Pruning all unused containers..."
-	-sudo docker container prune -f
+	docker container prune -f
 	@echo "Pruning all unused images..."
-	-sudo docker image prune -a -f
+	docker image prune -a -f
 	@echo "Pruning all unused volumes..."
-	-sudo docker volume prune -f
+	docker volume prune -f
 	@echo "Pruning all unused networks..."
-	-sudo docker network prune -f
+	docker network prune -f
 	@echo "Pruning system (build cache, etc.)..."
-	-sudo docker system prune -a -f --volumes
+	docker system prune -a -f --volumes
 	@echo "Nuclear cleanup complete! Everything has been reset."
